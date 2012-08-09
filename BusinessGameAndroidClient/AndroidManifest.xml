@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.ardhi.businessgame"
+    android:versionCode="1"
+    android:versionName="1.0" >
+
+    <uses-sdk android:minSdkVersion="7" android:targetSdkVersion="10"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
+
+    <application
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_login" >
+        <service android:name=".services.GlobalServices">
+            
+        </service>
+        <activity
+            android:label="@string/app_login"
+            android:name=".activities.LoginActivity" >
+            <intent-filter >
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:label="@string/app_reg"
+            android:name=".activities.RegisterActivity" >
+        </activity>
+        <activity
+            android:label="@string/app_main"
+            android:name=".activities.MainBusinessGameActivity" >
+        </activity>
+        <activity
+            android:label="@string/app_my_business"
+            android:name=".activities.MyBusinessGameActivity" >
+        </activity>
+        <activity
+            android:label="@string/app_bank_lobby"
+            android:name=".activities.BankLobbyActivity" >
+        </activity>
+        <activity
+            android:label="@string/app_propose"
+            android:name=".activities.BankProposalTabActivity" >
+        </activity>
+        <activity
+            android:label="@string/app_storage"
+            android:name=".activities.StorageTabActivity" >
+        </activity>
+        <activity
+            android:label="@string/app_storage"
+            android:name=".activities.StorageTabContentActivity" >
+        </activity>
+        <activity
+            android:label="@string/app_headquarter"
+            android:name=".activities.HeadquarterTabActivity" >
+        </activity>
+        <activity
+            android:label="@string/app_headquarter"
+            android:name=".activities.HeadquarterTabContentActivity" >
+        </activity>
+        <activity
+            android:label="@string/app_market"
+            android:name=".activities.MarketTabActivity" >
+        </activity>
+        <activity
+            android:label="@string/app_market"
+            android:name=".activities.MarketTabContentActivity" >
+        </activity>
+    </application>
+    
+
+</manifest>

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+	<TableLayout android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+	    android:stretchColumns="1"
+	    android:padding="10dip">
+	    <TableRow >
+	        <TextView android:layout_span="3"
+	            android:layout_gravity="center_horizontal"
+	            android:textAppearance="?android:attr/textAppearanceMedium"
+	            android:text="@string/question_product"/>
+	    </TableRow>
+	    <TableRow >
+	        <TextView android:id="@+id/txt_min"
+	            android:textAppearance="?android:attr/textAppearanceMedium"
+	            android:padding="5dip"/>
+	        <SeekBar android:id="@+id/seek_size"
+	            android:padding="5dip"/>
+	        <TextView android:id="@+id/txt_max"
+	            android:textAppearance="?android:attr/textAppearanceMedium"
+	            android:padding="5dip"/>
+	    </TableRow>
+	    <TableRow >
+	        <TextView android:layout_span="3"
+	            android:layout_gravity="center_horizontal"
+	            android:textAppearance="?android:attr/textAppearanceMedium"
+	            android:id="@+id/txt_offered"/>
+	    </TableRow>
+	    <TableRow >
+	        <TextView android:layout_span="3"
+	            android:layout_gravity="center_horizontal"
+	            android:textAppearance="?android:attr/textAppearanceMedium"
+	            android:id="@+id/txt_total"/>
+	    </TableRow>
+	</TableLayout>
+	<TableLayout android:layout_width="wrap_content"
+	    android:layout_height="wrap_content" 
+	    android:layout_gravity="center_horizontal">
+	    <TableRow >
+	        <TextView android:textAppearance="?android:attr/textAppearanceMedium"
+	        	android:text="@string/market"/>
+		    <Spinner android:layout_width="wrap_content"
+		        android:layout_height="wrap_content"
+		        android:id="@+id/spin_market"/>
+	    </TableRow>
+	    <TableRow >
+	        <TextView android:layout_width="wrap_content"
+		        android:layout_height="wrap_content"
+		        android:textAppearance="?android:attr/textAppearanceMedium"
+		        android:text="@string/price"/>
+		    <EditText android:layout_width="wrap_content"
+		        android:layout_height="wrap_content"
+		        android:id="@+id/txt_price"
+		        android:inputType="numberDecimal"/>
+	    </TableRow>
+	</TableLayout>
+</LinearLayout>
