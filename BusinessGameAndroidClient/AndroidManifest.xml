@@ -1,72 +1,140 @@
-<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.ardhi.businessgame"
     android:versionCode="1"
     android:versionName="1.0" >
 
-    <uses-sdk android:minSdkVersion="7" android:targetSdkVersion="10"/>
-    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-sdk
+        android:minSdkVersion="8"
+        android:targetSdkVersion="15" />
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:icon="@drawable/ic_launcher"
-        android:label="@string/app_login" >
-        <service android:name=".services.GlobalServices">
-            
-        </service>
+        android:label="@string/app_name"
+        android:theme="@style/AppTheme" >
+        <service android:name=".services.SystemService" />
+
         <activity
-            android:label="@string/app_login"
-            android:name=".activities.LoginActivity" >
-            <intent-filter >
+            android:name=".activities.LoginActivity"
+            android:label="@string/app_name" 
+            android:screenOrientation="portrait"
+            android:configChanges="keyboard|keyboardHidden|orientation" >
+            <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
-            android:label="@string/app_reg"
-            android:name=".activities.RegisterActivity" >
+            android:name=".activities.MainBusinessGameActivity"
+            android:label="@string/title_activity_main_business_game"
+            android:screenOrientation="portrait"
+            android:configChanges="keyboard|keyboardHidden|orientation" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.ardhi.businessgame.activities.LoginActivity" />
         </activity>
         <activity
-            android:label="@string/app_main"
-            android:name=".activities.MainBusinessGameActivity" >
+            android:name=".activities.RegisterActivity"
+            android:label="@string/title_activity_register"
+            android:screenOrientation="portrait"
+            android:configChanges="keyboard|keyboardHidden|orientation" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.ardhi.businessgame.activities.LoginActivity" />
         </activity>
         <activity
-            android:label="@string/app_my_business"
-            android:name=".activities.MyBusinessGameActivity" >
+            android:name=".activities.MyBusinessActivity"
+            android:label="@string/title_activity_my_business"
+            android:screenOrientation="portrait"
+            android:configChanges="keyboard|keyboardHidden|orientation" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.ardhi.businessgame.activities.MainBusinessGameActivity" />
         </activity>
         <activity
-            android:label="@string/app_bank_lobby"
-            android:name=".activities.BankLobbyActivity" >
+            android:name=".activities.BankLobbyActivity"
+            android:label="@string/title_activity_bank_lobby"
+            android:screenOrientation="portrait"
+            android:configChanges="keyboard|keyboardHidden|orientation" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.ardhi.businessgame.activities.MyBusinessActivity" />
         </activity>
         <activity
-            android:label="@string/app_propose"
-            android:name=".activities.BankProposalTabActivity" >
+            android:name=".activities.BankProposalTabActivity"
+            android:label="@string/title_activity_bank_proposal_tab"
+            android:screenOrientation="portrait"
+            android:configChanges="keyboard|keyboardHidden|orientation" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.ardhi.businessgame.activities.BankLobbyActivity" />
         </activity>
         <activity
-            android:label="@string/app_storage"
-            android:name=".activities.StorageTabActivity" >
+            android:name=".activities.StorageTabActivity"
+            android:label="@string/title_activity_tab_storage"
+            android:screenOrientation="portrait"
+            android:configChanges="keyboard|keyboardHidden|orientation" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.ardhi.businessgame.activities.MyBusinessActivity" />
         </activity>
         <activity
-            android:label="@string/app_storage"
-            android:name=".activities.StorageTabContentActivity" >
+            android:name=".activities.StorageTabContentActivity"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait"
+            android:configChanges="keyboard|keyboardHidden|orientation" >
         </activity>
         <activity
-            android:label="@string/app_headquarter"
-            android:name=".activities.HeadquarterTabActivity" >
+            android:name=".activities.HeadquarterTabActivity"
+            android:label="@string/title_activity_tab_headquarter"
+            android:screenOrientation="portrait"
+            android:configChanges="keyboard|keyboardHidden|orientation" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.ardhi.businessgame.activities.MyBusinessActivity" />
         </activity>
         <activity
-            android:label="@string/app_headquarter"
-            android:name=".activities.HeadquarterTabContentActivity" >
+            android:name=".activities.HeadquarterTabContentActivity"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait"
+            android:configChanges="keyboard|keyboardHidden|orientation" >
         </activity>
         <activity
-            android:label="@string/app_market"
-            android:name=".activities.MarketTabActivity" >
+            android:name=".activities.MarketTabActivity"
+            android:label="@string/title_activity_tab_market"
+            android:screenOrientation="portrait"
+            android:configChanges="keyboard|keyboardHidden|orientation" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.ardhi.businessgame.activities.MyBusinessActivity" />
         </activity>
         <activity
-            android:label="@string/app_market"
-            android:name=".activities.MarketTabContentActivity" >
+            android:name=".activities.MarketTabContentActivity"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait"
+            android:configChanges="keyboard|keyboardHidden|orientation" >
+        </activity>
+        <activity
+            android:name=".activities.SectorActivity"
+            android:label="@string/title_activity_sector"
+            android:screenOrientation="portrait"
+            android:configChanges="keyboard|keyboardHidden|orientation" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.ardhi.businessgame.activities.MyBusinessActivity" />
+        </activity>
+        <activity
+            android:name=".activities.SectorDetailTabActivity"
+            android:label="@string/title_activity_sector_detail_tab"
+            android:screenOrientation="portrait"
+            android:configChanges="keyboard|keyboardHidden|orientation" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.ardhi.businessgame.activities.SectorActivity" />
         </activity>
     </application>
-    
 
 </manifest>
