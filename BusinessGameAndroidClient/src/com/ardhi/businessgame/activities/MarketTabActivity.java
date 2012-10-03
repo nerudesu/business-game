@@ -2,28 +2,35 @@ package com.ardhi.businessgame.activities;
 
 import com.ardhi.businessgame.R;
 import com.ardhi.businessgame.models.User;
-import com.ardhi.businessgame.services.CustomHttpClient;
+import com.ardhi.businessgame.services.CommunicationService;
 import com.ardhi.businessgame.services.DBAccess;
-import com.ardhi.businessgame.services.GlobalServices;
+import com.ardhi.businessgame.services.SystemService;
 import com.ardhi.businessgame.services.TimeSync;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
 
+import android.os.AsyncTask;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.IBinder;
+import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.app.TabActivity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.os.AsyncTask;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.IBinder;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.EditText;
 import android.widget.TabHost;
 import android.widget.Toast;
+import android.support.v4.app.NavUtils;
 
+@SuppressWarnings("deprecation")
+@SuppressLint("NewApi")
 public class MarketTabActivity extends TabActivity {
 	private ProgressDialog progressDialog;
 	private DBAccess db;
@@ -33,13 +40,16 @@ public class MarketTabActivity extends TabActivity {
 	private Handler h;
 	private Thread t;
 	private String data;
-	
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.market_tab);
-		
-		zone = (EditText)findViewById(R.id.zone);
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_tab_market);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+        	getActionBar().setDisplayHomeAsUpEnabled(true);
+        }
+        
+        zone = (EditText)findViewById(R.id.zone);
         money = (EditText)findViewById(R.id.money);
         nextTurn = (EditText)findViewById(R.id.next_turn);
 		db = new DBAccess(this);
@@ -49,15 +59,19 @@ public class MarketTabActivity extends TabActivity {
         money.setText(user.getMoney()+" ZE");
         
         h = new Handler();
-        timeSync = new TimeSync(h, nextTurn);
-        Intent i = new Intent(getApplicationContext(), GlobalServices.class);
-        bindService(i, serviceConnection, Context.BIND_AUTO_CREATE);
+        timeSync = new TimeSync(h, nextTurn, money, db);
+        bindService(new Intent(this, SystemService.class), serviceConnection, Context.BIND_AUTO_CREATE);
         
-		progressDialog = ProgressDialog.show(this, "", "Accessing market in zone "+user.getZone()+"..");
-		new LoadMarketContent().execute();
-	}
-	
-	@Override
+        if(CommunicationService.isOnline(this)){
+        	progressDialog = ProgressDialog.show(this, "", "Accessing market in zone "+user.getZone()+"..");
+    		new LoadMarketContent().execute();
+        } else {
+        	Toast.makeText(getApplicationContext(), "Device is offline..", Toast.LENGTH_SHORT).show();
+        	finish();
+        }
+    }
+    
+    @Override
 	protected void onPause() {
 		super.onPause();
 		timeSync.setThreadWork(false);
@@ -80,15 +94,32 @@ public class MarketTabActivity extends TabActivity {
 		super.onDestroy();
 		unbindService(serviceConnection);
 	}
-	
-	private ServiceConnection serviceConnection = new ServiceConnection() {
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.activity_tab_market, menu);
+        return true;
+    }
+
+    
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                NavUtils.navigateUpFromSameTask(this);
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private ServiceConnection serviceConnection = new ServiceConnection() {
 		public void onServiceDisconnected(ComponentName name) {
 			timeSync.setGlobalServices(null);
 			timeSync.setServiceBound(false);
 		}
 		
 		public void onServiceConnected(ComponentName name, IBinder binder) {
-			timeSync.setGlobalServices(((GlobalServices.MyBinder)binder).getService());
+			timeSync.setGlobalServices(((SystemService.MyBinder)binder).getService());
 			timeSync.setServiceBound(true);
 		}
 	};
@@ -117,6 +148,9 @@ public class MarketTabActivity extends TabActivity {
 		intent.putExtra("Data", new Gson().fromJson(array.get(2), String.class));
 		spec = getTabHost().newTabSpec("Employee").setIndicator("Employee", getResources().getDrawable(R.drawable.ic_launcher)).setContent(intent);
         getTabHost().addTab(spec);
+        
+        parser = null;
+        array = null;
 	}
 	
 	private class LoadMarketContent extends AsyncTask<String, Void, Object>{
@@ -124,14 +158,12 @@ public class MarketTabActivity extends TabActivity {
 		@Override
 		protected Object doInBackground(String... params) {
 			try {
-				String res = CustomHttpClient.executeHttpGet(CustomHttpClient.URL+CustomHttpClient.GET_LOAD_MARKET_CONTENT+"&zone="+user.getZone());
-				res = res.toString().replaceAll("\\n+", "");
-				return res.toString();
+				return CommunicationService.get(CommunicationService.GET_LOAD_MARKET_CONTENT+"&zone="+user.getZone());
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+				return null;
 			}
-			return null;
 		}
 		
 		@Override

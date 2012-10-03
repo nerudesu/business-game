@@ -2,17 +2,16 @@ package com.ardhi.businessgame.activities;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
+import java.util.HashMap;
 
 import com.ardhi.businessgame.R;
+import com.ardhi.businessgame.activities.adapters.SectorAdapter;
 import com.ardhi.businessgame.activities.adapters.StorageEquipmentAdapter;
 import com.ardhi.businessgame.activities.adapters.StorageProductAdapter;
 import com.ardhi.businessgame.models.StorageEquipment;
 import com.ardhi.businessgame.models.StorageProduct;
 import com.ardhi.businessgame.models.User;
-import com.ardhi.businessgame.services.CustomHttpClient;
+import com.ardhi.businessgame.services.CommunicationService;
 import com.ardhi.businessgame.services.DBAccess;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -20,7 +19,6 @@ import com.google.gson.JsonParser;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.os.AsyncTask;
@@ -47,6 +45,9 @@ public class StorageTabContentActivity extends Activity {
 	private String tab, data, id;
 	private double size, price;
 	private ArrayList<String> marketZone;
+	private ArrayList<String> installment,zones,idInstallment;
+	private ArrayList<Double> efficiency;
+	private ArrayList<Integer> effectivity;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -72,26 +73,52 @@ public class StorageTabContentActivity extends Activity {
 		setLayout();
 	}
 	
-	@Override
-	protected Dialog onCreateDialog(int id) {
+	public void showMyDialog(String i, double s, int d) {
+		if(CommunicationService.isOnline(this)){
+			id = i;
+			size = s;
+			progressDialog = ProgressDialog.show(this, "", "Get suggested price..");
+			new GetSuggestedPrice().execute(""+i,""+d);
+		} else {
+			Toast.makeText(this, "Device is offline..", Toast.LENGTH_SHORT).show();
+		}
+	}
+	
+	public void showAttachDialog(String i, String type){
+		id = i;
+		if(CommunicationService.isOnline(this)){
+			progressDialog = ProgressDialog.show(this, "", "Get available installment..");
+			new LoadInstallmentOwnedByEquipment().execute(type);
+		} else {
+			Toast.makeText(this, "Device is offline..", Toast.LENGTH_SHORT).show();
+		}
+	}
+	
+	public AlertDialog dialog(int id){
+		final LayoutInflater factory;
+		final View view;
+		final EditText txtPrice;
+		final Spinner spinMarket;
+		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, marketZone);
+		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		AlertDialog dialog = null;
 		switch (id) {
 			case 1:
-				LayoutInflater factory = LayoutInflater.from(this);
-				final View view = factory.inflate(R.layout.question_product_sell, null);
+				factory = LayoutInflater.from(this);
+				view = factory.inflate(R.layout.question_product_sell, null);
 				final SeekBar s = (SeekBar)view.findViewById(R.id.seek_size);
 				final TextView txtMin = (TextView)view.findViewById(R.id.txt_min),
 						txtMax = (TextView)view.findViewById(R.id.txt_max),
 						txtOffered = (TextView)view.findViewById(R.id.txt_offered),
 						txtTotal = (TextView)view.findViewById(R.id.txt_total);
-				final EditText txtPrice = (EditText)view.findViewById(R.id.txt_price);
-				final Spinner spinMarket = (Spinner)view.findViewById(R.id.spin_market);
-				ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, marketZone);
-				adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+				txtPrice = (EditText)view.findViewById(R.id.txt_price);
+				spinMarket = (Spinner)view.findViewById(R.id.spin_market);
 				spinMarket.setAdapter(adapter);
 				txtMin.setText("0");
 				txtMax.setText(""+size);
 				txtOffered.setText("Offered : 0.0 CBM");
 				txtTotal.setText("Total : 0 ZE");
+//				android.util.Log.d("tes set", ""+price);
 				txtPrice.setText(""+price);
 				s.setMax((int)(size*100));
 				s.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -135,12 +162,12 @@ public class StorageTabContentActivity extends Activity {
 						
 					}
 				});
-				return new AlertDialog.Builder(this)
+				dialog = new AlertDialog.Builder(this)
 				.setView(view)
 				.setPositiveButton("Sell", new DialogInterface.OnClickListener() {
 					public void onClick(DialogInterface dialog, int which) {
 						if(s.getProgress() > 0){
-							doPositiveClickDialog((double)s.getProgress()/100, spinMarket.getSelectedItem().toString());
+							doPositiveClickProduct((double)s.getProgress()/100, spinMarket.getSelectedItem().toString());
 						}
 						txtOffered.setText("Offered : 0.0 CBM");
 						txtTotal.setText("Total : 0 ZE");
@@ -156,22 +183,109 @@ public class StorageTabContentActivity extends Activity {
 				})
 				.setCancelable(false)
 				.create();
+				break;
+			case 2 :
+				factory = LayoutInflater.from(this);
+				view = factory.inflate(R.layout.question_equipment_sell, null);
+				txtPrice = (EditText)view.findViewById(R.id.txt_price);
+				txtPrice.setText(""+price);
+//				android.util.Log.d("tes set", ""+price);
+				spinMarket = (Spinner)view.findViewById(R.id.spin_market);
+				spinMarket.setAdapter(adapter);
+				txtPrice.addTextChangedListener(new TextWatcher() {
+					
+					@Override
+					public void onTextChanged(CharSequence cs, int start, int before, int count) {
+						price=Double.parseDouble(txtPrice.getText().toString());
+					}
+					
+					@Override
+					public void beforeTextChanged(CharSequence cs, int start, int count,
+							int after) {
+						// TODO Auto-generated method stub
+						
+					}
+					
+					@Override
+					public void afterTextChanged(Editable e) {
+						// TODO Auto-generated method stub
+						
+					}
+				});
+				dialog = new AlertDialog.Builder(this)
+				.setView(view)
+				.setPositiveButton("Sell", new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int which) {
+						doPositiveClickEquipment(spinMarket.getSelectedItem().toString());
+					}
+				})
+				.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int which) {
+						
+					}
+				})
+				.setCancelable(false)
+				.create();
+				break;
+			case 3 :
+				factory = LayoutInflater.from(this);
+				view = factory.inflate(R.layout.question_equipment_attach_employee_hire, null);
+//				ListView lv = (ListView)view.findViewById(R.id.list_sector);
+//		    	lv.setAdapter(new SectorAdapter(this, installment, zones, efficiency, effectivity));
+//		    	lv.setTextFilterEnabled(true);
+//		        lv.setOnItemClickListener(onItemClickHandler);
+		        dialog = new AlertDialog.Builder(this)
+				.setView(view)
+				.setAdapter(new SectorAdapter(this, installment, zones, efficiency, effectivity), new DialogInterface.OnClickListener() {
+					
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						if(CommunicationService.isOnline(StorageTabContentActivity.this)){
+							progressDialog = ProgressDialog.show(StorageTabContentActivity.this, "", "Processing..");
+							android.util.Log.d("idEq", StorageTabContentActivity.this.id);
+							android.util.Log.d("idIns", idInstallment.get(which));
+							new AttachEquipmentToInstallment().execute(idInstallment.get(which));
+						} else {
+				    		Toast.makeText(StorageTabContentActivity.this, "Device is offline..", Toast.LENGTH_SHORT).show();
+				    	}
+					}
+				})
+				.create();
+				break;
 			default : 
 				break;
 		}
-		return null;
+		return dialog;
 	}
 	
-	public void showMyDialog(String i, double s, int d) {
-		id = i;
-		size = s;
-		progressDialog = ProgressDialog.show(this, "", "Get suggested price..");
-		new GetSuggestedPrice().execute(""+i,""+d);
+//	private AdapterView.OnItemClickListener onItemClickHandler = new AdapterView.OnItemClickListener() {
+//    	public void onItemClick(AdapterView<?> parent, View v, int pos, long id) {
+//			Toast.makeText(StorageTabContentActivity.this, StorageTabContentActivity.this.idInstallment.get(pos), Toast.LENGTH_SHORT).show();
+//			if(CommunicationService.isOnline(StorageTabContentActivity.this)){
+//				progressDialog = ProgressDialog.show(StorageTabContentActivity.this, "", "Processing..");
+//				new AttachEquipment().execute();
+//			} else {
+//	    		Toast.makeText(StorageTabContentActivity.this, "Device is offline..", Toast.LENGTH_SHORT).show();
+//	    	}
+//		}
+//	};
+	
+	private void doPositiveClickProduct(double offered, String marketZone){
+		if(CommunicationService.isOnline(this)){
+			progressDialog = ProgressDialog.show(this, "", "Processing..");
+			new SellStorageProduct().execute(""+offered,marketZone);
+		} else {
+    		Toast.makeText(this, "Device is offline..", Toast.LENGTH_SHORT).show();
+    	}
 	}
 	
-	private void doPositiveClickDialog(double offered, String marketZone){
-		progressDialog = ProgressDialog.show(this, "", "Processing..");
-		new SellStorageProduct().execute(""+offered,marketZone);
+	private void doPositiveClickEquipment(String marketZone){
+		if(CommunicationService.isOnline(this)){
+			progressDialog = ProgressDialog.show(this, "", "Processing..");
+			new SellStorageEquipment().execute(marketZone);
+		} else {
+    		Toast.makeText(this, "Device is offline..", Toast.LENGTH_SHORT).show();
+    	}
 	}
 	
 	private void setLayout(){
@@ -199,6 +313,9 @@ public class StorageTabContentActivity extends Activity {
 		
 		lv.setId(200);
 		lin.addView(lv);
+		
+		parser = null;
+		array = null;
 	}
 	
 	private class GetSuggestedPrice extends AsyncTask<String, Void, Object>{
@@ -208,14 +325,11 @@ public class StorageTabContentActivity extends Activity {
 		protected Object doInBackground(String... params) {
 			dialog = Integer.parseInt(params[1]);
 			try {
-				String res = CustomHttpClient.executeHttpGet(CustomHttpClient.URL+CustomHttpClient.GET_GET_SUGGESTED_PRICE+"&user="+user.getName()+"&productId="+params[0]);
-				res = res.toString().replaceAll("\\n+", "");
-				return res.toString();
+				return CommunicationService.get(CommunicationService.GET_GET_SUGGESTED_PRICE+"&user="+user.getName()+"&id="+params[0]);
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
+				return null;
 			}
-			return null;
 		}
 		
 		@Override
@@ -228,17 +342,87 @@ public class StorageTabContentActivity extends Activity {
 			} else if(res.equals("0")){
 				Toast.makeText(getApplicationContext(), "Internal Error..", Toast.LENGTH_SHORT).show();
 			} else {
-				android.util.Log.d("json", res.toString());
 				JsonParser parser = new JsonParser();
 				JsonArray array = parser.parse(res.toString()).getAsJsonArray(),
 						array1 = parser.parse(new Gson().fromJson(array.get(1), String.class)).getAsJsonArray();
-				android.util.Log.d("json", array.get(1).toString());
 				price = new Gson().fromJson(array.get(0), Double.class);
 				marketZone = new ArrayList<String>();
 				for(int i=0;i<array1.size();i++){
 					marketZone.add(new Gson().fromJson(array1.get(i), String.class));
 				}
-				showDialog(dialog);
+				
+				parser = null;
+				array = null;
+				array1 = null;
+				
+				dialog(dialog).show();
+			}
+		}
+	}
+	
+	private class LoadInstallmentOwnedByEquipment extends AsyncTask<String, Void, Object>{
+		
+		@Override
+		protected Object doInBackground(String... params) {
+			try {
+				return CommunicationService.get(CommunicationService.GET_LOAD_INSTALLMENT_OWNED_BY_EQUIPMENT+"&user="+user.getName()+"&equipment_type="+params[0]);
+			} catch (Exception e) {
+				e.printStackTrace();
+				return null;
+			}
+		}
+		
+		@Override
+		protected void onPostExecute(Object res) {
+			progressDialog.dismiss();
+			if(res == null){
+				Toast.makeText(StorageTabContentActivity.this, "No response from server. Try again later.", Toast.LENGTH_LONG).show();
+			} else if(res.toString().equals("-1")){
+				Toast.makeText(StorageTabContentActivity.this, "Server is not ready..", Toast.LENGTH_LONG).show();
+			} else if(res.toString().equals("0")){
+				Toast.makeText(StorageTabContentActivity.this, "Internal error..", Toast.LENGTH_LONG).show();
+			} else {
+				idInstallment = new ArrayList<String>();
+				installment = new ArrayList<String>();
+				zones = new ArrayList<String>();
+				efficiency = new ArrayList<Double>();
+				effectivity = new ArrayList<Integer>();
+				JsonParser parser = new JsonParser();
+				JsonArray array = parser.parse(res.toString()).getAsJsonArray(),
+						array1 = parser.parse(new Gson().fromJson(array.get(0), String.class)).getAsJsonArray(),
+						array2 = parser.parse(new Gson().fromJson(array.get(1), String.class)).getAsJsonArray(),
+						array3 = parser.parse(new Gson().fromJson(array.get(2), String.class)).getAsJsonArray(),
+						array4 = parser.parse(new Gson().fromJson(array.get(3), String.class)).getAsJsonArray(),
+						array5 = parser.parse(new Gson().fromJson(array.get(4), String.class)).getAsJsonArray();
+				for(int i=0;i<array1.size();i++){
+					idInstallment.add(new Gson().fromJson(array1.get(i), String.class));
+				}
+				
+				for(int i=0;i<array2.size();i++){
+					installment.add(new Gson().fromJson(array2.get(i), String.class));
+				}
+				
+				for(int i=0;i<array3.size();i++){
+					zones.add(new Gson().fromJson(array3.get(i), String.class));
+				}
+				
+				for(int i=0;i<array4.size();i++){
+					efficiency.add(new Gson().fromJson(array4.get(i), Double.class));
+				}
+				
+				for(int i=0;i<array5.size();i++){
+					effectivity.add(new Gson().fromJson(array5.get(i), Integer.class));
+				}
+				
+				parser = null;
+				array = null;
+				array1 = null;
+				array2 = null;
+				array3 = null;
+				array4 = null;
+				array5 = null;
+				
+				dialog(3).show();
 			}
 		}
 	}
@@ -247,22 +431,25 @@ public class StorageTabContentActivity extends Activity {
 		
 		@Override
 		protected Object doInBackground(String... params) {
-			ArrayList<NameValuePair> postParameters = new ArrayList<NameValuePair>();
-			postParameters.add(new BasicNameValuePair("action", CustomHttpClient.POST_SELL_STORAGE_PRODUCT));
-			postParameters.add(new BasicNameValuePair("user", user.getName()));
-			postParameters.add(new BasicNameValuePair("zone", user.getZone()));
-			postParameters.add(new BasicNameValuePair("productId", id));
-			postParameters.add(new BasicNameValuePair("offer", params[0]));
-			postParameters.add(new BasicNameValuePair("price", ""+price));
-			postParameters.add(new BasicNameValuePair("marketZone", params[1]));
+			HashMap<String, String> postParameters = new HashMap<String, String>();
+			postParameters.put("user", user.getName());
+			postParameters.put("zone", user.getZone());
+			postParameters.put("productId", id);
+			postParameters.put("offer", params[0]);
+			postParameters.put("price", ""+price);
+			postParameters.put("marketZone", params[1]);
+			
+			String res = null;
 			try {
-				String res = CustomHttpClient.executeHttpPost(CustomHttpClient.URL, postParameters);
-				res = res.toString().replaceAll("\\s+", "");
-				return res;
+				res = CommunicationService.post(CommunicationService.POST_SELL_STORAGE_PRODUCT, postParameters);
 			} catch (Exception e) {
 				e.printStackTrace();
+				res = null;
 			}
-			return null;
+			
+			postParameters = null;
+			
+			return res;
 		}
 		
 		@Override
@@ -276,7 +463,84 @@ public class StorageTabContentActivity extends Activity {
 				Toast.makeText(StorageTabContentActivity.this, "Internal error..", Toast.LENGTH_LONG).show();
 			} else {
 				data = res.toString();
-				android.util.Log.d("json", res.toString());
+				setLayout();
+			}
+		}
+	}
+	
+	private class SellStorageEquipment extends AsyncTask<String, Void, Object>{
+		
+		@Override
+		protected Object doInBackground(String... params) {
+			HashMap<String, String> postParameters = new HashMap<String, String>();
+			postParameters.put("user", user.getName());
+			postParameters.put("zone", user.getZone());
+			postParameters.put("equipmentId", id);
+			postParameters.put("price", ""+price);
+			postParameters.put("marketZone", params[0]);
+			
+			String res = null;
+			try {
+				res = CommunicationService.post(CommunicationService.POST_SELL_STORAGE_EQUIPMENT, postParameters);
+			} catch (Exception e) {
+				e.printStackTrace();
+				res = null;
+			}
+			
+			postParameters = null;
+			
+			return res;
+		}
+		
+		@Override
+		protected void onPostExecute(Object res) {
+			progressDialog.dismiss();
+			if(res == null){
+				Toast.makeText(StorageTabContentActivity.this, "No response from server. Try again later.", Toast.LENGTH_LONG).show();
+			} else if(res.toString().equals("-1")){
+				Toast.makeText(StorageTabContentActivity.this, "Server is not ready..", Toast.LENGTH_LONG).show();
+			} else if(res.toString().equals("0")){
+				Toast.makeText(StorageTabContentActivity.this, "Internal error..", Toast.LENGTH_LONG).show();
+			} else {
+				data = res.toString();
+				setLayout();
+			}
+		}
+	}
+	
+	private class AttachEquipmentToInstallment extends AsyncTask<String, Void, Object>{
+		
+		@Override
+		protected Object doInBackground(String... params) {
+			HashMap<String, String> postParameters = new HashMap<String, String>();
+			postParameters.put("user", user.getName());
+			postParameters.put("zone", user.getZone());
+			postParameters.put("idInstallment", params[0]);
+			postParameters.put("idEquipment", id);
+			String res = null;
+			try {
+				res = CommunicationService.post(CommunicationService.POST_ATTACH_EQUIPMENT_TO_INSTALLMENT, postParameters);
+			} catch (Exception e) {
+				e.printStackTrace();
+				res = null;
+			}
+			
+			postParameters = null;
+			
+			return res;
+		}
+		
+		@Override
+		protected void onPostExecute(Object res) {
+			progressDialog.dismiss();
+			if(res == null){
+				Toast.makeText(StorageTabContentActivity.this, "No response from server. Try again later.", Toast.LENGTH_LONG).show();
+			} else if(res.toString().equals("-1")){
+				Toast.makeText(StorageTabContentActivity.this, "Server is not ready..", Toast.LENGTH_LONG).show();
+			} else if(res.toString().equals("0")){
+				Toast.makeText(StorageTabContentActivity.this, "Internal error..", Toast.LENGTH_LONG).show();
+			} else {
+				data = res.toString();
 				setLayout();
 			}
 		}

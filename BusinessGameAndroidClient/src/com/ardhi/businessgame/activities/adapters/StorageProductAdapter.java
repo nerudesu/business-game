@@ -52,11 +52,9 @@ public class StorageProductAdapter extends BaseAdapter{
 		StorageProduct product = products.get(pos);
 		
 		txtProduct.setText(product.getProduct());
-		txtSize.setText("Size : "+product.getSize());
+		txtSize.setText("Size : "+(product.getSize()));
 		rateQuality.setRating(product.getQuality());
 		btnSell.setOnClickListener(new OnClickHandler(product.getId(), product.getSize()));
-		btnSell.setClickable(!product.isOffer());
-		btnSell.setEnabled(!product.isOffer());
 		return v;
 	}
 	

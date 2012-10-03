@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <TextView android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text="@string/question_equipment"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:layout_margin="10dip"/>
+    <TableLayout android:layout_width="wrap_content"
+	    android:layout_height="wrap_content" 
+	    android:layout_gravity="center_horizontal">
+	    <TableRow >
+	        <TextView android:textAppearance="?android:attr/textAppearanceMedium"
+	        	android:text="@string/employee"/>
+		    <TextView android:textAppearance="?android:attr/textAppearanceMedium"
+	        	android:id="@+id/txt_employee"/>
+	    </TableRow>
+	    <TableRow >
+	        <TextView android:textAppearance="?android:attr/textAppearanceMedium"
+		        android:text="@string/quality"/>
+	        <LinearLayout android:orientation="vertical">
+	            <RatingBar android:layout_width="wrap_content"
+	                android:layout_height="wrap_content" 
+	                android:numStars="3"
+					android:id="@+id/rate_quality"
+				style="?android:attr/ratingBarStyleSmall"/>
+	        </LinearLayout>
+	    </TableRow>
+	    <TableRow >
+	        <TextView android:textAppearance="?android:attr/textAppearanceMedium"
+		        android:text="@string/price"/>
+		    <TextView android:textAppearance="?android:attr/textAppearanceMedium"
+		        android:id="@+id/txt_price"/>
+	    </TableRow>
+	    <TableRow >
+	        <TextView android:textAppearance="?android:attr/textAppearanceMedium"
+		        android:text="@string/operational"/>
+		    <TextView android:textAppearance="?android:attr/textAppearanceMedium"
+		        android:id="@+id/txt_operational"/>
+	    </TableRow>
+	</TableLayout>
+    
+</LinearLayout>

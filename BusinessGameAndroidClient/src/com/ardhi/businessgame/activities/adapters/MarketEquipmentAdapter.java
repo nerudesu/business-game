@@ -57,28 +57,33 @@ public class MarketEquipmentAdapter extends BaseAdapter{
 		MarketEquipment equipment = equipments.get(pos);
 		
 		txtEquipment.setText(equipment.getEquipment());
-		txtUser.setText("Seller : "+equipment.getUser());
+		txtUser.setText("Seller : "+equipment.getUser()+", Price : "+equipment.getPrice());
 		txtSize.setText("Size : "+equipment.getSize());
 		rateQuality.setRating(equipment.getQuality());
 		progressDurability.setProgress((int)equipment.getDurability());
-		btnBuy.setOnClickListener(new OnClickHandler(equipment.getId(), equipment.getPrice()));
+		btnBuy.setOnClickListener(new OnClickHandler(equipment.getId(), equipment.getEquipment(), equipment.getPrice(), equipment.getDurability(), equipment.getQuality(), equipment.getOperational()));
 		btnBuy.setClickable(!user.equals(equipment.getUser()));
 		btnBuy.setEnabled(!user.equals(equipment.getUser()));
 		return v;
 	}
 	
 	private class OnClickHandler implements View.OnClickListener{
-		private String id;
-		private double price;
+		private String id, name;
+		private double price, durability, operational;
+		private int quality;
 		
-		public OnClickHandler(String i, double p){
+		public OnClickHandler(String i, String n, double p, double d, int q, double ops){
 			id = i;
+			name = n;
 			price = p;
+			durability = d;
+			quality = q;
+			operational = ops;
 		}
 		
 		@Override
 		public void onClick(View v) {
-			act.showMyDialog(id, 2, 0, price);
+			act.dialog(id, 2, name, 0, price, durability, quality, operational).show();
 		}
 	}
 }

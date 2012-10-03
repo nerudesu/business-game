@@ -58,7 +58,7 @@ public class MarketProductAdapter extends BaseAdapter{
 		txtUser.setText("Seller : "+product.getUser());
 		txtSize.setText("Stock : "+product.getSize()+" CBM ("+product.getPrice()+" ZE/CBM)");
 		rateQuality.setRating(product.getQuality());
-		btnBuy.setOnClickListener(new OnClickHandler(product.getId(), product.getSize(), product.getPrice()));
+		btnBuy.setOnClickListener(new OnClickHandler(product.getId(), product.getSize(), product.getPrice(), product.getQuality()));
 		btnBuy.setClickable(!user.equals(product.getUser()));
 		btnBuy.setEnabled(!user.equals(product.getUser()));
 		return v;
@@ -67,16 +67,18 @@ public class MarketProductAdapter extends BaseAdapter{
 	private class OnClickHandler implements View.OnClickListener{
 		private String id;
 		private double size, price;
+		private int quality;
 		
-		public OnClickHandler(String i, double s, double p){
+		public OnClickHandler(String i, double s, double p, int q){
 			id = i;
 			size = s;
 			price = p;
+			quality = q;
 		}
 		
 		@Override
 		public void onClick(View v) {
-			act.showMyDialog(id, 1, size, price);
+			act.dialog(id, 1, "", size, price, 0, quality, 0).show();
 		}
 	}
 }

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="10dp">
+    
+    <TableRow >
+        
+        <TextView android:textAppearance="?android:attr/textAppearanceMedium"
+		    android:text="@string/installment_type"/>
+        
+        <Spinner android:id="@+id/spin_sector"/>
+        
+    </TableRow>
+    
+    <TableRow >
+        
+        <TextView android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="@string/price"/>
+        
+        <EditText android:background="@null"
+            android:focusable="false"
+            android:inputType="none"
+            android:textColor="@android:color/white"
+            android:id="@+id/txt_price"/>
+        
+    </TableRow>
+    
+</TableLayout>

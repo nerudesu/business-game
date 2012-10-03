@@ -1,22 +1,21 @@
 package com.ardhi.businessgame.activities;
 
-import java.util.ArrayList;
-
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
+import java.io.IOException;
+import java.util.HashMap;
 
 import com.ardhi.businessgame.R;
 import com.ardhi.businessgame.models.SavedUser;
 import com.ardhi.businessgame.models.User;
-import com.ardhi.businessgame.services.CustomHttpClient;
+import com.ardhi.businessgame.services.CommunicationService;
 import com.ardhi.businessgame.services.DBAccess;
 import com.google.gson.Gson;
 
+import android.os.AsyncTask;
+import android.os.Bundle;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.os.AsyncTask;
-import android.os.Bundle;
+import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -24,6 +23,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 public class LoginActivity extends Activity {
+
 	private EditText user, pass;
     private Button btnLogin, btnRegister;
     private CheckBox accRe, autoLog;
@@ -33,7 +33,7 @@ public class LoginActivity extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.login);
+        setContentView(R.layout.activity_login);
         
         user = (EditText)findViewById(R.id.user);
         pass = (EditText)findViewById(R.id.pass);
@@ -70,14 +70,23 @@ public class LoginActivity extends Activity {
     private View.OnClickListener onClickHandler = new View.OnClickListener(){
 		public void onClick(View v) {
 			if(v.getId() == R.id.btn_login){
-				progressDialog = ProgressDialog.show(LoginActivity.this, "", "Please wait..");
-				new Login().execute();
+				if(CommunicationService.isOnline(LoginActivity.this)){
+					progressDialog = ProgressDialog.show(LoginActivity.this, "", "Please wait..");
+					new Login().execute();
+				} else {
+					Toast.makeText(LoginActivity.this, "Device is offline..", Toast.LENGTH_SHORT).show();
+				}
 			} else if(v.getId() == R.id.btn_register){
-				Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
-				startActivity(intent);
+				startActivity(new Intent(LoginActivity.this, RegisterActivity.class));
 			}
 		}
     };
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.activity_login, menu);
+        return true;
+    }
     
     private class Login extends AsyncTask<String, Void, Object>{
 
@@ -87,18 +96,21 @@ public class LoginActivity extends Activity {
 			if(accRe.isChecked()){
 				db.saveUserData(new SavedUser(user.getText().toString(), pass.getText().toString(), autoLog.isChecked()));
 			}
-			ArrayList<NameValuePair> postParameters = new ArrayList<NameValuePair>();
-			postParameters.add(new BasicNameValuePair("action", CustomHttpClient.POST_LOGIN));
-			postParameters.add(new BasicNameValuePair("user", user.getText().toString()));
-			postParameters.add(new BasicNameValuePair("pass", pass.getText().toString()));
+			HashMap<String, String> postParameters = new HashMap<String, String>();
+			postParameters.put("user", user.getText().toString());
+			postParameters.put("pass", pass.getText().toString());
+			
+			String res = null;
 			try {
-				String res = CustomHttpClient.executeHttpPost(CustomHttpClient.URL, postParameters);
-				res = res.toString().replaceAll("\\n+", "");
-				return res;
-			} catch (Exception e) {
+				res = CommunicationService.post(CommunicationService.POST_LOGIN, postParameters);
+			} catch (IOException e) {
 				e.printStackTrace();
+				res = null;
 			}
-			return null;
+			
+			postParameters = null;
+			
+			return res;
 		}
     	
 		@Override
@@ -107,15 +119,15 @@ public class LoginActivity extends Activity {
 			if(res == null){
 				Toast.makeText(LoginActivity.this, "No response from server..", Toast.LENGTH_SHORT).show();
 			} else if(res.toString().equals("-1")){
-				Toast.makeText(getApplicationContext(), "Server is not ready..", Toast.LENGTH_SHORT).show();
+				Toast.makeText(LoginActivity.this, "Server is not ready..", Toast.LENGTH_SHORT).show();
 			} else if(res.toString().equals("0")){
 				Toast.makeText(LoginActivity.this, "Wrong password..", Toast.LENGTH_SHORT).show();
 			} else if(res.toString().equals("1")){
 				Toast.makeText(LoginActivity.this, "Username not exist..", Toast.LENGTH_SHORT).show();
 			} else {
+				android.util.Log.d("gson", res.toString());
 				if(db.addUser(new Gson().fromJson(res.toString(), User.class))){
-					Intent intent = new Intent(LoginActivity.this, MainBusinessGameActivity.class);
-					startActivity(intent);
+					startActivity(new Intent(LoginActivity.this, MainBusinessGameActivity.class));
 				}
 			}
 		}

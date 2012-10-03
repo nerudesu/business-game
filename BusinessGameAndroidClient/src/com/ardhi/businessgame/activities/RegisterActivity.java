@@ -1,26 +1,28 @@
 package com.ardhi.businessgame.activities;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
-
 import com.ardhi.businessgame.R;
 import com.ardhi.businessgame.models.User;
-import com.ardhi.businessgame.services.CustomHttpClient;
+import com.ardhi.businessgame.services.CommunicationService;
 import com.ardhi.businessgame.services.DBAccess;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 
+import android.os.AsyncTask;
+import android.os.Build;
+import android.os.Bundle;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.os.AsyncTask;
-import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -28,6 +30,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
+import android.support.v4.app.NavUtils;
 
 public class RegisterActivity extends Activity {
 	private EditText user, pass, pass_re, email;
@@ -36,11 +39,15 @@ public class RegisterActivity extends Activity {
     private ArrayList<String> zoneList;
     private ProgressDialog progressDialog;
     private DBAccess db;
-    
-    @Override
+
+	@SuppressLint("NewApi")
+	@Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.reg);
+        setContentView(R.layout.activity_register);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+        	getActionBar().setDisplayHomeAsUpEnabled(true);
+        }
         
         user = (EditText)findViewById(R.id.user);
         pass = (EditText)findViewById(R.id.pass);
@@ -53,12 +60,34 @@ public class RegisterActivity extends Activity {
         spinZone = (Spinner)findViewById(R.id.spin_zone);
         db = new DBAccess(this);
         
-        progressDialog = ProgressDialog.show(RegisterActivity.this, "", "Please wait..");
-        new GetEntireZone().execute();
-        
         btnRegister.setOnClickListener(onClickHandler);
         spinMonth.setOnItemSelectedListener(onSpinnerSelect);
         spinYear.setOnItemSelectedListener(onSpinnerSelect);
+        
+        if(CommunicationService.isOnline(this)){
+        	progressDialog = ProgressDialog.show(RegisterActivity.this, "", "Please wait..");
+            new GetEntireZone().execute();
+        } else {
+        	Toast.makeText(getApplicationContext(), "Device is offline..", Toast.LENGTH_SHORT).show();
+        	finish();
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.activity_register, menu);
+        return true;
+    }
+
+    
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                NavUtils.navigateUpFromSameTask(this);
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
     
     private void loadZone() {
@@ -127,8 +156,12 @@ public class RegisterActivity extends Activity {
 					Toast.makeText(RegisterActivity.this, "You must fill all field.", Toast.LENGTH_SHORT).show();
 				} else {
 					if(pass.getText().toString().equals(pass_re.getText().toString())){
-						progressDialog = ProgressDialog.show(RegisterActivity.this, "", "Registering..");
-						new RegisterUser().execute();
+						if(CommunicationService.isOnline(RegisterActivity.this)){
+							progressDialog = ProgressDialog.show(RegisterActivity.this, "", "Registering..");
+							new RegisterUser().execute();
+						} else {
+							Toast.makeText(RegisterActivity.this, "Device is offline..", Toast.LENGTH_SHORT).show();
+						}
 					} else {
 						Toast.makeText(RegisterActivity.this, "Password and Password (retype) did not match", Toast.LENGTH_SHORT).show();
 					}
@@ -141,13 +174,11 @@ public class RegisterActivity extends Activity {
 		@Override
 		protected Object doInBackground(String... params) {
 			try {
-				String res = CustomHttpClient.executeHttpGet(CustomHttpClient.URL+CustomHttpClient.GET_GET_ENTIRE_ZONE);
-				res = res.toString().replaceAll("\\n+", "");
-				return res;
-			} catch (Exception e) {
+				return CommunicationService.get(CommunicationService.GET_GET_ENTIRE_ZONE);
+			} catch (IOException e) {
 				e.printStackTrace();
+				return null;
 			}
-			return null;
 		}
 		
 		@Override
@@ -173,70 +204,31 @@ public class RegisterActivity extends Activity {
 					x++;
 					i.next();
 				}
+				parser = null;
+				array = null;
+				i = null;
+				
 				loadZone();
 			}
 		}
     }
     
-//    private class CheckUser extends AsyncTask<String, Void, Object>{
-//    	@Override
-//		protected Object doInBackground(String... params) {
-//    		ArrayList<NameValuePair> postParameters = new ArrayList<NameValuePair>();
-//			postParameters.add(new BasicNameValuePair("user", user.getText().toString()));
-//			postParameters.add(new BasicNameValuePair("action", CustomHttpClient.POST_CHECK_USER));
-//			try {
-//				String res = CustomHttpClient.executeHttpPost(CustomHttpClient.URL, postParameters);
-//				res = res.toString().replaceAll("\\s+", "");
-//				return res;
-//			} catch (Exception e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-//			return null;
-//    	}
-//    	
-//    	@Override
-//		protected void onPostExecute(Object res) {
-//    		if(res == null){
-//				Toast.makeText(RegisterActivity.this, "No response from server. Try again later.", Toast.LENGTH_SHORT).show();
-//				pass.setText("");
-//				pass_re.setText("");
-//				progressDialog.dismiss();
-//    		} else if(res.toString().equals("-1")){
-//    			Toast.makeText(RegisterActivity.this, "Server is not ready..", Toast.LENGTH_SHORT).show();
-//    			pass.setText("");
-//				pass_re.setText("");
-//			} else if(res.equals("0")){
-//				Toast.makeText(RegisterActivity.this, "Username is already exist", Toast.LENGTH_SHORT).show();
-//				user.setText("");
-//				pass.setText("");
-//				pass_re.setText("");
-//				progressDialog.dismiss();
-//			} else {
-//				new RegisterUser().execute();
-//			}
-//    	}
-//    }
-    
     private class RegisterUser extends AsyncTask<String, Void, Object>{
 
 		@Override
 		protected Object doInBackground(String... params) {
-			ArrayList<NameValuePair> postParameters = new ArrayList<NameValuePair>();
-			postParameters.add(new BasicNameValuePair("user", user.getText().toString()));
-			postParameters.add(new BasicNameValuePair("pass", pass.getText().toString()));
-			postParameters.add(new BasicNameValuePair("email", email.getText().toString()));
-			postParameters.add(new BasicNameValuePair("dob", spinMonth.getSelectedItem().toString()+" "+spinDate.getSelectedItem().toString()+" "+spinYear.getSelectedItem().toString()));
-			postParameters.add(new BasicNameValuePair("zone", spinZone.getSelectedItem().toString()));
-			postParameters.add(new BasicNameValuePair("action", CustomHttpClient.POST_REGISTER_USER));
+			HashMap<String, String> postParameters = new HashMap<String, String>();
+			postParameters.put("user", user.getText().toString());
+			postParameters.put("pass", pass.getText().toString());
+			postParameters.put("email", email.getText().toString());
+			postParameters.put("dob", spinMonth.getSelectedItem().toString()+" "+spinDate.getSelectedItem().toString()+" "+spinYear.getSelectedItem().toString());
+			postParameters.put("zone", spinZone.getSelectedItem().toString());
 			try {
-				String res = CustomHttpClient.executeHttpPost(CustomHttpClient.URL, postParameters);
-				res = res.toString().replaceAll("\\s+", "");
-				return res;
-			} catch (Exception e) {
+				return CommunicationService.post(CommunicationService.POST_REGISTER_USER, postParameters);
+			} catch (IOException e) {
 				e.printStackTrace();
+				return null;
 			}
-			return null;
 		}
 		
 		@Override
@@ -257,10 +249,11 @@ public class RegisterActivity extends Activity {
 				pass_re.setText("");
 				progressDialog.dismiss();
 			} else {
-				db.addUser(new User(user.getText().toString(), email.getText().toString(), spinMonth.getSelectedItem().toString()+" "+spinDate.getSelectedItem().toString()+" "+spinYear.getSelectedItem().toString(), "This is me", "", 0.00, 0, spinZone.getSelectedItem().toString(), new HashMap<String, String>()));
+				db.addUser(new User(user.getText().toString(), email.getText().toString(), spinMonth.getSelectedItem().toString()+" "+spinDate.getSelectedItem().toString()+" "+spinYear.getSelectedItem().toString(), "This is me", "", 0.00, 0, spinZone.getSelectedItem().toString(), new HashMap<String, String>(), 0));
 				Intent intent = new Intent(RegisterActivity.this, MainBusinessGameActivity.class);
 				startActivity(intent);
 			}
 		}
     }
+
 }

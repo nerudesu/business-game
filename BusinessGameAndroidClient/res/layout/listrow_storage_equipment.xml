@@ -41,4 +41,10 @@
         android:layout_alignParentRight="true"
         android:text="@string/btn_sell"
         android:id="@+id/btn_sell"/>
+    <Button android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/btn_sell"
+        android:layout_toLeftOf="@+id/btn_sell"
+        android:text="@string/btn_attach"
+        android:id="@+id/btn_attach"/>
 </RelativeLayout>

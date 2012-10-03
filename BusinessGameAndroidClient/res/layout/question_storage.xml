@@ -8,7 +8,7 @@
         android:layout_height="wrap_content"
         android:text="@string/question_storage"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:layout_margin="10dip"/>
-    
+        android:layout_margin="10dip"
+        android:id="@+id/question_storage"/>
 
 </LinearLayout>

@@ -13,7 +13,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class DBAccess extends SQLiteOpenHelper {
 	private static final String DB_NAME = "user.db";
-	private static final int VER = 1;
+	private static final int VER = 2;
 	
 	public DBAccess(Context context) {
 		super(context, DB_NAME, null, VER);
@@ -21,7 +21,7 @@ public class DBAccess extends SQLiteOpenHelper {
 
 	@Override
 	public void onCreate(SQLiteDatabase db) {
-		db.execSQL("create table user (name varchar primary key, email varchar, dob varchar, about text, avatar text, money double, rep bigint, zone varchar)");
+		db.execSQL("create table user (name varchar primary key, email varchar, dob varchar, about text, avatar text, money double, rep bigint, zone varchar, level int)");
 		db.execSQL("create table saved_user (name varchar primary key, pass varchar, auto_log boolean)");
 		db.execSQL("create table user_storage(zone varchar primary key, id varchar)");
 //		db.execSQL("create table user (name varchar primary key, email varchar)");
@@ -83,6 +83,8 @@ public class DBAccess extends SQLiteOpenHelper {
 		val.put("money", user.getMoney());
 		val.put("rep", user.getRep());
 		val.put("zone", user.getZone());
+		val.put("level", user.getLevel());
+		android.util.Log.d("level", ""+user.getLevel());
 		if(db.insert("user", null, val) > 0)
 			success = true;
 		db.close();
@@ -116,7 +118,7 @@ public class DBAccess extends SQLiteOpenHelper {
 				storages.put(cursor2.getString(0), cursor2.getString(1));
 			}
 			if(cursor1.moveToFirst()){
-				User user = new User(cursor1.getString(0), cursor1.getString(1), cursor1.getString(2), cursor1.getString(3), cursor1.getString(4), Double.parseDouble(cursor1.getString(5)), Long.parseLong(cursor1.getString(6)), cursor1.getString(7), storages);
+				User user = new User(cursor1.getString(0), cursor1.getString(1), cursor1.getString(2), cursor1.getString(3), cursor1.getString(4), Double.parseDouble(cursor1.getString(5)), Long.parseLong(cursor1.getString(6)), cursor1.getString(7), storages, Integer.parseInt(cursor1.getString(8)));
 				db.close();
 				return user;
 			} else {
@@ -155,9 +157,12 @@ public class DBAccess extends SQLiteOpenHelper {
 		val.put("money", user.getMoney());
 		val.put("rep", user.getRep());
 		val.put("zone", user.getZone());
+		val.put("level", user.getLevel());
 		if (db.update("user", val, "name=?", new String[]{user.getName()}) > 0){
 			success = true;
 		} else success = false;
+		
+		db.close();
 		
 		return success;
 	}

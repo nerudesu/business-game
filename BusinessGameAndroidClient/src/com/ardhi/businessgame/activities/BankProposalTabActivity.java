@@ -2,21 +2,25 @@ package com.ardhi.businessgame.activities;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
+import java.util.HashMap;
 
 import com.ardhi.businessgame.R;
 import com.ardhi.businessgame.models.BusinessSectorInfo;
 import com.ardhi.businessgame.models.User;
-import com.ardhi.businessgame.services.CustomHttpClient;
+import com.ardhi.businessgame.services.CommunicationService;
 import com.ardhi.businessgame.services.DBAccess;
-import com.ardhi.businessgame.services.GlobalServices;
+import com.ardhi.businessgame.services.SystemService;
 import com.ardhi.businessgame.services.TimeSync;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
 
+import android.os.AsyncTask;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.IBinder;
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
@@ -27,17 +31,16 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.Typeface;
-import android.os.AsyncTask;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.IBinder;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -47,7 +50,10 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.support.v4.app.NavUtils;
 
+@SuppressWarnings("deprecation")
+@SuppressLint("NewApi")
 public class BankProposalTabActivity extends TabActivity {
 	private DBAccess db;
 	private EditText zone, money, nextTurn, total;
@@ -59,15 +65,20 @@ public class BankProposalTabActivity extends TabActivity {
 	private ArrayList<String> sectors;
 	private ArrayList<Double> prices;
 	private ArrayList<BusinessSectorInfo> bsis;
-	private double pCost,ieCost,ieTurn,eCost,eTurn,rCost;
+	private double pCost,ieCost,ieTurn,eCost,eTurn,rCost,sCost;
+	private int turn = 1;
+	private boolean storage;
 	private Spinner spinSector;
-	
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.bank_proposal_tab);
-		
-		db = new DBAccess(this);
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_tab_bankproposal);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+        	getActionBar().setDisplayHomeAsUpEnabled(true);
+        }
+        
+        db = new DBAccess(this);
         zone = (EditText)findViewById(R.id.zone);
         money = (EditText)findViewById(R.id.money);
         nextTurn = (EditText)findViewById(R.id.next_turn);
@@ -81,15 +92,19 @@ public class BankProposalTabActivity extends TabActivity {
         money.setText(user.getMoney()+" ZE");
         
         h = new Handler();
-        timeSync = new TimeSync(h, nextTurn);
-        Intent i = new Intent(getApplicationContext(), GlobalServices.class);
-        bindService(i, serviceConnection, Context.BIND_AUTO_CREATE);
+        timeSync = new TimeSync(h, nextTurn, money, db);
+        bindService(new Intent(this, SystemService.class), serviceConnection, Context.BIND_AUTO_CREATE);
         
-        progressDialog = ProgressDialog.show(this, "", "Loading Bank's data..");
-		new LoadBankData().execute();
-	}
-	
-	@Override
+        if(CommunicationService.isOnline(this)){
+        	progressDialog = ProgressDialog.show(this, "", "Loading Bank's data..");
+    		new LoadBankData().execute();
+        } else {
+        	Toast.makeText(getApplicationContext(), "Device is offline..", Toast.LENGTH_SHORT).show();
+        	finish();
+        }
+    }
+    
+    @Override
 	protected void onPause() {
 		super.onPause();
 		timeSync.setThreadWork(false);
@@ -112,13 +127,24 @@ public class BankProposalTabActivity extends TabActivity {
 		super.onDestroy();
 		unbindService(serviceConnection);
 	}
-	
-	private void doPositiveClickDialog(){
-    	progressDialog = ProgressDialog.show(this, "", "Submitting the proposal, please wait...");
-		new SubmitProposal().execute();
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.activity_tab_bankproposal, menu);
+        return true;
     }
-	
-	@Override
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                NavUtils.navigateUpFromSameTask(this);
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+    
+    @Override
 	public Dialog onCreateDialog(int id){
 		switch (id) {
 		case 1:
@@ -143,23 +169,26 @@ public class BankProposalTabActivity extends TabActivity {
 		}
 		return null;
 	}
-	
-	private ServiceConnection serviceConnection = new ServiceConnection() {
+    
+    private ServiceConnection serviceConnection = new ServiceConnection() {
 		public void onServiceDisconnected(ComponentName name) {
 			timeSync.setGlobalServices(null);
 			timeSync.setServiceBound(false);
 		}
 		
 		public void onServiceConnected(ComponentName name, IBinder binder) {
-			timeSync.setGlobalServices(((GlobalServices.MyBinder)binder).getService());
+			timeSync.setGlobalServices(((SystemService.MyBinder)binder).getService());
 			timeSync.setServiceBound(true);
 		}
 	};
 	
 	private AdapterView.OnItemSelectedListener onItemSelectedHandler = new AdapterView.OnItemSelectedListener(){
     	public void onItemSelected(AdapterView<?> spinner, View v, int i, long id) {
+    		int tmp = getTabHost().getCurrentTab();
     		getTabHost().setCurrentTab(0);
     		setLayout(i);
+    		getTabHost().setCurrentTab(tmp);
+    		storage = false;
 		}
 
 		public void onNothingSelected(AdapterView<?> arg0) {
@@ -172,8 +201,17 @@ public class BankProposalTabActivity extends TabActivity {
 			showDialog(1);
 		}
     };
-	
-	private void loadSector() {
+    
+    private void doPositiveClickDialog(){
+    	if(CommunicationService.isOnline(this)){
+    		progressDialog = ProgressDialog.show(this, "", "Submitting the proposal, please wait...");
+    		new SubmitProposal().execute();
+    	} else {
+    		Toast.makeText(this, "Device is offline..", Toast.LENGTH_SHORT).show();
+    	}
+    }
+
+    private void loadSector() {
 		ArrayAdapter<String> adapter = new ArrayAdapter<String>(BankProposalTabActivity.this, android.R.layout.simple_spinner_item, sectors);
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		spinSector.setAdapter(adapter);
@@ -200,8 +238,8 @@ public class BankProposalTabActivity extends TabActivity {
         getTabHost().setCurrentTab(1);
         getTabHost().setCurrentTab(2);
         getTabHost().setCurrentTab(0);
-        android.util.Log.d("eq", ieCost+"+"+eCost+"+"+rCost);
-        total.setText((ieCost+eCost+rCost)+" ZE");
+//        android.util.Log.d("eq", ieCost+"+"+eCost+"+"+rCost);
+        total.setText((ieCost+eCost+rCost+ieTurn+eTurn+prices.get(spinSector.getSelectedItemPosition())+pCost)+" ZE");
 	}
 	
 	private class TabEquipment implements TabHost.TabContentFactory {
@@ -214,7 +252,7 @@ public class BankProposalTabActivity extends TabActivity {
 		}
 		@Override
 		public View createTabContent(String tag) {
-			android.util.Log.d("eq", "jalan");
+//			android.util.Log.d("eq", "jalan");
 			ScrollView layout = new ScrollView(c);
 			TableLayout detailsData = new TableLayout(c);
 			TableRow.LayoutParams params = new TableRow.LayoutParams();
@@ -323,7 +361,7 @@ public class BankProposalTabActivity extends TabActivity {
 		
 		@Override
 		public View createTabContent(String tag) {
-			android.util.Log.d("em", "jalan");
+//			android.util.Log.d("em", "jalan");
 			ScrollView layout = new ScrollView(c);
 			TableLayout detailsData = new TableLayout(c);
 			TableRow.LayoutParams params = new TableRow.LayoutParams();
@@ -430,7 +468,7 @@ public class BankProposalTabActivity extends TabActivity {
 		
 		@Override
 		public View createTabContent(String tag) {
-			android.util.Log.d("pr", "jalan");
+//			android.util.Log.d("pr", "jalan");
 			ScrollView layout = new ScrollView(c);
 			LinearLayout subLayout = new LinearLayout(c), turnLayout = new LinearLayout(c);
 			
@@ -533,7 +571,9 @@ public class BankProposalTabActivity extends TabActivity {
 		detailsData.addView(row);
 		
 		rCost = sumPrice;
-		total.setText((ieCost+eCost+rCost)+" ZE");
+		if(storage)
+			total.setText((ieCost+eCost+rCost+ieTurn+eTurn+prices.get(spinSector.getSelectedItemPosition())+pCost+sCost)+" ZE");
+		else total.setText((ieCost+eCost+rCost+ieTurn+eTurn+prices.get(spinSector.getSelectedItemPosition())+pCost)+" ZE");
 		
 		sumPrice = 0;
 		
@@ -672,7 +712,8 @@ public class BankProposalTabActivity extends TabActivity {
 			CheckBox checkStorage = new CheckBox(c);
 			checkStorage.setText(R.string.storage);
 			checkStorage.setLayoutParams(new TableRow.LayoutParams(1));
-			checkStorage.setId(300);
+			checkStorage.setOnCheckedChangeListener(new OnCheckedChangeHandler());
+			
 			row = new TableRow(c);
 			row.addView(checkStorage);
 			detailsData.addView(row);
@@ -710,162 +751,7 @@ public class BankProposalTabActivity extends TabActivity {
 		@Override
 		public void onItemSelected(AdapterView<?> spinner, View v, int pos, long id) {
 			setLayoutProduct(detailsData, bsi, pos, c);
-//			double tmp1, sumPrice = 0, total1 = 0;
-//			
-//			detailsData.removeAllViews();
-//			
-//			TextView text = new TextView(c);
-//			text.setText("Input");
-//			TableRow row = new TableRow(c);
-//			TableRow.LayoutParams params = new TableRow.LayoutParams();
-//			params.setMargins(5, 5, 5, 5);
-//			text.setLayoutParams(params);
-//			row.addView(text);
-//			
-//			text = new TextView(c);
-//			text.setText("Unit(s)");
-//			text.setLayoutParams(params);
-//			row.addView(text);
-//			
-//			text = new TextView(c);
-//			text.setText("Price");
-//			text.setLayoutParams(params);
-//			row.addView(text);
-//			
-//			detailsData.addView(row);
-//			
-//			for(int i=0;i<bsi.getListInput().size();i++){				
-//				row = new TableRow(c);
-//				text = new TextView(c);
-//				text.setText(bsi.getListInput().get(i).getType());
-//				text.setLayoutParams(params);
-//				row.addView(text);
-//				
-//				text = new TextView(c);
-//				text.setText(""+(pos+1)*bsi.getListInput().get(i).getSize());
-//				tmp1 = (pos+1)*bsi.getListInput().get(i).getSize();
-//				text.setLayoutParams(params);
-//				row.addView(text);
-//				
-//				text = new TextView(c);
-//				text.setText(bsi.getListInput().get(i).getBasePrice()+" ZE");
-//				tmp1 *= bsi.getListInput().get(i).getBasePrice();
-//				text.setLayoutParams(params);
-//				row.addView(text);
-//				
-//				detailsData.addView(row);
-//				sumPrice += tmp1;
-//			}
-//			
-//			row = new TableRow(c);
-//			
-//			text = new TextView(c);
-//			text.setText("Subtotal");
-//			text.setLayoutParams(params);
-//			row.addView(text);
-//			
-//			text = new TextView(c);
-//			text.setText("");
-//			text.setLayoutParams(params);
-//			row.addView(text);
-//			
-//			text = new TextView(c);
-//			sumPrice = new BigDecimal(Double.valueOf(sumPrice)).setScale(2, BigDecimal.ROUND_HALF_EVEN).doubleValue();
-//			text.setText(sumPrice+" ZE");
-//			text.setLayoutParams(params);
-//			row.addView(text);
-//			
-//			detailsData.addView(row);
-//			
-//			rCost = sumPrice;
-//			total.setText((ieCost+eCost+rCost)+" ZE");
-//			
-//			sumPrice = 0;
-//			
-//			text = new TextView(c);
-//			text.setText("Output");
-//			row = new TableRow(c);
-//			text.setLayoutParams(params);
-//			row.addView(text);
-//			
-//			text = new TextView(c);
-//			text.setText("Unit(s)");
-//			text.setLayoutParams(params);
-//			row.addView(text);
-//			
-//			text = new TextView(c);
-//			text.setText("Price");
-//			text.setLayoutParams(params);
-//			row.addView(text);
-//			
-//			detailsData.addView(row);
-//			
-//			for(int i=0;i<bsi.getListOutput().size();i++){				
-//				row = new TableRow(c);
-//				text = new TextView(c);
-//				text.setText(bsi.getListOutput().get(i).getType());
-//				text.setLayoutParams(params);
-//				row.addView(text);
-//				
-//				text = new TextView(c);
-//				text.setText(""+(pos+1)*bsi.getListOutput().get(i).getSize());
-//				tmp1 = (pos+1)*bsi.getListOutput().get(i).getSize();
-//				text.setLayoutParams(params);
-//				row.addView(text);
-//				
-//				text = new TextView(c);
-//				text.setText(bsi.getListOutput().get(i).getBasePrice()+" ZE");
-//				tmp1 *= bsi.getListOutput().get(i).getBasePrice();
-//				text.setLayoutParams(params);
-//				row.addView(text);
-//				
-//				detailsData.addView(row);
-//				sumPrice += tmp1;
-//			}
-//			
-//			row = new TableRow(c);
-//			
-//			text = new TextView(c);
-//			text.setText("Subtotal");
-//			text.setLayoutParams(params);
-//			row.addView(text);
-//			
-//			text = new TextView(c);
-//			text.setText("");
-//			text.setLayoutParams(params);
-//			row.addView(text);
-//			
-//			text = new TextView(c);
-//			sumPrice = new BigDecimal(Double.valueOf(sumPrice)).setScale(2, BigDecimal.ROUND_HALF_EVEN).doubleValue();
-//			text.setText(sumPrice+" ZE");
-//			text.setLayoutParams(params);
-//			row.addView(text);
-//			
-//			detailsData.addView(row);
-//			
-//			total1 = sumPrice - total1;
-//			
-//			row = new TableRow(c);
-//			
-//			text = new TextView(c);
-//			text.setText("Gross Margin");
-//			text.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
-//			text.setTextColor(0xffffffff);
-//			text.setLayoutParams(params);
-//			row.addView(text);
-//			
-//			text = new TextView(c);
-//			text.setText("");
-//			text.setLayoutParams(params);
-//			row.addView(text);
-//			
-//			text = new TextView(c);
-//			text.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
-//			text.setTextColor(0xffffffff);
-//			text.setText(total1+" ZE");
-//			text.setLayoutParams(params);
-//			row.addView(text);
-//			detailsData.addView(row);
+			turn = pos+1;
 		}
 
 		@Override
@@ -873,22 +759,30 @@ public class BankProposalTabActivity extends TabActivity {
 			// TODO Auto-generated method stub
 			
 		}
-		
 	}
+	
+	private class OnCheckedChangeHandler implements CompoundButton.OnCheckedChangeListener{
+		public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+			storage = isChecked;
+			if(isChecked){
+				total.setText((ieCost+eCost+rCost+ieTurn+eTurn+prices.get(spinSector.getSelectedItemPosition())+pCost+sCost)+" ZE");
+			} else {
+				total.setText((ieCost+eCost+rCost+ieTurn+eTurn+prices.get(spinSector.getSelectedItemPosition())+pCost)+" ZE");
+			}
+			android.util.Log.d("bool storage", ""+storage);
+		}
+	};
 	
 	private class LoadBankData extends AsyncTask<String, Void, Object>{
 
 		@Override
 		protected Object doInBackground(String... params) {
 			try {
-				String res = CustomHttpClient.executeHttpGet(CustomHttpClient.URL+CustomHttpClient.GET_LOAD_BANK_DATA+"&user="+user.getName()+"&zone="+user.getZone());
-				res = res.toString().replaceAll("\\n+", "");
-				return res;
+				return CommunicationService.get(CommunicationService.GET_LOAD_BANK_DATA+"&user="+user.getName()+"&zone="+user.getZone());
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
+				return null;
 			}
-			return null;
 		}
 		
 		@Override
@@ -911,7 +805,7 @@ public class BankProposalTabActivity extends TabActivity {
 				JsonArray array = parser.parse(res.toString()).getAsJsonArray(),
 						array1 = parser.parse(new Gson().fromJson(array.get(0), String.class)).getAsJsonArray(),
 						array2 = parser.parse(new Gson().fromJson(array.get(1), String.class)).getAsJsonArray(),
-						array3 = parser.parse(new Gson().fromJson(array.get(3), String.class)).getAsJsonArray();
+						array3 = parser.parse(new Gson().fromJson(array.get(4), String.class)).getAsJsonArray();
 				sectors = new ArrayList<String>();
 				for(int i=0;i<array1.size();i++){
 					sectors.add(new Gson().fromJson(array1.get(i), String.class));
@@ -923,11 +817,20 @@ public class BankProposalTabActivity extends TabActivity {
 				}
 				
 				pCost = new Gson().fromJson(array.get(2), Double.class);
+				sCost = new Gson().fromJson(array.get(3), Double.class);
+				storage = false;
 				
 				bsis = new ArrayList<BusinessSectorInfo>();
 				for(int i=0;i<array3.size();i++){
 					bsis.add(new Gson().fromJson(array3.get(i), BusinessSectorInfo.class));
 				}
+				
+				parser = null;
+				array = null;
+				array1 = null;
+				array2 = null;
+				array3 = null;
+				
 				loadSector();
 			}
 		}
@@ -937,19 +840,23 @@ public class BankProposalTabActivity extends TabActivity {
 
 		@Override
 		protected Object doInBackground(String... params) {
-			ArrayList<NameValuePair> postParameters = new ArrayList<NameValuePair>();
-			postParameters.add(new BasicNameValuePair("user", user.getName()));
-			postParameters.add(new BasicNameValuePair("money", ""+(ieCost+eCost+rCost)));
-			postParameters.add(new BasicNameValuePair("sector", spinSector.getSelectedItem().toString()));
-			postParameters.add(new BasicNameValuePair("action", CustomHttpClient.POST_SUBMIT_PROPOSAL));
+			HashMap<String, String> postParameters = new HashMap<String, String>();
+			postParameters.put("user", user.getName());
+			postParameters.put("sector", spinSector.getSelectedItem().toString());
+			postParameters.put("turn", ""+turn);
+			postParameters.put("storage", ""+storage);
+			
+			String res = null;
 			try {
-				String res = CustomHttpClient.executeHttpPost(CustomHttpClient.URL, postParameters);
-				res = res.toString().replaceAll("\\n+", "");
-				return res;
+				res = CommunicationService.post(CommunicationService.POST_SUBMIT_PROPOSAL, postParameters);
 			} catch (Exception e) {
 				e.printStackTrace();
+				res = null;
 			}
-			return null;
+			
+			postParameters = null;
+			
+			return res;
 		}
 		
 		@Override
@@ -957,13 +864,10 @@ public class BankProposalTabActivity extends TabActivity {
 			progressDialog.dismiss();
 			if(res == null){
 				Toast.makeText(getApplicationContext(), "No response from server. Try again later.", Toast.LENGTH_SHORT).show();
-				finish();
 			} else if(res.equals("-1")){
 				Toast.makeText(getApplicationContext(), "Server is not ready..", Toast.LENGTH_SHORT).show();
-				finish();
 			} else if(res.equals("0")){
 				Toast.makeText(getApplicationContext(), "Internal server error..", Toast.LENGTH_SHORT).show();
-				finish();
 			} else {
 				Toast.makeText(getApplicationContext(), "The proposal has been submitted. Please wait until this turn finished.", Toast.LENGTH_LONG).show();
 				finish();

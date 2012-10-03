@@ -4,16 +4,14 @@ public class StorageEquipment {
 	private String id,equipment;
 	private int quality;
 	private double durability,size,operational;
-	private boolean offer;
 	
-	public StorageEquipment(String i, String e, int q, double d, double s, double o, boolean of){
+	public StorageEquipment(String i, String e, int q, double d, double s, double o){
 		setId(i);
 		setEquipment(e);
 		setQuality(q);
 		setDurability(d);
 		setSize(s);
 		setOperational(o);
-		setOffer(of);
 	}
 	
 	public String getId() {
@@ -55,13 +53,5 @@ public class StorageEquipment {
 
 	public void setOperational(double o) {
 		operational = o;
-	}
-
-	public boolean isOffer() {
-		return offer;
-	}
-
-	public void setOffer(boolean o) {
-		offer = o;
 	}
 }
