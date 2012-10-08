@@ -164,14 +164,16 @@ public class HeadquarterTabActivity extends TabActivity {
 				TextView txtSector = (TextView)view.findViewById(R.id.txt_sector),
 						txtPrice = (TextView)view.findViewById(R.id.txt_price);
 				txtSector.setText(sectors.get(position));
-				txtPrice.setText((sector*(userSectors.size()))+" ZE");
+				txtPrice.setText((sector*(userSectors.size())*sectorsLvl.get(position))+" ZE");
 				dialog = new AlertDialog.Builder(this)
 				.setView(view)
 				.setPositiveButton("Buy", new DialogInterface.OnClickListener() {
 	
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
-						doPositiveClickDialogSector();
+						if(user.getMoney() < (sector*(userSectors.size())*sectorsLvl.get(position)))
+							Toast.makeText(HeadquarterTabActivity.this, "Insufficient money..", Toast.LENGTH_SHORT).show();
+						else doPositiveClickDialogSector();
 					}
 					
 				})
@@ -387,36 +389,47 @@ public class HeadquarterTabActivity extends TabActivity {
 				Toast.makeText(getApplicationContext(), "Server is not ready..", Toast.LENGTH_SHORT).show();
 			} else if(res.equals("0")){
 				Toast.makeText(getApplicationContext(), "Internal Error..", Toast.LENGTH_SHORT).show();
+			} else if(res.equals("1")){
+				Toast.makeText(getApplicationContext(), "Insufficient money..", Toast.LENGTH_SHORT).show();
+			} else if(res.equals("2")){
+				Toast.makeText(getApplicationContext(), "Your level is lower than the sector's required level..", Toast.LENGTH_SHORT).show();
 			} else {
-				JsonParser parser = new JsonParser();
-				JsonArray array = parser.parse(res.toString()).getAsJsonArray(),
-						array1 = parser.parse(new Gson().fromJson(array.get(0), String.class)).getAsJsonArray(),
-						array2 = parser.parse(new Gson().fromJson(array.get(1), String.class)).getAsJsonArray(),
-						array3 = parser.parse(new Gson().fromJson(array.get(2), String.class)).getAsJsonArray();
-				sectors = new ArrayList<String>();
-				sectorsLvl = new ArrayList<Integer>();
-				userSectors = new ArrayList<String>();
-				for(int i=0;i<array1.size();i++){
-					sectors.add(new Gson().fromJson(array1.get(i), String.class));
-				}
-				
-				for(int i=0;i<array2.size();i++){
-					sectorsLvl.add(new Gson().fromJson(array2.get(i), Integer.class));
-				}
-				
-				for(int i=0;i<array3.size();i++){
-					userSectors.add(new Gson().fromJson(array3.get(i), String.class));
-				}
-				
-				sector = new Gson().fromJson(array.get(3), Double.class);
-				user.setMoney(new Gson().fromJson(array.get(4), Double.class));
+				user.setMoney(user.getMoney()-(sector*(userSectors.size())*sectorsLvl.get(position)));
+				if(user.getLevel() == sectorsLvl.get(position))
+					user.setLevel(sectorsLvl.get(position)+1);
 				db.updateUserData(user);
-				parser = null;
-				array = null;
-				array1 = null;
-				array2 = null;
-				array3 = null;
+				userSectors.add(sectors.get(position));
 				setLayout();
+				
+//				JsonParser parser = new JsonParser();
+//				JsonArray array = parser.parse(res.toString()).getAsJsonArray(),
+//						array1 = parser.parse(new Gson().fromJson(array.get(0), String.class)).getAsJsonArray(),
+//						array2 = parser.parse(new Gson().fromJson(array.get(1), String.class)).getAsJsonArray(),
+//						array3 = parser.parse(new Gson().fromJson(array.get(2), String.class)).getAsJsonArray();
+//				sectors = new ArrayList<String>();
+//				sectorsLvl = new ArrayList<Integer>();
+//				userSectors = new ArrayList<String>();
+//				for(int i=0;i<array1.size();i++){
+//					sectors.add(new Gson().fromJson(array1.get(i), String.class));
+//				}
+//				
+//				for(int i=0;i<array2.size();i++){
+//					sectorsLvl.add(new Gson().fromJson(array2.get(i), Integer.class));
+//				}
+//				
+//				for(int i=0;i<array3.size();i++){
+//					userSectors.add(new Gson().fromJson(array3.get(i), String.class));
+//				}
+//				
+//				sector = new Gson().fromJson(array.get(3), Double.class);
+//				user.setMoney(new Gson().fromJson(array.get(4), Double.class));
+//				db.updateUserData(user);
+//				parser = null;
+//				array = null;
+//				array1 = null;
+//				array2 = null;
+//				array3 = null;
+//				setLayout();
 			}
 		}
 	}

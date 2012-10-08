@@ -25,10 +25,8 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.Toast;
 import android.support.v4.app.NavUtils;
 
-@SuppressWarnings("deprecation")
 @SuppressLint("NewApi")
 public class MainBusinessGameActivity extends Activity {
 	private ListView lv;
@@ -122,7 +120,7 @@ public class MainBusinessGameActivity extends Activity {
     
 	@Override
     public void onBackPressed() {
-    	showDialog(1);
+    	dialog().show();
     }
 
     @Override
@@ -140,6 +138,24 @@ public class MainBusinessGameActivity extends Activity {
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+    
+    public AlertDialog dialog(){
+    	LayoutInflater factory = LayoutInflater.from(this);
+		final View textView = factory.inflate(R.layout.question_logout, null);
+		return new AlertDialog.Builder(this)
+			.setView(textView)
+			.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int which) {
+					doPositiveClickDialog();
+				}
+			})
+			.setNegativeButton("No", new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int which) {
+					
+				}
+			})
+			.create();
     }
 
     private void doPositiveClickDialog(){
@@ -164,8 +180,6 @@ public class MainBusinessGameActivity extends Activity {
 	
 	private AdapterView.OnItemClickListener onItemClickHandler = new AdapterView.OnItemClickListener() {
     	public void onItemClick(AdapterView<?> parent, View v, int pos, long id) {
-			Toast.makeText(MainBusinessGameActivity.this, parent.getItemAtPosition(pos).toString(), Toast.LENGTH_SHORT).show();
-			
 			switch (pos) {
 			case 0:
 				startActivity(new Intent(MainBusinessGameActivity.this, MyBusinessActivity.class));

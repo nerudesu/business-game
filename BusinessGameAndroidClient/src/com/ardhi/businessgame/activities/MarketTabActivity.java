@@ -149,6 +149,11 @@ public class MarketTabActivity extends TabActivity {
 		spec = getTabHost().newTabSpec("Employee").setIndicator("Employee", getResources().getDrawable(R.drawable.ic_launcher)).setContent(intent);
         getTabHost().addTab(spec);
         
+        intent = new Intent(this, MarketTabContentActivity.class);
+		intent.putExtra("Tab", "Bundle");
+        spec = getTabHost().newTabSpec("Bundle").setIndicator("Bundle", getResources().getDrawable(R.drawable.ic_launcher)).setContent(intent);
+        getTabHost().addTab(spec);
+        
         parser = null;
         array = null;
 	}

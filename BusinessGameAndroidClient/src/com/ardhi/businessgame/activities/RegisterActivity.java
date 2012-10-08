@@ -3,7 +3,6 @@ package com.ardhi.businessgame.activities;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 
 import com.ardhi.businessgame.R;
 import com.ardhi.businessgame.models.User;
@@ -11,7 +10,6 @@ import com.ardhi.businessgame.services.CommunicationService;
 import com.ardhi.businessgame.services.DBAccess;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 
 import android.os.AsyncTask;
@@ -197,16 +195,11 @@ public class RegisterActivity extends Activity {
 				zoneList = new ArrayList<String>();
 				JsonParser parser = new JsonParser();
 				JsonArray array = parser.parse(res.toString()).getAsJsonArray();
-				Iterator<JsonElement> i = array.iterator();
-				int x = 0;
-				while(i.hasNext()){
-					zoneList.add(new Gson().fromJson(array.get(x), String.class));
-					x++;
-					i.next();
+				for(int i=0;i<array.size();i++){
+					zoneList.add(new Gson().fromJson(array.get(i), String.class));
 				}
 				parser = null;
 				array = null;
-				i = null;
 				
 				loadZone();
 			}
@@ -242,7 +235,7 @@ public class RegisterActivity extends Activity {
 				Toast.makeText(RegisterActivity.this, "Server is not ready..", Toast.LENGTH_SHORT).show();
 				pass.setText("");
 				pass_re.setText("");
-			} else if(res.equals("0")){
+			} else if(res.equals("1")){
 				Toast.makeText(RegisterActivity.this, "Username is already exist", Toast.LENGTH_SHORT).show();
 				user.setText("");
 				pass.setText("");

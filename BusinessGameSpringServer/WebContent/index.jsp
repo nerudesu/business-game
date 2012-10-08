@@ -11,6 +11,8 @@
 	<ul>
 		<li><a href="test.htm">Test</a></li>
 		<li><a href="getProposeInfo.htm">Test Propose Info</a></li>
+		<li><a href="test_sector.htm">Test</a></li>
+		<li><a href="businessGame?action=deleteUserData&user=demigodA">Delete user</a></li>
 	</ul>
 </body>
 </html>

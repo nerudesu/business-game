@@ -220,7 +220,8 @@ public class StorageTabActivity extends TabActivity {
 		@Override
 		protected Object doInBackground(String... params) {
 			try {
-				return CommunicationService.get(CommunicationService.GET_CHECK_USER_STORAGE+"&user="+user.getName()+"&zone="+user.getZone());
+//				return CommunicationService.get(CommunicationService.GET_CHECK_USER_STORAGE+"&user="+user.getName()+"&zone="+user.getZone());
+				return CommunicationService.get(CommunicationService.GET_CHECK_USER_STORAGE+"&storage="+user.getStorages().get(user.getZone()));
 			} catch (Exception e) {
 				e.printStackTrace();
 				return null;
@@ -302,11 +303,15 @@ public class StorageTabActivity extends TabActivity {
 				Toast.makeText(getApplicationContext(), "Insufficient money..", Toast.LENGTH_SHORT).show();
 				finish();
 			} else {
-				db.addUserStorage(user.getZone(), res.toString());
 				JsonParser parser = new JsonParser();
 				JsonArray array = parser.parse(res.toString()).getAsJsonArray(),
-						array1 = parser.parse(new Gson().fromJson(array.get(1), String.class)).getAsJsonArray();
-				user.setMoney(new Gson().fromJson(array.get(0), Double.class));
+						array1 = parser.parse(new Gson().fromJson(array.get(2), String.class)).getAsJsonArray();
+				android.util.Log.d("id", new Gson().fromJson(array.get(0), String.class));
+				db.addUserStorage(user.getZone(), new Gson().fromJson(array.get(0), String.class));
+				user.getStorages().put(user.getZone(), new Gson().fromJson(array.get(0), String.class));
+				android.util.Log.d("id", user.getStorages().get(user.getZone()));
+				
+				user.setMoney(new Gson().fromJson(array.get(1), Double.class));
 				db.updateUserData(user);
 				
 				capacity = new Gson().fromJson(array1.get(1), Double.class);

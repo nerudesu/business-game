@@ -22,9 +22,10 @@
     <string name="btn_fire">Fire</string>
     <string name="btn_attach">Attach</string>
     <string name="btn_detach">Detach</string>
+    <string name="btn_cancel_supply">Cancel Supply</string>
     <string name="btn_new_installment">Create new installment</string>
     <string name="imgdesc_product">Product</string>
-    <string name="user">Username : </string>
+    <string name="username">Username : </string>
     <string name="pass">Password : </string>
     <string name="pass_re">Password (retype) : </string>
     <string name="acc_re">Remember acc.</string>
@@ -51,12 +52,20 @@
     <string name="quality">Quality : </string>
     <string name="durability">Durability : </string>
     <string name="operational">Operational : </string>
+    <string name="installment">Installment : </string>
+    <string name="installment_supply">Energy Supply : </string>
     <string name="installment_type">Installment type : </string>
+    <string name="price_kwh">Price per KWH : </string>
+    <string name="kwh_available">KWH available : </string>
+    <string name="kwh_need">KWH needed : </string>
+    <string name="user">User : </string>
+    
     <string name="storage">Buy Storage</string>
     <string name="login">Login</string>
     <string name="register">Register</string>
     <string name="logout">Logout</string>
     <string name="submit">Submit</string>
+    <string name="update">Update changes</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="question_borrow">Are you sure you want to borrow this money? Once you successfully getting this money, you will no longer be able to borrow more money for several period.</string>
@@ -65,13 +74,13 @@
     <string name="question_product">How much?</string>
     <string name="question_equipment">Are you sure?</string>
     <string name="question_sector_blueprint">Are you sure you want to buy this blueprint?</string>
+    <string name="question_bundle_installment">You are about to buy a bundle of equipment and hire a team of employee for an installment you choose before. Are you sure?</string>
 
     <string-array name="options_main">
         <item>My Business</item>
         <item>My Account</item>
         <item>Help</item>
         <item>Options</item>
-        <item>Logout</item>
         <item>Logout</item>
     </string-array>
     <string-array name="options_bank">
@@ -86,6 +95,12 @@
         <item>Product</item>
         <item>Equipment</item>
         <item>Human Resource</item>
+    </string-array>
+    <string-array name="options_bundle">
+        <item>Bundle with standard quality</item>
+        <item>Bundle with custom quality</item>
+        <item>Single equipment</item>
+        <item>Single employee</item>
     </string-array>
     <string-array name="month">
         <item>Jan</item>

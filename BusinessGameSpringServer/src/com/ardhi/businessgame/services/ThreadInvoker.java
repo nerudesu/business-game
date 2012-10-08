@@ -25,10 +25,18 @@ public class ThreadInvoker extends Thread {
 				futureList.add(executor.submit(new EngineCall(EngineCall.IDLE)));
 				Thread.sleep(futureList.get(0).get());
 //				BusinessGameController.working = false;
-				futureList.add(executor.submit(new EngineCall(EngineCall.BANK)));
-				futureList.add(executor.submit(new EngineCall(EngineCall.SECTOR_CHEMICAL_PLANT)));
+				futureList.add(executor.submit(new EngineCall(EngineCall.MARKET_SHARE)));
 				futureList.add(executor.submit(new EngineCall(EngineCall.WORK)));
-				Thread.sleep(futureList.get(3).get());
+				Thread.sleep(futureList.get(2).get());
+				futureList.add(executor.submit(new EngineCall(EngineCall.SECTOR_POWER_PLANT)));
+				futureList.add(executor.submit(new EngineCall(EngineCall.WORK)));
+				Thread.sleep(futureList.get(4).get());
+				futureList.add(executor.submit(new EngineCall(EngineCall.BANK)));
+				futureList.add(executor.submit(new EngineCall(EngineCall.SECTOR_NON_POWER_PLANT)));
+				futureList.add(executor.submit(new EngineCall(EngineCall.WORK)));
+				Thread.sleep(futureList.get(7).get());
+				futureList.add(executor.submit(new EngineCall(EngineCall.WORK)));
+				Thread.sleep(futureList.get(8).get());
 				futureList.clear();
 				System.out.println("Cleaning before loop re-start..");
 			}

@@ -16,7 +16,7 @@ import android.net.NetworkInfo;
 public class CommunicationService {
 	
 	public static final int HTTP_TIMEOUT = 30 * 1000; // milliseconds
-	public static final String URL = "http://192.168.1.12:8080/BusinessGame/businessGame",
+	public static final String URL = "http://192.168.1.3:8080/BusinessGame/businessGame",
 			GET_GET_GAME_TIME = "?action=getGameTime",
 			GET_GET_ENTIRE_ZONE = "?action=getEntireZone",
 			GET_LOAD_BANK_DATA = "?action=loadBankData",
@@ -30,6 +30,7 @@ public class CommunicationService {
 			GET_LOAD_INSTALLMENT_DETAILS = "?action=loadInstallmentDetails",
 			GET_GET_AVAILABLE_INSTALLMENT = "?action=getAvailableInstallment",
 			GET_LOAD_INSTALLMENT_OWNED_BY_EQUIPMENT = "?action=loadInstallmentOwnedByEquipment",
+			GET_QUERY_TOTAL_BUNDLE = "?action=queryTotalBundle",
 			
 			POST_LOGIN = "loginUser",
 			POST_REGISTER_USER = "registerUser",
@@ -44,7 +45,11 @@ public class CommunicationService {
 			POST_DETACH_EQUIPMENT="detachEquipment",
 			POST_HIRE_EMPLOYEE_TO_INSTALLMENT = "hireEmployeeToInstallment",
 			POST_FIRE_EMPLOYEE = "fireEmployee",
-			POST_BUY_SECTOR_BLUEPRINT = "buySectorBlueprint";
+			POST_UPDATE_TARIFF = "updateTariff",
+			POST_UPDATE_SUPPLY_KWH = "updateSupplyKwh",
+			POST_CANCEL_SUPPLY_INSTALLMENT = "cancelSupplyInstallment",
+			POST_BUY_SECTOR_BLUEPRINT = "buySectorBlueprint",
+			POST_BUY_BUNDLE_EQUIPMENT_EMPLOYEE = "buyBundleEquipmentEmployee";
 	
 	public static boolean isOnline(Activity act){
 		ConnectivityManager conn = (ConnectivityManager)act.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -62,6 +67,7 @@ public class CommunicationService {
 		}
 		URL url = new URL(URL);
 		HttpURLConnection conn = (HttpURLConnection)url.openConnection();
+		conn.setConnectTimeout(HTTP_TIMEOUT);
 		conn.setDoOutput(true);
 		conn.setRequestMethod("POST");
 		conn.setFixedLengthStreamingMode(str.getBytes().length);
@@ -91,6 +97,7 @@ public class CommunicationService {
 		String str = "";
 		URL url = new URL(URL+act);
 		HttpURLConnection conn = (HttpURLConnection)url.openConnection();
+		conn.setConnectTimeout(HTTP_TIMEOUT);
 		Scanner in = new Scanner(conn.getInputStream());
 		while(in.hasNextLine()){
 			str+=(in.nextLine());

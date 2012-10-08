@@ -23,7 +23,7 @@ public class SystemService extends Service {
 	private NotificationManager mNM;
 	private DBAccess db;
 	private User user;
-	long lastUpdateTimeInMillis;
+	private long lastUpdateTimeInMillis;
 	private TimePhase timePhase;
 	private IBinder binder = new MyBinder();
 	private Thread t;
@@ -37,7 +37,6 @@ public class SystemService extends Service {
 	
 	public TimePhase getTimePhase(){
 		long tmp = System.currentTimeMillis() - lastUpdateTimeInMillis;
-//		android.util.Log.d("timePhase", ""+timePhase);
 		if(timePhase != null){
 			while(timePhase.getCurrentTimeMillis() < tmp){
 				timePhase.setCurrentTimeMillis(timePhase.getCurrentTimeMillis()+((timePhase.getIdleTime()+timePhase.getWorkTime())*60000));
@@ -58,13 +57,12 @@ public class SystemService extends Service {
         user = db.getUser();
         threadWork = true;
 
-        // Display a notification about us starting.  We put an icon in the status bar.
-		Notification notification = new Notification(R.drawable.ic_launcher, "Hello "+user.getName()+", welcome aboard..", System.currentTimeMillis());
+		Notification notification = new Notification(R.drawable.ic_launcher, "Hello "+user.getName()+", welcome..", System.currentTimeMillis());
         notification.flags = Notification.FLAG_ONGOING_EVENT;
         Intent i = new Intent(this, MainBusinessGameActivity.class);
         i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0, i, 0);
-        notification.setLatestEventInfo(this, "Welcome to BusinessGame, "+user.getName(), "Click here to go to your Dashboard", contentIntent);
+        notification.setLatestEventInfo(this, "Welcome, "+user.getName(), "Click here to go to your Dashboard", contentIntent);
         mNM.notify(100, notification);
         new RequestTimePhase().execute();
         t = new Thread(new Runnable() {
@@ -72,7 +70,7 @@ public class SystemService extends Service {
 			public void run() {
 				while(threadWork){
 					try {
-						Thread.sleep(30000);
+						Thread.sleep(10000);
 						new RefreshClientData().execute();
 					} catch (InterruptedException e) {
 						
@@ -92,7 +90,6 @@ public class SystemService extends Service {
 	
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		android.util.Log.d("Ok", "ok");
 		return START_STICKY;
 	}
 	
@@ -100,16 +97,6 @@ public class SystemService extends Service {
 	public IBinder onBind(Intent arg0) {
 		return binder;
 	}
-	
-//	private void refreshClientData(){
-//		try {
-//			String res = CommunicationService.get(CustomHttpClient.URL+CustomHttpClient.GET_REFRESH_CLIENT_DATA+"&user="+user.getName());
-//			res = res.toString().replaceAll("\\n+", "");
-//			db.updateUserData(new Gson().fromJson(res.toString(), User.class));
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
-//	}
 	
 	private class RefreshClientData extends AsyncTask<String, Void, Object>{
 		@Override
@@ -129,9 +116,7 @@ public class SystemService extends Service {
 			} else if(res.toString().equals("-1")){
 				Toast.makeText(SystemService.this, "Server is not ready..", Toast.LENGTH_SHORT).show();
 			} else if(res.toString().equals("0")){
-				Toast.makeText(SystemService.this, "Wrong password..", Toast.LENGTH_SHORT).show();
-			} else if(res.toString().equals("1")){
-				Toast.makeText(SystemService.this, "Username not exist..", Toast.LENGTH_SHORT).show();
+				Toast.makeText(SystemService.this, "Internal error..", Toast.LENGTH_SHORT).show();
 			} else {
 				db.updateUserData(new Gson().fromJson(res.toString(), User.class));
 			}
@@ -158,36 +143,14 @@ public class SystemService extends Service {
 			} else if(res.toString().equals("-1")){
 				Toast.makeText(SystemService.this, "Server is not ready..", Toast.LENGTH_SHORT).show();
 			} else if(res.toString().equals("0")){
-				Toast.makeText(SystemService.this, "Wrong password..", Toast.LENGTH_SHORT).show();
-			} else if(res.toString().equals("1")){
-				Toast.makeText(SystemService.this, "Username not exist..", Toast.LENGTH_SHORT).show();
+				Toast.makeText(SystemService.this, "Internal error..", Toast.LENGTH_SHORT).show();
 			} else {
 				long tmp = System.currentTimeMillis();
-				TimePhase time;
-				
-				time = new Gson().fromJson(res.toString(), TimePhase.class);
+				TimePhase time = new Gson().fromJson(res.toString(), TimePhase.class);
 				time.setCurrentTimeMillis(time.getCurrentTimeMillis() - (System.currentTimeMillis() - tmp));
 				timePhase = time;
 				lastUpdateTimeInMillis = System.currentTimeMillis();
-				android.util.Log.d("timePhase in request", ""+timePhase);
 			}
 		}
 	}
-
-//	public void requestTimePhase() {
-//		String res = "";
-//		try {
-//			res = CommunicationService.get(CommunicationService.URL+CommunicationService.GET_GET_GAME_TIME);
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		}
-//		long tmp = System.currentTimeMillis();
-//		TimePhase time;
-//		
-//		time = new Gson().fromJson(res, TimePhase.class);
-//		time.setCurrentTimeMillis(time.getCurrentTimeMillis() - (System.currentTimeMillis() - tmp));
-//		timePhase = time;
-//		lastUpdateTimeInMillis = System.currentTimeMillis();
-//		android.util.Log.d("timePhase in request", ""+timePhase);
-//	}
 }

@@ -188,7 +188,7 @@ public class BankProposalTabActivity extends TabActivity {
     		getTabHost().setCurrentTab(0);
     		setLayout(i);
     		getTabHost().setCurrentTab(tmp);
-    		storage = false;
+    		storage = true;
 		}
 
 		public void onNothingSelected(AdapterView<?> arg0) {
@@ -237,9 +237,10 @@ public class BankProposalTabActivity extends TabActivity {
         getTabHost().addTab(spec);
         getTabHost().setCurrentTab(1);
         getTabHost().setCurrentTab(2);
+        getTabHost().setCurrentTab(3);
         getTabHost().setCurrentTab(0);
 //        android.util.Log.d("eq", ieCost+"+"+eCost+"+"+rCost);
-        total.setText((ieCost+eCost+rCost+ieTurn+eTurn+prices.get(spinSector.getSelectedItemPosition())+pCost)+" ZE");
+        total.setText((ieCost+eCost+rCost+ieTurn+eTurn+sCost+prices.get(spinSector.getSelectedItemPosition())+pCost)+" ZE");
 	}
 	
 	private class TabEquipment implements TabHost.TabContentFactory {
@@ -712,6 +713,7 @@ public class BankProposalTabActivity extends TabActivity {
 			CheckBox checkStorage = new CheckBox(c);
 			checkStorage.setText(R.string.storage);
 			checkStorage.setLayoutParams(new TableRow.LayoutParams(1));
+			checkStorage.setChecked(true);
 			checkStorage.setOnCheckedChangeListener(new OnCheckedChangeHandler());
 			
 			row = new TableRow(c);
@@ -778,7 +780,7 @@ public class BankProposalTabActivity extends TabActivity {
 		@Override
 		protected Object doInBackground(String... params) {
 			try {
-				return CommunicationService.get(CommunicationService.GET_LOAD_BANK_DATA+"&user="+user.getName()+"&zone="+user.getZone());
+				return CommunicationService.get(CommunicationService.GET_LOAD_BANK_DATA+"&user="+user.getName());
 			} catch (Exception e) {
 				e.printStackTrace();
 				return null;

@@ -432,8 +432,9 @@ public class StorageTabContentActivity extends Activity {
 		@Override
 		protected Object doInBackground(String... params) {
 			HashMap<String, String> postParameters = new HashMap<String, String>();
-			postParameters.put("user", user.getName());
-			postParameters.put("zone", user.getZone());
+//			postParameters.put("user", user.getName());
+//			postParameters.put("zone", user.getZone());
+			postParameters.put("storage", user.getStorages().get(user.getZone()));
 			postParameters.put("productId", id);
 			postParameters.put("offer", params[0]);
 			postParameters.put("price", ""+price);
@@ -473,8 +474,9 @@ public class StorageTabContentActivity extends Activity {
 		@Override
 		protected Object doInBackground(String... params) {
 			HashMap<String, String> postParameters = new HashMap<String, String>();
-			postParameters.put("user", user.getName());
-			postParameters.put("zone", user.getZone());
+//			postParameters.put("user", user.getName());
+//			postParameters.put("zone", user.getZone());
+			postParameters.put("storage", user.getStorages().get(user.getZone()));
 			postParameters.put("equipmentId", id);
 			postParameters.put("price", ""+price);
 			postParameters.put("marketZone", params[0]);
@@ -513,8 +515,9 @@ public class StorageTabContentActivity extends Activity {
 		@Override
 		protected Object doInBackground(String... params) {
 			HashMap<String, String> postParameters = new HashMap<String, String>();
-			postParameters.put("user", user.getName());
-			postParameters.put("zone", user.getZone());
+//			postParameters.put("user", user.getName());
+//			postParameters.put("zone", user.getZone());
+			postParameters.put("storage", user.getStorages().get(user.getZone()));
 			postParameters.put("idInstallment", params[0]);
 			postParameters.put("idEquipment", id);
 			String res = null;

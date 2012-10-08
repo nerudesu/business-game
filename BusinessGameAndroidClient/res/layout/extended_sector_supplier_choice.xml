@@ -1,0 +1,86 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
+    
+    <LinearLayout android:layout_width="fill_parent"
+	    android:layout_height="wrap_content"
+	    android:orientation="vertical"
+	    tools:context=".activities.MainBusinessGameActivity" >
+	    
+	    <LinearLayout android:layout_width="fill_parent"
+	        android:layout_height="wrap_content"
+	        android:orientation="horizontal">
+	        
+	        <TextView android:layout_width="wrap_content"
+	            android:layout_height="wrap_content"
+	            android:text="@string/installment_supply"/>
+	        
+	        <Spinner android:layout_width="wrap_content"
+	            android:layout_height="wrap_content"
+	            android:prompt="@string/installment_supply"
+	            android:id="@+id/spin_supplier"/>
+	        
+	    </LinearLayout>
+	    
+	    <TableLayout android:layout_width="fill_parent"
+	        android:layout_height="wrap_content"
+	        android:stretchColumns="1"
+	        android:layout_margin="10dp">
+	        
+	        <TableRow >
+	            
+	            <TextView android:text="@string/user"/>
+	            
+	            <EditText android:id="@+id/txt_user"
+	                android:background="@null"
+	                android:focusable="false"
+	                android:inputType="none"
+	                android:textColor="@android:color/white" />
+	            
+	        </TableRow>
+	        
+	        <TableRow >
+	            
+	            <TextView android:text="@string/price_kwh"/>
+	            
+	            <EditText android:id="@+id/txt_price_kwh"
+	                android:background="@null"
+	                android:focusable="false"
+	                android:inputType="none"
+	                android:textColor="@android:color/white" />
+	            
+	        </TableRow>
+	        
+	        <TableRow >
+	            
+	            <TextView android:text="@string/kwh_available"/>
+	            
+	            <EditText android:id="@+id/txt_kwh_available"
+	                android:background="@null"
+	                android:focusable="false"
+	                android:inputType="none"
+	                android:textColor="@android:color/white" />
+	            
+	        </TableRow>
+	        
+	        <TableRow >
+	            
+	            <TextView android:text="@string/kwh_need"/>
+	            
+	            <EditText android:id="@+id/txt_kwh_need"
+	                android:inputType="numberDecimal"/>
+	            
+	        </TableRow>
+	        
+	    </TableLayout>
+	    
+	    <Button android:layout_width="match_parent"
+	        android:layout_height="wrap_content"
+	        android:text="@string/update"
+	        android:layout_margin="10dp"
+	        android:id="@+id/btn_update"/>
+	
+	</LinearLayout>
+    
+</ScrollView>

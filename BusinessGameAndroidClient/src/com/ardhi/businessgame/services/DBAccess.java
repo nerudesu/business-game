@@ -84,7 +84,6 @@ public class DBAccess extends SQLiteOpenHelper {
 		val.put("rep", user.getRep());
 		val.put("zone", user.getZone());
 		val.put("level", user.getLevel());
-		android.util.Log.d("level", ""+user.getLevel());
 		if(db.insert("user", null, val) > 0)
 			success = true;
 		db.close();

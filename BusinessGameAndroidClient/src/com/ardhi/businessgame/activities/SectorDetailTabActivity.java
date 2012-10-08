@@ -1,12 +1,14 @@
 package com.ardhi.businessgame.activities;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 import com.ardhi.businessgame.R;
 import com.ardhi.businessgame.activities.adapters.InstallmentEmployeeAdapter;
 import com.ardhi.businessgame.activities.adapters.InstallmentEquipmentAdapter;
+import com.ardhi.businessgame.activities.adapters.InstallmentSupplyAdapter;
 import com.ardhi.businessgame.models.InstallmentEmployee;
 import com.ardhi.businessgame.models.InstallmentEquipment;
 import com.ardhi.businessgame.models.User;
@@ -36,9 +38,13 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.ScrollView;
+import android.widget.Spinner;
 import android.widget.TabHost;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -56,10 +62,10 @@ public class SectorDetailTabActivity extends TabActivity {
 	private Handler h;
 	private Thread t;
 	private ProgressDialog progressDialog;
-	private String id,idE;
-	private double efficiency,effectivity;
-	private ArrayList<String> input,output;
-	private ArrayList<Double> inputVal,outputVal;
+	private String id,idE,sectorType,currentSupply;
+	private double efficiency,effectivity,tariff,totalKwh,currentKwh;
+	private ArrayList<String> input,output,types,users,idSupplies;
+	private ArrayList<Double> inputVal,outputVal,supplies,tariffs,availables;
 	private ArrayList<InstallmentEmployee> employees;
 	private ArrayList<InstallmentEquipment> equipments;
 
@@ -146,8 +152,8 @@ public class SectorDetailTabActivity extends TabActivity {
 		}
 	};
 	
-	public AlertDialog dialog(int d,String idEquipment,String e){
-		idE = idEquipment;
+	public AlertDialog dialog(int d,String id,String e){
+		idE = id;
 		final LayoutInflater factory;
 		final View view;
 		final EditText txt;
@@ -200,6 +206,30 @@ public class SectorDetailTabActivity extends TabActivity {
 			.setCancelable(false)
 			.create();
 			break;
+			
+		case 3:
+			factory = LayoutInflater.from(this);
+			view = factory.inflate(R.layout.question_cancel_supply, null);
+			txt = (EditText)view.findViewById(R.id.txt_installment);
+			txt.setText(e);
+			dialog = new AlertDialog.Builder(this)
+			.setView(view)
+			.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					doPositiveClickDialogInstallment();
+				}
+				
+			})
+			.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int which) {
+					
+				}
+			})
+			.setCancelable(false)
+			.create();
+			break;
 		}
 		return dialog;
 	}
@@ -218,6 +248,9 @@ public class SectorDetailTabActivity extends TabActivity {
         spec = getTabHost().newTabSpec("Employee").setIndicator("Employee", getResources().getDrawable(R.drawable.ic_launcher)).setContent(new TabEmployee());
         getTabHost().addTab(spec);
         
+        spec = getTabHost().newTabSpec("Energy Supply").setIndicator("Energy Supply", getResources().getDrawable(R.drawable.ic_launcher)).setContent(new TabEnergySupply());
+        getTabHost().addTab(spec);
+        
         getTabHost().setCurrentTab(tab);
 	}
 	
@@ -234,6 +267,33 @@ public class SectorDetailTabActivity extends TabActivity {
 		if(CommunicationService.isOnline(this)){
 			progressDialog = ProgressDialog.show(this, "", "Processing..");
 			new FireEmployee().execute();
+		} else {
+			Toast.makeText(this, "Device is offline..", Toast.LENGTH_SHORT).show();
+		}
+	}
+	
+	private void doPositiveClickDialogInstallment(){
+		if(CommunicationService.isOnline(this)){
+			progressDialog = ProgressDialog.show(this, "", "Processing..");
+			new CancelSupplyInstallment().execute();
+		} else {
+			Toast.makeText(this, "Device is offline..", Toast.LENGTH_SHORT).show();
+		}
+	}
+	
+	private void updateTariff(double newTariff){
+		if(CommunicationService.isOnline(this)){
+			progressDialog = ProgressDialog.show(this, "", "Processing..");
+			new UpdateTariff().execute(""+newTariff);
+		} else {
+			Toast.makeText(this, "Device is offline..", Toast.LENGTH_SHORT).show();
+		}
+	}
+	
+	private void updateSupplyKwh(String id,double kwh){
+		if(CommunicationService.isOnline(this)){
+			progressDialog = ProgressDialog.show(this, "", "Processing..");
+			new UpdateSupplyKwh().execute(id,""+kwh);
 		} else {
 			Toast.makeText(this, "Device is offline..", Toast.LENGTH_SHORT).show();
 		}
@@ -404,6 +464,83 @@ public class SectorDetailTabActivity extends TabActivity {
 		
 	}
 	
+	private class TabEnergySupply implements TabHost.TabContentFactory {
+		private SectorDetailTabActivity a;
+		
+		public TabEnergySupply() {
+			a = SectorDetailTabActivity.this;
+		}
+
+		@Override
+		public View createTabContent(String tag) {
+			LayoutInflater inflater = (LayoutInflater)a.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+			View v = null;
+			if(sectorType.equals("Petrol Power Plant")){
+				v = inflater.inflate(R.layout.extended_sector_supply_list, null);
+				final EditText txtPrice = (EditText)v.findViewById(R.id.txt_price_kwh),
+						txtKwhNeed = (EditText)v.findViewById(R.id.txt_kwh_need);
+				ListView lv = (ListView)v.findViewById(R.id.supply_list);
+				Button btnSubmit = (Button)v.findViewById(R.id.btn_submit);
+				
+				txtPrice.setText(""+tariff);
+				txtKwhNeed.setText(totalKwh+" KWH");
+				lv.setAdapter(new InstallmentSupplyAdapter(a, idSupplies, types, users, supplies));
+				lv.setTextFilterEnabled(true);
+				btnSubmit.setOnClickListener(new View.OnClickListener() {
+					@Override
+					public void onClick(View v) {
+						updateTariff(Double.parseDouble(txtPrice.getText().toString()));
+					}
+				});
+				
+			} else {
+				v = inflater.inflate(R.layout.extended_sector_supplier_choice, null);
+				final Spinner spinSupply = (Spinner)v.findViewById(R.id.spin_supplier);
+				final EditText txtUser = (EditText)v.findViewById(R.id.txt_user),
+						txtPriceKwh = (EditText)v.findViewById(R.id.txt_price_kwh),
+						txtKwhAvailable = (EditText)v.findViewById(R.id.txt_kwh_available),
+						txtKwhNeed = (EditText)v.findViewById(R.id.txt_kwh_need);
+				Button btnUpdate = (Button)v.findViewById(R.id.btn_update);
+				int tmp = idSupplies.indexOf(currentSupply);
+				
+				ArrayAdapter<String> adapter = new ArrayAdapter<String>(a, android.R.layout.simple_spinner_item, users);
+				adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+				spinSupply.setAdapter(adapter);
+				if(tmp > -1)
+					spinSupply.setSelection(tmp);
+				
+				txtKwhNeed.setText(""+currentKwh);
+				
+				spinSupply.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+
+					@Override
+					public void onItemSelected(AdapterView<?> spinner, View v, int i, long id) {
+						txtUser.setText(users.get(i));
+						txtPriceKwh.setText(tariffs.get(i)+" ZE");
+						txtKwhAvailable.setText(availables.get(i)+" KWH");
+					}
+
+					@Override
+					public void onNothingSelected(AdapterView<?> arg0) {
+						// TODO Auto-generated method stub
+						
+					}
+				});
+				
+				btnUpdate.setOnClickListener(new View.OnClickListener() {
+					
+					@Override
+					public void onClick(View v) {
+						updateSupplyKwh(idSupplies.get(spinSupply.getSelectedItemPosition()), Double.parseDouble(txtKwhNeed.getText().toString()));
+					}
+				});
+			}
+			
+			return v;
+		}
+		
+	}
+	
 	private class LoadSectorDetails extends AsyncTask<String, Void, Object>{
 		
 		@Override
@@ -435,13 +572,14 @@ public class SectorDetailTabActivity extends TabActivity {
 						array1 = parser.parse(new Gson().fromJson(array.get(0), String.class)).getAsJsonArray(),
 						array2 = parser.parse(new Gson().fromJson(array.get(1), String.class)).getAsJsonArray(),
 						array3 = parser.parse(new Gson().fromJson(array.get(2), String.class)).getAsJsonArray(),
-						array4 = parser.parse(new Gson().fromJson(array1.get(2), String.class)).getAsJsonArray(),
-						array5 = parser.parse(new Gson().fromJson(array1.get(3), String.class)).getAsJsonArray(),
-						array6 = parser.parse(new Gson().fromJson(array1.get(4), String.class)).getAsJsonArray(),
-						array7 = parser.parse(new Gson().fromJson(array1.get(5), String.class)).getAsJsonArray();
+						array4 = parser.parse(new Gson().fromJson(array1.get(3), String.class)).getAsJsonArray(),
+						array5 = parser.parse(new Gson().fromJson(array1.get(4), String.class)).getAsJsonArray(),
+						array6 = parser.parse(new Gson().fromJson(array1.get(5), String.class)).getAsJsonArray(),
+						array7 = parser.parse(new Gson().fromJson(array1.get(6), String.class)).getAsJsonArray();
 				
-				efficiency = new Gson().fromJson(array1.get(0), Double.class);
-				effectivity = new Gson().fromJson(array1.get(1), Double.class);
+				sectorType = new Gson().fromJson(array1.get(0), String.class);
+				efficiency = new Gson().fromJson(array1.get(1), Double.class);
+				effectivity = new Gson().fromJson(array1.get(2), Double.class);
 				input = new ArrayList<String>();
 				inputVal = new ArrayList<Double>();
 				output = new ArrayList<String>();
@@ -465,6 +603,65 @@ public class SectorDetailTabActivity extends TabActivity {
 				employees = new ArrayList<InstallmentEmployee>();
 				for(int i=0;i<array3.size();i++){
 					employees.add(new Gson().fromJson(array3.get(i), InstallmentEmployee.class));
+				}
+				
+				if(sectorType.equals("Petrol Power Plant")){
+					totalKwh = 0;
+					tariff = new Gson().fromJson(array.get(3), Double.class);
+					array4 = parser.parse(new Gson().fromJson(array.get(4), String.class)).getAsJsonArray();
+					array5 = parser.parse(new Gson().fromJson(array.get(5), String.class)).getAsJsonArray();
+					array6 = parser.parse(new Gson().fromJson(array.get(6), String.class)).getAsJsonArray();
+					array7 = parser.parse(new Gson().fromJson(array.get(7), String.class)).getAsJsonArray();
+					
+					types = new ArrayList<String>();
+					for(int i=0;i<array4.size();i++){
+						types.add(new Gson().fromJson(array4.get(i), String.class));
+					}
+					
+					users = new ArrayList<String>();
+					for(int i=0;i<array5.size();i++){
+						users.add(new Gson().fromJson(array5.get(i), String.class));
+					}
+					
+					supplies = new ArrayList<Double>();
+					for(int i=0;i<array6.size();i++){
+						supplies.add(new Gson().fromJson(array6.get(i), Double.class));
+						totalKwh += new Gson().fromJson(array6.get(i), Double.class);
+					}
+					
+					totalKwh = new BigDecimal(Double.valueOf(totalKwh)).setScale(2, BigDecimal.ROUND_HALF_EVEN).doubleValue();
+					
+					idSupplies = new ArrayList<String>();
+					for(int i=0;i<array7.size();i++){
+						idSupplies.add(new Gson().fromJson(array7.get(i), String.class));
+					}
+				} else {
+					currentKwh = new Gson().fromJson(array.get(7), Double.class);
+					currentSupply = new Gson().fromJson(array.get(8), String.class);
+					array4 = parser.parse(new Gson().fromJson(array.get(3), String.class)).getAsJsonArray();
+					array5 = parser.parse(new Gson().fromJson(array.get(4), String.class)).getAsJsonArray();
+					array6 = parser.parse(new Gson().fromJson(array.get(5), String.class)).getAsJsonArray();
+					array7 = parser.parse(new Gson().fromJson(array.get(6), String.class)).getAsJsonArray();
+					
+					idSupplies = new ArrayList<String>();
+					for(int i=0;i<array4.size();i++){
+						idSupplies.add(new Gson().fromJson(array4.get(i), String.class));
+					}
+					
+					users = new ArrayList<String>();
+					for(int i=0;i<array5.size();i++){
+						users.add(new Gson().fromJson(array5.get(i), String.class));
+					}
+					
+					tariffs = new ArrayList<Double>();
+					for(int i=0;i<array6.size();i++){
+						tariffs.add(new Gson().fromJson(array6.get(i), Double.class));
+					}
+					
+					availables = new ArrayList<Double>();
+					for(int i=0;i<array7.size();i++){
+						availables.add(new Gson().fromJson(array7.get(i), Double.class));
+					}
 				}
 				
 				parser = null;
@@ -564,6 +761,137 @@ public class SectorDetailTabActivity extends TabActivity {
 				}
 				getTabHost().setCurrentTab(0);
 				setLayout(2);
+			}
+		}
+	}
+	
+	private class UpdateTariff extends AsyncTask<String, Void, Object>{
+		double tmp;
+		
+		@Override
+		protected Object doInBackground(String... params) {
+			HashMap<String, String> postParameters = new HashMap<String, String>();
+			postParameters.put("id", id);
+			postParameters.put("tariff", params[0]);
+			tmp = Double.parseDouble(params[0]);
+			String res = null;
+			try {
+				res = CommunicationService.post(CommunicationService.POST_UPDATE_TARIFF, postParameters);
+			} catch (Exception e) {
+				e.printStackTrace();
+				res = null;
+			}
+			
+			postParameters = null;
+			
+			return res;
+		}
+		
+		@Override
+		protected void onPostExecute(Object res) {
+			progressDialog.dismiss();
+			if(res == null){
+				Toast.makeText(getApplicationContext(), "No response from server. Try again later.", Toast.LENGTH_SHORT).show();
+			} else if(res.toString().equals("-1")){
+				Toast.makeText(getApplicationContext(), "Server is not ready..", Toast.LENGTH_SHORT).show();
+			} else if(res.toString().equals("0")){
+				Toast.makeText(getApplicationContext(), "Internal server error..", Toast.LENGTH_SHORT).show();
+			} else {
+				tariff = tmp;
+				getTabHost().setCurrentTab(0);
+				setLayout(3);
+			}
+		}
+	}
+	
+	private class UpdateSupplyKwh extends AsyncTask<String, Void, Object>{
+		double tmp;
+		String tmps;
+		
+		@Override
+		protected Object doInBackground(String... params) {
+			HashMap<String, String> postParameters = new HashMap<String, String>();
+			postParameters.put("id", id);
+			postParameters.put("idSupply", params[0]);
+			postParameters.put("supply", params[1]);
+			tmp = Double.parseDouble(params[1]);
+			tmps = params[0];
+			String res = null;
+			try {
+				res = CommunicationService.post(CommunicationService.POST_UPDATE_SUPPLY_KWH, postParameters);
+			} catch (Exception e) {
+				e.printStackTrace();
+				res = null;
+			}
+			
+			postParameters = null;
+			
+			return res;
+		}
+		
+		@Override
+		protected void onPostExecute(Object res) {
+			progressDialog.dismiss();
+			if(res == null){
+				Toast.makeText(getApplicationContext(), "No response from server. Try again later.", Toast.LENGTH_SHORT).show();
+			} else if(res.toString().equals("-1")){
+				Toast.makeText(getApplicationContext(), "Server is not ready..", Toast.LENGTH_SHORT).show();
+			} else if(res.toString().equals("0")){
+				Toast.makeText(getApplicationContext(), "Internal server error..", Toast.LENGTH_SHORT).show();
+			} else {
+				currentKwh = tmp;
+				currentSupply = tmps;
+				getTabHost().setCurrentTab(0);
+				setLayout(3);
+			}
+		}
+	}
+	
+	private class CancelSupplyInstallment extends AsyncTask<String, Void, Object>{
+		
+		@Override
+		protected Object doInBackground(String... params) {
+			HashMap<String, String> postParameters = new HashMap<String, String>();
+			postParameters.put("idInstallment", idE);
+			postParameters.put("id", id);
+			String res = null;
+			try {
+				res = CommunicationService.post(CommunicationService.POST_CANCEL_SUPPLY_INSTALLMENT, postParameters);
+			} catch (Exception e) {
+				e.printStackTrace();
+				res = null;
+			}
+			
+			postParameters = null;
+			
+			return res;
+		}
+		
+		@Override
+		protected void onPostExecute(Object res) {
+			progressDialog.dismiss();
+			if(res == null){
+				Toast.makeText(getApplicationContext(), "No response from server. Try again later.", Toast.LENGTH_SHORT).show();
+			} else if(res.toString().equals("-1")){
+				Toast.makeText(getApplicationContext(), "Server is not ready..", Toast.LENGTH_SHORT).show();
+			} else if(res.toString().equals("0")){
+				Toast.makeText(getApplicationContext(), "Internal server error..", Toast.LENGTH_SHORT).show();
+			} else {
+				int tmp = idSupplies.indexOf(idE);
+				types.remove(tmp);
+				users.remove(tmp);
+				supplies.remove(tmp);
+				idSupplies.remove(tmp);
+				
+				totalKwh = 0;
+				for(int i=0;i<supplies.size();i++){
+					totalKwh += supplies.get(i);
+				}
+				
+				totalKwh = new BigDecimal(Double.valueOf(totalKwh)).setScale(2, BigDecimal.ROUND_HALF_EVEN).doubleValue();
+				
+				getTabHost().setCurrentTab(0);
+				setLayout(3);
 			}
 		}
 	}

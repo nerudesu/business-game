@@ -19,6 +19,7 @@ import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -49,6 +50,9 @@ public class LoginActivity extends Activity {
         db.deleteUserData();
         
         SavedUser sUser = db.getSavedUserData();
+        
+        accRe.setOnCheckedChangeListener(new OnCheckedChangeHandler());
+        
         if(sUser != null){
         	user.setText(sUser.getUser());
         	pass.setText(sUser.getPass());
@@ -88,6 +92,20 @@ public class LoginActivity extends Activity {
         return true;
     }
     
+    private class OnCheckedChangeHandler implements CompoundButton.OnCheckedChangeListener{
+
+		@Override
+		public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+			if(isChecked){
+				db.deleteSavedUserData();
+				db.saveUserData(new SavedUser(user.getText().toString(), pass.getText().toString(), autoLog.isChecked()));
+			} else {
+				db.deleteSavedUserData();
+			}
+		}
+    	
+    }
+    
     private class Login extends AsyncTask<String, Void, Object>{
 
 		@Override
@@ -125,7 +143,6 @@ public class LoginActivity extends Activity {
 			} else if(res.toString().equals("1")){
 				Toast.makeText(LoginActivity.this, "Username not exist..", Toast.LENGTH_SHORT).show();
 			} else {
-				android.util.Log.d("gson", res.toString());
 				if(db.addUser(new Gson().fromJson(res.toString(), User.class))){
 					startActivity(new Intent(LoginActivity.this, MainBusinessGameActivity.class));
 				}

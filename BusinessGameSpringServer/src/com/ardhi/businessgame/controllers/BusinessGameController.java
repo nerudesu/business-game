@@ -35,17 +35,35 @@ public class BusinessGameController {
 		listActionGet.add("loadBankData");
 		listActionGet.add("checkUserStorage");
 		listActionGet.add("refreshClientData");
-		listActionGet.add("checkUserSector");
+		listActionGet.add("loadHeadquarterData");
 		listActionGet.add("loadMarketContent");
 		listActionGet.add("getSuggestedPrice");
+		listActionGet.add("loadSectorOwned");
+		listActionGet.add("loadInstallmentOwnedByUser");
+		listActionGet.add("loadInstallmentDetails");
+		listActionGet.add("loadInstallmentOwnedByEquipment");
+		listActionGet.add("queryTotalBundle");
+		listActionGet.add("deleteUserData");
+//		listActionGet.add("tesBatch");
 		
 		listActionPost.add("loginUser");
 		listActionPost.add("registerUser");
-		listActionPost.add("getProposeInfo");
 		listActionPost.add("submitProposal");
 		listActionPost.add("buildUserStorage");
 		listActionPost.add("buyMarketProduct");
+		listActionPost.add("buyMarketEquipment");
 		listActionPost.add("sellStorageProduct");
+		listActionPost.add("sellStorageEquipment");
+		listActionPost.add("createNewInstallment");
+		listActionPost.add("attachEquipmentToInstallment");
+		listActionPost.add("detachEquipment");
+		listActionPost.add("hireEmployeeToInstallment");
+		listActionPost.add("fireEmployee");
+		listActionPost.add("updateTariff");
+		listActionPost.add("updateSupplyKwh");
+		listActionPost.add("cancelSupplyInstallment");
+		listActionPost.add("buySectorBlueprint");
+		listActionPost.add("buyBundleEquipmentEmployee");
 	}
 	
 	@RequestMapping(method=RequestMethod.GET)
@@ -68,11 +86,23 @@ public class BusinessGameController {
 		case 4:
 			return businessGameService.refreshClientData(req);
 		case 5:
-			return businessGameService.checkUserSector(req);
+			return businessGameService.loadHeadquarterData(req);
 		case 6:
 			return businessGameService.loadMarketContent(req);
 		case 7:
 			return businessGameService.getSuggestedPrice(req);
+		case 8:
+			return businessGameService.loadSectorOwned(req);
+		case 9:
+			return businessGameService.loadInstallmentOwnedByUser(req);
+		case 10:
+			return businessGameService.loadInstallmentDetails(req);
+		case 11:
+			return businessGameService.loadInstallmentOwnedByEquipment(req);
+		case 12:
+			return businessGameService.queryTotalBundle(req);
+		case 13:
+			return businessGameService.deleteUserData(req);
 		default:
 			return "-1";
 		}
@@ -93,15 +123,37 @@ public class BusinessGameController {
 			case 1:
 				return businessGameService.registerUser(req);
 			case 2:
-				return businessGameService.getProposeInfo(req);
-			case 3:
 				return businessGameService.submitProposal(req);
-			case 4:
+			case 3:
 				return businessGameService.buildUserStorage(req);
-			case 5:
+			case 4:
 				return businessGameService.buyMarketProduct(req);
+			case 5:
+				return businessGameService.buyMarketEquipment(req);
 			case 6:
 				return businessGameService.sellStorageProduct(req);
+			case 7:
+				return businessGameService.sellStorageEquipment(req);
+			case 8:
+				return businessGameService.createNewInstallment(req);
+			case 9:
+				return businessGameService.attachEquipmentToInstallment(req);
+			case 10:
+				return businessGameService.detachEquipment(req);
+			case 11:
+				return businessGameService.hireEmployeeToInstallment(req);
+			case 12:
+				return businessGameService.fireEmployee(req);
+			case 13:
+				return businessGameService.updateTariff(req);
+			case 14:
+				return businessGameService.updateSupplyKwh(req);
+			case 15:
+				return businessGameService.cancelSupplyInstallment(req);
+			case 16:
+				return businessGameService.buySectorBlueprint(req);
+			case 17:
+				return businessGameService.buyBundleEquipmentEmployee(req);
 			default:
 				return "-1";
 		}
@@ -109,8 +161,8 @@ public class BusinessGameController {
 	
 	//Debug zone :
 	
-	@RequestMapping(value="getProposeInfo", method=RequestMethod.GET)
-	public String getProposeInfoGet(){
-		return "getProposeInfo";
-	}
+//	@RequestMapping(value="getProposeInfo", method=RequestMethod.GET)
+//	public String getProposeInfoGet(){
+//		return "getProposeInfo";
+//	}
 }

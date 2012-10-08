@@ -7,8 +7,9 @@ public class User {
 	private double money;
 	private long rep;
 	private HashMap<String, String> storages;
+	private int level;
 	
-	public User(String n, String e, String d, String ab, String av, double m, long r, String z, HashMap<String, String> s){
+	public User(String n, String e, String d, String ab, String av, double m, long r, String z, HashMap<String, String> s, int l){
 		setName(n);
 		setEmail(e);
 		setDob(d);
@@ -18,6 +19,7 @@ public class User {
 		setRep(r);
 		setZone(z);
 		setStorages(s);
+		setLevel(l);
 	}
 	
 	public void setName(String s){
@@ -56,6 +58,10 @@ public class User {
 		storages = s;
 	}
 	
+	public void setLevel(int l) {
+		level = l;
+	}
+	
 	public String getName(){
 		return name;
 	}
@@ -90,5 +96,9 @@ public class User {
 
 	public HashMap<String, String> getStorages() {
 		return storages;
+	}
+
+	public int getLevel() {
+		return level;
 	}
 }
