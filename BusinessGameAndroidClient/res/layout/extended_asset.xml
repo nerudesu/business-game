@@ -1,0 +1,168 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".activities.MyProfileTabActivity" >
+      
+    <TableLayout android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+	    android:layout_margin="10dp"
+	    android:stretchColumns="1">
+    
+	    <TableRow >
+	        
+	        <TextView android:textStyle="bold"
+				android:textColor="#FFFFFF"
+				android:textSize="20sp"
+				android:text="@string/current_assets"/>
+	        
+	    </TableRow>
+	    
+	    <TableRow >
+	        
+	        <TextView android:text="@string/cash"
+	            android:textAppearance="?android:attr/textAppearanceMedium"
+	            android:layout_marginLeft="20dp"/>
+	        	
+	        <EditText android:id="@+id/txt_cash"
+                android:background="@null"
+                android:focusable="false"
+                android:inputType="none"
+                android:textColor="@android:color/white" />
+	         
+	    </TableRow>
+	    
+	    <TableRow >
+	        
+	        <TextView android:text="@string/on_storage"
+	            android:textAppearance="?android:attr/textAppearanceMedium"
+	            android:layout_marginLeft="20dp"/>
+	         
+	    </TableRow>
+	    
+	    <TableRow >
+	        
+	        <TextView android:text="@string/raw_material"
+	            android:textAppearance="?android:attr/textAppearanceMedium"
+	            android:layout_marginLeft="40dp"/>
+	        	
+	        <EditText android:id="@+id/txt_raw_material"
+                android:background="@null"
+                android:focusable="false"
+                android:inputType="none"
+                android:textColor="@android:color/white" />
+	         
+	    </TableRow>
+	    
+	    <TableRow >
+	        
+	        <TextView android:text="@string/equipment_on_storage"
+	            android:textAppearance="?android:attr/textAppearanceMedium"
+	            android:layout_marginLeft="40dp"/>
+	        	
+	        <EditText android:id="@+id/txt_equipment_on_storage"
+                android:background="@null"
+                android:focusable="false"
+                android:inputType="none"
+                android:textColor="@android:color/white" />
+	         
+	    </TableRow>
+	    
+	    <TableRow >
+	        
+	        <TextView android:text="@string/loan"
+	            android:textAppearance="?android:attr/textAppearanceMedium"
+	            android:layout_marginLeft="20dp"/>
+	        	
+	        <EditText android:id="@+id/txt_loan"
+                android:background="@null"
+                android:focusable="false"
+                android:inputType="none"
+                android:textColor="@android:color/white" />
+	         
+	    </TableRow>
+	    
+	    <TableRow >
+	        
+	        <TextView />
+	        
+	    </TableRow>
+	    
+	    <TableRow >
+	        
+	        <TextView android:textStyle="bold"
+				android:textColor="#FFFFFF"
+				android:textSize="20sp"
+				android:text="@string/fixed_assets"/>
+	        
+	    </TableRow>
+	    
+	    <TableRow >
+	        
+	        <TextView android:text="@string/storage"
+	            android:textAppearance="?android:attr/textAppearanceMedium"
+	            android:layout_marginLeft="20dp"/>
+	        	
+	        <EditText android:id="@+id/txt_storage"
+                android:background="@null"
+                android:focusable="false"
+                android:inputType="none"
+                android:textColor="@android:color/white" />
+	         
+	    </TableRow>
+	    
+	    <TableRow >
+	        
+	        <TextView android:text="@string/equipment_attached"
+	            android:textAppearance="?android:attr/textAppearanceMedium"
+	            android:layout_marginLeft="20dp"/>
+	        	
+	        <EditText android:id="@+id/txt_equipment_attached"
+                android:background="@null"
+                android:focusable="false"
+                android:inputType="none"
+                android:textColor="@android:color/white" />
+	         
+	    </TableRow>
+	    
+	    <TableRow >
+	        
+	        <TextView android:text="@string/sector"
+	            android:textAppearance="?android:attr/textAppearanceMedium"
+	            android:layout_marginLeft="20dp"/>
+	        	
+	        <EditText android:id="@+id/txt_sector"
+                android:background="@null"
+                android:focusable="false"
+                android:inputType="none"
+                android:textColor="@android:color/white" />
+	         
+	    </TableRow>
+	    
+	    <TableRow >
+
+	        <TextView />
+	        <TextView
+	            android:layout_height="3dp"
+	            android:background="@android:color/white" />
+	         
+	    </TableRow>
+	    
+	    <TableRow >
+	        
+	        <TextView android:textStyle="bold"
+				android:textColor="#FFFFFF"
+				android:textSize="20sp"
+				android:text="@string/total_assets"/>
+	        	
+	        <EditText android:id="@+id/txt_total_assets"
+                android:background="@null"
+                android:focusable="false"
+                android:inputType="none"
+                android:textColor="@android:color/white" />
+	         
+	    </TableRow>
+
+	</TableLayout>
+
+</ScrollView>

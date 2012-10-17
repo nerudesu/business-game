@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
@@ -44,6 +45,8 @@ public class InstallmentEmployeeAdapter extends BaseAdapter{
 		if(newView == null){
 			v = inflater.inflate(R.layout.listrow_installment_employee, null);
 		}
+		
+		ImageView img = (ImageView)v.findViewById(R.id.img);
 		TextView txtEmployee = (TextView)v.findViewById(R.id.txt_employee),
 				txtOperational = (TextView)v.findViewById(R.id.txt_operational);
 		RatingBar rateQuality = (RatingBar)v.findViewById(R.id.rate_quality);
@@ -51,6 +54,7 @@ public class InstallmentEmployeeAdapter extends BaseAdapter{
 		
 		InstallmentEmployee employee = employees.get(pos);
 		
+		img.setImageResource(employee.getDraw());
 		txtEmployee.setText(employee.getEmployee());
 		txtOperational.setText("Operational cost : "+employee.getOperational()+" ZE");
 		rateQuality.setRating(employee.getQuality());

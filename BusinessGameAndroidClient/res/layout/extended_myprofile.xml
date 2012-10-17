@@ -1,0 +1,80 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".activities.MyProfileTabActivity" >
+      
+    <TableLayout android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+	    android:layout_margin="10dp"
+	    android:stretchColumns="1">
+    
+	    <TableRow >
+	        
+	        <TextView android:text="@string/avatar"/>
+	        
+	        <ImageView android:layout_width="wrap_content"
+			    android:layout_height="wrap_content"
+			    android:contentDescription="@string/imgdesc_user"
+			    android:src="@drawable/ic_launcher"
+			    android:id="@+id/img"/>
+	        
+	    </TableRow>
+	    
+	    <TableRow >
+	        
+	        <TextView android:text="@string/username" />
+	        	
+	        <EditText android:inputType="text"
+	            android:id="@+id/txt_user"/>	
+	         
+	    </TableRow>
+	    
+	    <TableRow >
+	        
+	        <TextView android:text="@string/email" />
+	        	
+	        <EditText android:inputType="text"
+	            android:id="@+id/txt_email"/>	
+	         
+	    </TableRow>
+	    
+	    <TableRow >
+	        
+	        <TextView android:text="@string/dob" />
+	        	
+	        <EditText android:inputType="text"
+	            android:id="@+id/txt_dob"/>	
+	         
+	    </TableRow>
+	    
+	    <TableRow >
+	        
+	        <TextView android:text="@string/about" />
+	        	
+	        <EditText android:inputType="text"
+	            android:id="@+id/txt_about"/>	
+	         
+	    </TableRow>
+	
+	    <TableRow >
+	        
+	        <TextView android:text="@string/reputation" />
+	        	
+	        <EditText android:inputType="text"
+	            android:id="@+id/txt_reputation"/>	
+	         
+	    </TableRow>
+	    
+	    <TableRow >
+	        
+	        <TextView android:text="@string/level" />
+	        	
+	        <EditText android:inputType="text"
+	            android:id="@+id/txt_level"/>	
+	         
+	    </TableRow>
+
+	</TableLayout>
+
+</ScrollView>

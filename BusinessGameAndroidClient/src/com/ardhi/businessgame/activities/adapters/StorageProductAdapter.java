@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
@@ -44,6 +45,7 @@ public class StorageProductAdapter extends BaseAdapter{
 		if(newView == null){
 			v = inflater.inflate(R.layout.listrow_storage_product, null);
 		}
+		ImageView img = (ImageView)v.findViewById(R.id.img);
 		TextView txtProduct = (TextView)v.findViewById(R.id.txt_product),
 				txtSize = (TextView)v.findViewById(R.id.txt_size);
 		RatingBar rateQuality = (RatingBar)v.findViewById(R.id.rate_quality);
@@ -51,6 +53,7 @@ public class StorageProductAdapter extends BaseAdapter{
 		
 		StorageProduct product = products.get(pos);
 		
+		img.setImageResource(product.getDraw());
 		txtProduct.setText(product.getProduct());
 		txtSize.setText("Size : "+(product.getSize()));
 		rateQuality.setRating(product.getQuality());

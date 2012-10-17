@@ -1,0 +1,215 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".activities.MyProfileTabActivity" >
+      
+    <TableLayout android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+	    android:layout_margin="10dp"
+	    android:stretchColumns="1">
+    
+	    <TableRow >
+	        
+	        <TextView android:text="@string/sales"
+	            android:textAppearance="?android:attr/textAppearanceMedium"/>
+	        
+	        <EditText android:id="@+id/txt_sales"
+                android:background="@null"
+                android:focusable="false"
+                android:inputType="none"
+                android:textColor="@android:color/white" />
+	        
+	    </TableRow>
+	    
+	    <TableRow >
+	        
+	        <TextView android:text="@string/raw_material"
+	            android:textAppearance="?android:attr/textAppearanceMedium"/>
+	        	
+	        <EditText android:id="@+id/txt_raw_material"
+                android:background="@null"
+                android:focusable="false"
+                android:inputType="none"
+                android:textColor="@android:color/white" />
+	         
+	    </TableRow>
+	    
+	    <TableRow >
+	        
+	        <TextView android:text="@string/electricity"
+	            android:textAppearance="?android:attr/textAppearanceMedium"/>
+	        	
+	        <EditText android:id="@+id/txt_electricity"
+                android:background="@null"
+                android:focusable="false"
+                android:inputType="none"
+                android:textColor="@android:color/white" />
+	         
+	    </TableRow>
+	    
+	    <TableRow >
+	        
+	        <TextView android:text="@string/fixed_cost"
+	            android:textAppearance="?android:attr/textAppearanceMedium"/>
+	        	
+	        <EditText android:id="@+id/txt_fixed_cost"
+                android:background="@null"
+                android:focusable="false"
+                android:inputType="none"
+                android:textColor="@android:color/white" />
+	         
+	    </TableRow>
+	    
+	    <TableRow >
+	        
+	        <TextView android:text="@string/wage"
+	            android:textAppearance="?android:attr/textAppearanceMedium"/>
+	        	
+	        <EditText android:id="@+id/txt_wage"
+                android:background="@null"
+                android:focusable="false"
+                android:inputType="none"
+                android:textColor="@android:color/white" />
+	         
+	    </TableRow>
+	    
+	    <TableRow >
+	        
+	        <TextView android:text="@string/operation"
+	            android:textAppearance="?android:attr/textAppearanceMedium"/>
+	        	
+	        <EditText android:id="@+id/txt_operation"
+                android:background="@null"
+                android:focusable="false"
+                android:inputType="none"
+                android:textColor="@android:color/white" />
+	         
+	    </TableRow>
+	    
+	    <TableRow >
+	        
+	        <TextView android:text="@string/transport"
+	            android:textAppearance="?android:attr/textAppearanceMedium"/>
+	        	
+	        <EditText android:id="@+id/txt_transport"
+                android:background="@null"
+                android:focusable="false"
+                android:inputType="none"
+                android:textColor="@android:color/white" />
+	         
+	    </TableRow>
+	    
+	    <TableRow >
+	        
+	        <TextView android:text="@string/retribution"
+	            android:textAppearance="?android:attr/textAppearanceMedium"/>
+	        	
+	        <EditText android:id="@+id/txt_retribution"
+                android:background="@null"
+                android:focusable="false"
+                android:inputType="none"
+                android:textColor="@android:color/white" />
+	         
+	    </TableRow>
+	    
+	    <TableRow >
+	        
+	        <TextView android:text="@string/advertisement"
+	            android:textAppearance="?android:attr/textAppearanceMedium"/>
+	        	
+	        <EditText android:id="@+id/txt_advertisement"
+                android:background="@null"
+                android:focusable="false"
+                android:inputType="none"
+                android:textColor="@android:color/white" />
+	         
+	    </TableRow>
+	    
+	    <TableRow >
+	        
+	        <TextView android:text="@string/bank_interest"
+	            android:textAppearance="?android:attr/textAppearanceMedium"/>
+	        	
+	        <EditText android:id="@+id/txt_bank_interest"
+                android:background="@null"
+                android:focusable="false"
+                android:inputType="none"
+                android:textColor="@android:color/white" />
+	         
+	    </TableRow>
+	    
+	    <TableRow >
+
+	        <TextView
+	            android:text="@string/depreciation"
+	            android:textAppearance="?android:attr/textAppearanceMedium" />
+	        	
+	        <EditText android:id="@+id/txt_depreciation"
+                android:background="@null"
+                android:focusable="false"
+                android:inputType="none"
+                android:textColor="@android:color/white" />
+	         
+	    </TableRow>
+	    
+	    <TableRow >
+
+	        <TextView />
+	        <TextView
+	            android:layout_height="3dp"
+	            android:background="@android:color/white" />
+	         
+	    </TableRow>
+	    
+	    <TableRow >
+	        
+	        <TextView android:text="@string/profit_before_tax"
+	            android:textAppearance="?android:attr/textAppearanceMedium"/>
+	        	
+	        <EditText android:id="@+id/txt_profit_before_tax"
+                android:background="@null"
+                android:focusable="false"
+                android:inputType="none"
+                android:textColor="@android:color/white" />
+	         
+	    </TableRow>
+	    
+	    <TableRow >
+	        
+	        <TextView android:text="@string/tax"
+	            android:textAppearance="?android:attr/textAppearanceMedium"/>
+	        	
+	        <EditText android:id="@+id/txt_tax"
+                android:background="@null"
+                android:focusable="false"
+                android:inputType="none"
+                android:textColor="@android:color/white" />
+	         
+	    </TableRow>
+	    
+	    <TableRow >
+
+	        <TextView />
+	        <TextView
+	            android:layout_height="3dp"
+	            android:background="@android:color/white" />
+	         
+	    </TableRow>
+	    
+	    <TableRow >
+	        
+	        <TextView android:text="@string/profit"
+	            android:textAppearance="?android:attr/textAppearanceMedium"/>
+	        	
+	        <EditText android:id="@+id/txt_profit"
+                android:background="@null"
+                android:focusable="false"
+                android:inputType="none"
+                android:textColor="@android:color/white" />
+	         
+	    </TableRow>
+
+	</TableLayout>
+
+</ScrollView>

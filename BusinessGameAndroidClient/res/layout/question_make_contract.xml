@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:stretchColumns="1" >
+
+    <TableRow >
+        
+        <TextView android:text="@string/product"
+	        android:textAppearance="?android:attr/textAppearanceMedium"/>
+	    
+	    <Spinner android:id="@+id/spin_product"/>
+        
+    </TableRow>
+    
+    <TableRow >
+        
+        <TextView android:text="@string/quality"
+            android:textAppearance="?android:attr/textAppearanceMedium"/>
+        
+        <Spinner android:id="@+id/spin_quality"/>
+        
+    </TableRow>
+    
+    <TableRow >
+        
+        <TextView android:text="@string/quantity"
+            android:textAppearance="?android:attr/textAppearanceMedium"/>
+        
+        <EditText android:inputType="numberDecimal"
+            android:id="@+id/txt_quantity"/>
+        
+    </TableRow>
+    
+    <TableRow >
+        
+        <TextView android:text="@string/price_per_cbm"
+            android:textAppearance="?android:attr/textAppearanceMedium"/>
+        
+        <EditText android:inputType="numberDecimal"
+            android:id="@+id/txt_price"/>
+        
+    </TableRow>
+    
+    <TableRow >
+        
+        <TextView android:text="@string/turn"
+            android:textAppearance="?android:attr/textAppearanceMedium"/>
+        
+        <EditText android:inputType="number"
+            android:id="@+id/txt_turn"/>
+        
+    </TableRow>
+    
+</TableLayout>

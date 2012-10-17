@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RatingBar;
 import android.widget.TextView;
@@ -47,6 +48,7 @@ public class MarketEquipmentAdapter extends BaseAdapter{
 		if(newView == null){
 			v = inflater.inflate(R.layout.listrow_market_equipment, null);
 		}
+		ImageView img = (ImageView)v.findViewById(R.id.img);
 		TextView txtEquipment = (TextView)v.findViewById(R.id.txt_equipment),
 				txtUser = (TextView)v.findViewById(R.id.txt_user),
 				txtSize = (TextView)v.findViewById(R.id.txt_size);
@@ -56,6 +58,7 @@ public class MarketEquipmentAdapter extends BaseAdapter{
 		
 		MarketEquipment equipment = equipments.get(pos);
 		
+		img.setImageResource(equipment.getDraw());
 		txtEquipment.setText(equipment.getEquipment());
 		txtUser.setText("Seller : "+equipment.getUser()+", Price : "+equipment.getPrice());
 		txtSize.setText("Size : "+equipment.getSize());

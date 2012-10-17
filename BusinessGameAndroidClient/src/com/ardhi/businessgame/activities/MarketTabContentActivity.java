@@ -28,6 +28,7 @@ import com.ardhi.businessgame.activities.adapters.MarketEmployeeAdapter;
 import com.ardhi.businessgame.activities.adapters.MarketEquipmentAdapter;
 import com.ardhi.businessgame.activities.adapters.MarketProductAdapter;
 import com.ardhi.businessgame.activities.adapters.SectorAdapter;
+import com.ardhi.businessgame.models.Installment;
 import com.ardhi.businessgame.models.MarketEmployee;
 import com.ardhi.businessgame.models.MarketEquipment;
 import com.ardhi.businessgame.models.MarketProduct;
@@ -46,9 +47,7 @@ public class MarketTabContentActivity extends Activity {
 	private double size, price, durability, operational, total;
 	private int quality;
 	private ProgressDialog progressDialog;
-	private ArrayList<String> installment,zones,idInstallment;
-	private ArrayList<Double> efficiency;
-	private ArrayList<Integer> effectivity;
+	private ArrayList<Installment> installments;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -260,7 +259,7 @@ public class MarketTabContentActivity extends Activity {
 				view = factory.inflate(R.layout.question_equipment_attach_employee_hire, null);
 				dialog = new AlertDialog.Builder(this)
 				.setView(view)
-				.setAdapter(new SectorAdapter(this, installment, zones, efficiency, effectivity), new DialogInterface.OnClickListener() {
+				.setAdapter(new SectorAdapter(this, installments), new DialogInterface.OnClickListener() {
 					
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
@@ -288,7 +287,7 @@ public class MarketTabContentActivity extends Activity {
 			view = factory.inflate(R.layout.question_equipment_attach_employee_hire, null);
 			dialog = new AlertDialog.Builder(this)
 			.setView(view)
-			.setAdapter(new SectorAdapter(this, installment, zones, efficiency, effectivity), new DialogInterface.OnClickListener() {
+			.setAdapter(new SectorAdapter(this, installments), new DialogInterface.OnClickListener() {
 				
 				@Override
 				public void onClick(DialogInterface dialog, int which) {
@@ -366,7 +365,7 @@ public class MarketTabContentActivity extends Activity {
 	private void doPositiveClickDialogEmployee(int pos){
 		if(CommunicationService.isOnline(this)){
 			progressDialog = ProgressDialog.show(this, "", "Processing..");
-			new HireEmployeeToInstallment().execute(idInstallment.get(pos));
+			new HireEmployeeToInstallment().execute(installments.get(pos).getId());
 		} else {
     		Toast.makeText(this, "Device is offline..", Toast.LENGTH_SHORT).show();
     	}
@@ -393,8 +392,8 @@ public class MarketTabContentActivity extends Activity {
 	private void doQueryTotalBundle(int pos){
 		if(CommunicationService.isOnline(this)){
 			progressDialog = ProgressDialog.show(this, "", "Querying total price..");
-			id = idInstallment.get(pos);
-			new QueryTotalBundle().execute(idInstallment.get(pos));
+			id = installments.get(pos).getId();
+			new QueryTotalBundle().execute(installments.get(pos).getId());
 		} else {
     		Toast.makeText(this, "Device is offline..", Toast.LENGTH_SHORT).show();
     	}
@@ -469,45 +468,18 @@ public class MarketTabContentActivity extends Activity {
 			} else if(res.toString().equals("0")){
 				Toast.makeText(MarketTabContentActivity.this, "Internal error..", Toast.LENGTH_LONG).show();
 			} else {
-				idInstallment = new ArrayList<String>();
-				installment = new ArrayList<String>();
-				zones = new ArrayList<String>();
-				efficiency = new ArrayList<Double>();
-				effectivity = new ArrayList<Integer>();
+				installments = new ArrayList<Installment>();
 				JsonParser parser = new JsonParser();
 				JsonArray array = parser.parse(res.toString()).getAsJsonArray(),
-						array1 = parser.parse(new Gson().fromJson(array.get(0), String.class)).getAsJsonArray(),
-						array2 = parser.parse(new Gson().fromJson(array.get(1), String.class)).getAsJsonArray(),
-						array3 = parser.parse(new Gson().fromJson(array.get(2), String.class)).getAsJsonArray(),
-						array4 = parser.parse(new Gson().fromJson(array.get(3), String.class)).getAsJsonArray(),
-						array5 = parser.parse(new Gson().fromJson(array.get(4), String.class)).getAsJsonArray();
+						array1 = parser.parse(new Gson().fromJson(array.get(0), String.class)).getAsJsonArray();
+
 				for(int i=0;i<array1.size();i++){
-					idInstallment.add(new Gson().fromJson(array1.get(i), String.class));
-				}
-				
-				for(int i=0;i<array2.size();i++){
-					installment.add(new Gson().fromJson(array2.get(i), String.class));
-				}
-				
-				for(int i=0;i<array3.size();i++){
-					zones.add(new Gson().fromJson(array3.get(i), String.class));
-				}
-				
-				for(int i=0;i<array4.size();i++){
-					efficiency.add(new Gson().fromJson(array4.get(i), Double.class));
-				}
-				
-				for(int i=0;i<array5.size();i++){
-					effectivity.add(new Gson().fromJson(array5.get(i), Integer.class));
+					installments.add(new Gson().fromJson(array1.get(i), Installment.class));
 				}
 				
 				parser = null;
 				array = null;
 				array1 = null;
-				array2 = null;
-				array3 = null;
-				array4 = null;
-				array5 = null;
 				
 				switch (check) {
 				case 0:

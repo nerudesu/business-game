@@ -5,7 +5,7 @@
     android:padding="5dip">
     <ImageView android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:contentDescription="@string/imgdesc_product"
+        android:contentDescription="@string/imgdesc_employee"
         android:src="@drawable/ic_launcher"
         android:id="@+id/img"/>
     <TextView android:layout_width="wrap_content"

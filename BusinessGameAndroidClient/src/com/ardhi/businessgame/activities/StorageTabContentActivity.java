@@ -8,6 +8,7 @@ import com.ardhi.businessgame.R;
 import com.ardhi.businessgame.activities.adapters.SectorAdapter;
 import com.ardhi.businessgame.activities.adapters.StorageEquipmentAdapter;
 import com.ardhi.businessgame.activities.adapters.StorageProductAdapter;
+import com.ardhi.businessgame.models.Installment;
 import com.ardhi.businessgame.models.StorageEquipment;
 import com.ardhi.businessgame.models.StorageProduct;
 import com.ardhi.businessgame.models.User;
@@ -45,9 +46,7 @@ public class StorageTabContentActivity extends Activity {
 	private String tab, data, id;
 	private double size, price;
 	private ArrayList<String> marketZone;
-	private ArrayList<String> installment,zones,idInstallment;
-	private ArrayList<Double> efficiency;
-	private ArrayList<Integer> effectivity;
+	private ArrayList<Installment> installments;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -236,15 +235,15 @@ public class StorageTabContentActivity extends Activity {
 //		        lv.setOnItemClickListener(onItemClickHandler);
 		        dialog = new AlertDialog.Builder(this)
 				.setView(view)
-				.setAdapter(new SectorAdapter(this, installment, zones, efficiency, effectivity), new DialogInterface.OnClickListener() {
+				.setAdapter(new SectorAdapter(this, installments), new DialogInterface.OnClickListener() {
 					
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
 						if(CommunicationService.isOnline(StorageTabContentActivity.this)){
 							progressDialog = ProgressDialog.show(StorageTabContentActivity.this, "", "Processing..");
 							android.util.Log.d("idEq", StorageTabContentActivity.this.id);
-							android.util.Log.d("idIns", idInstallment.get(which));
-							new AttachEquipmentToInstallment().execute(idInstallment.get(which));
+							android.util.Log.d("idIns", installments.get(which).getId());
+							new AttachEquipmentToInstallment().execute(installments.get(which).getId());
 						} else {
 				    		Toast.makeText(StorageTabContentActivity.this, "Device is offline..", Toast.LENGTH_SHORT).show();
 				    	}
@@ -382,45 +381,18 @@ public class StorageTabContentActivity extends Activity {
 			} else if(res.toString().equals("0")){
 				Toast.makeText(StorageTabContentActivity.this, "Internal error..", Toast.LENGTH_LONG).show();
 			} else {
-				idInstallment = new ArrayList<String>();
-				installment = new ArrayList<String>();
-				zones = new ArrayList<String>();
-				efficiency = new ArrayList<Double>();
-				effectivity = new ArrayList<Integer>();
+				installments = new ArrayList<Installment>();
 				JsonParser parser = new JsonParser();
 				JsonArray array = parser.parse(res.toString()).getAsJsonArray(),
-						array1 = parser.parse(new Gson().fromJson(array.get(0), String.class)).getAsJsonArray(),
-						array2 = parser.parse(new Gson().fromJson(array.get(1), String.class)).getAsJsonArray(),
-						array3 = parser.parse(new Gson().fromJson(array.get(2), String.class)).getAsJsonArray(),
-						array4 = parser.parse(new Gson().fromJson(array.get(3), String.class)).getAsJsonArray(),
-						array5 = parser.parse(new Gson().fromJson(array.get(4), String.class)).getAsJsonArray();
+						array1 = parser.parse(new Gson().fromJson(array.get(0), String.class)).getAsJsonArray();
+
 				for(int i=0;i<array1.size();i++){
-					idInstallment.add(new Gson().fromJson(array1.get(i), String.class));
-				}
-				
-				for(int i=0;i<array2.size();i++){
-					installment.add(new Gson().fromJson(array2.get(i), String.class));
-				}
-				
-				for(int i=0;i<array3.size();i++){
-					zones.add(new Gson().fromJson(array3.get(i), String.class));
-				}
-				
-				for(int i=0;i<array4.size();i++){
-					efficiency.add(new Gson().fromJson(array4.get(i), Double.class));
-				}
-				
-				for(int i=0;i<array5.size();i++){
-					effectivity.add(new Gson().fromJson(array5.get(i), Integer.class));
+					installments.add(new Gson().fromJson(array1.get(i), Installment.class));
 				}
 				
 				parser = null;
 				array = null;
 				array1 = null;
-				array2 = null;
-				array3 = null;
-				array4 = null;
-				array5 = null;
 				
 				dialog(3).show();
 			}

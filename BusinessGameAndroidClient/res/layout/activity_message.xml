@@ -1,0 +1,114 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <ScrollView android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+        
+        <TableLayout android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:stretchColumns="1">
+            
+            <TableRow >
+                
+                <TextView android:text="@string/from"
+                    android:textAppearance="?android:attr/textAppearanceMedium"/>
+                
+                <EditText android:id="@+id/txt_from"
+	                android:background="@null"
+	                android:focusable="false"
+	                android:inputType="none"
+	                android:textColor="@android:color/white" />
+                
+            </TableRow>
+            
+            <TableRow >
+                
+                <TextView android:text="@string/time"
+                    android:textAppearance="?android:attr/textAppearanceMedium"/>
+                
+                <EditText android:id="@+id/txt_time"
+	                android:background="@null"
+	                android:focusable="false"
+	                android:inputType="none"
+	                android:textColor="@android:color/white" />
+                
+            </TableRow>
+            
+            <TableRow >
+                
+                <TextView android:text="@string/message"
+                    android:textAppearance="?android:attr/textAppearanceMedium"/>
+                
+            </TableRow>
+            
+            <EditText android:layout_width="match_parent"
+                android:layout_height="match_parent" 
+                android:id="@+id/txt_message"
+                android:background="@null"
+                android:focusable="false"
+                android:inputType="none"
+                android:textColor="@android:color/white" />
+            
+        </TableLayout>
+        
+    </ScrollView>
+    
+    <TextView
+        android:layout_width="fill_parent"
+        android:layout_height="3dp"
+        android:background="@android:color/white" />
+
+    <TableLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:stretchColumns="1"
+        android:weightSum="1" >
+
+        <TableRow>
+
+            <TextView
+                android:text="@string/zone"
+                android:textSize="15sp" />
+
+            <EditText
+                android:id="@+id/zone"
+                android:background="@null"
+                android:focusable="false"
+                android:inputType="none"
+                android:textColor="@android:color/white" />
+        </TableRow>
+
+        <TableRow>
+
+            <TextView
+                android:text="@string/money"
+                android:textSize="15sp" />
+
+            <EditText
+                android:id="@+id/money"
+                android:background="@null"
+                android:focusable="false"
+                android:inputType="none"
+                android:textColor="@android:color/white" />
+        </TableRow>
+
+        <TableRow>
+
+            <TextView
+                android:text="@string/next_turn"
+                android:textSize="15sp" />
+
+            <EditText
+                android:id="@+id/next_turn"
+                android:background="@null"
+                android:focusable="false"
+                android:inputType="none"
+                android:textColor="@android:color/white" />
+        </TableRow>
+    </TableLayout>
+
+</LinearLayout>

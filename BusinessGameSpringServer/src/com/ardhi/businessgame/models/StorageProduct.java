@@ -2,14 +2,15 @@ package com.ardhi.businessgame.models;
 
 public class StorageProduct {
 	private String id,product;
-	private int quality;
+	private int quality,draw;
 	private double size;
 	
-	public StorageProduct(String i, String p, int q, double s){
+	public StorageProduct(String i, String p, int q, double s, String d){
 		setId(i);
 		setProduct(p);
 		setQuality(q);
 		setSize(s);
+		setDraw(d);
 	}
 	
 	public String getId() {
@@ -42,5 +43,13 @@ public class StorageProduct {
 	
 	public void setSize(double s) {
 		size = s;
+	}
+
+	public int getDraw() {
+		return draw;
+	}
+
+	public void setDraw(String d) {
+		draw = Integer.decode(d);
 	}
 }

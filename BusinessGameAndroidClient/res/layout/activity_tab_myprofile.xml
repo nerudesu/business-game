@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+        
+    <TabHost xmlns:android="http://schemas.android.com/apk/res/android"
+	    android:layout_width="match_parent"
+	    android:layout_height="0dip"
+	    android:layout_weight="1"
+	    android:id="@android:id/tabhost">
+	
+	    <LinearLayout android:layout_width="fill_parent"
+	        android:layout_height="fill_parent"
+	        android:padding="5dip"
+	        android:orientation="vertical">
+	        <HorizontalScrollView android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:fillViewport="true"
+                android:scrollbars="none">
+		        <TabWidget android:layout_width="wrap_content"
+		            android:layout_height="wrap_content"
+		            android:id="@android:id/tabs"/>
+	        </HorizontalScrollView>
+	        <FrameLayout android:layout_width="fill_parent"
+	            android:layout_height="fill_parent"
+	            android:padding="5dip"
+	            android:id="@android:id/tabcontent"/>
+	    </LinearLayout>
+	</TabHost>
+    
+    <TextView
+        android:layout_width="fill_parent"
+        android:layout_height="3dp"
+        android:background="@android:color/white" />
+
+    <TableLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:stretchColumns="1"
+        android:weightSum="1" >
+
+        <TableRow>
+
+            <TextView
+                android:text="@string/zone"
+                android:textSize="15sp" />
+
+            <EditText
+                android:id="@+id/zone"
+                android:background="@null"
+                android:focusable="false"
+                android:inputType="none"
+                android:textColor="@android:color/white" />
+        </TableRow>
+
+        <TableRow>
+
+            <TextView
+                android:text="@string/money"
+                android:textSize="15sp" />
+
+            <EditText
+                android:id="@+id/money"
+                android:background="@null"
+                android:focusable="false"
+                android:inputType="none"
+                android:textColor="@android:color/white" />
+        </TableRow>
+
+        <TableRow>
+
+            <TextView
+                android:text="@string/next_turn"
+                android:textSize="15sp" />
+
+            <EditText
+                android:id="@+id/next_turn"
+                android:background="@null"
+                android:focusable="false"
+                android:inputType="none"
+                android:textColor="@android:color/white" />
+        </TableRow>
+    </TableLayout>
+
+</LinearLayout>

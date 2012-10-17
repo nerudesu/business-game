@@ -5,6 +5,7 @@ import java.util.HashMap;
 
 import com.ardhi.businessgame.R;
 import com.ardhi.businessgame.activities.adapters.SectorAdapter;
+import com.ardhi.businessgame.models.Installment;
 import com.ardhi.businessgame.models.User;
 import com.ardhi.businessgame.services.CommunicationService;
 import com.ardhi.businessgame.services.DBAccess;
@@ -51,9 +52,9 @@ public class SectorActivity extends Activity {
 	private Thread t;
 	private TimeSync timeSync;
 	private ProgressDialog progressDialog;
-	private ArrayList<String> installment,zones,id,sectors;
-	private ArrayList<Double> efficiency, costs;
-	private ArrayList<Integer> effectivity;
+	private ArrayList<String> sectors;
+	private ArrayList<Double> costs;
+	private ArrayList<Installment> installments;
 	private double price;
 
     @Override
@@ -143,9 +144,8 @@ public class SectorActivity extends Activity {
 	
 	private AdapterView.OnItemClickListener onItemClickHandler = new AdapterView.OnItemClickListener() {
     	public void onItemClick(AdapterView<?> parent, View v, int pos, long id) {
-			Toast.makeText(SectorActivity.this, SectorActivity.this.id.get(pos), Toast.LENGTH_SHORT).show();
 			Intent i = new Intent(SectorActivity.this, SectorDetailTabActivity.class);
-			i.putExtra("id",SectorActivity.this.id.get(pos));
+			i.putExtra("id",installments.get(pos).getId());
 			startActivity(i);
 		}
 	};
@@ -214,7 +214,7 @@ public class SectorActivity extends Activity {
 	
 	private void setLayout(){
     	ListView lv = (ListView)findViewById(R.id.list_sector);
-    	lv.setAdapter(new SectorAdapter(this, installment, zones, efficiency, effectivity));
+    	lv.setAdapter(new SectorAdapter(this, installments));
     	lv.setTextFilterEnabled(true);
         lv.setOnItemClickListener(onItemClickHandler);
     }
@@ -308,45 +308,18 @@ public class SectorActivity extends Activity {
 			} else if(res.toString().equals("1")){
 				Toast.makeText(SectorActivity.this, "Insufficient funds..", Toast.LENGTH_LONG).show();
 			} else {
-				id = new ArrayList<String>();
-				installment = new ArrayList<String>();
-				zones = new ArrayList<String>();
-				efficiency = new ArrayList<Double>();
-				effectivity = new ArrayList<Integer>();
+				installments = new ArrayList<Installment>();
 				JsonParser parser = new JsonParser();
 				JsonArray array = parser.parse(res.toString()).getAsJsonArray(),
-						array1 = parser.parse(new Gson().fromJson(array.get(0), String.class)).getAsJsonArray(),
-						array2 = parser.parse(new Gson().fromJson(array.get(1), String.class)).getAsJsonArray(),
-						array3 = parser.parse(new Gson().fromJson(array.get(2), String.class)).getAsJsonArray(),
-						array4 = parser.parse(new Gson().fromJson(array.get(3), String.class)).getAsJsonArray(),
-						array5 = parser.parse(new Gson().fromJson(array.get(4), String.class)).getAsJsonArray();
+						array1 = parser.parse(new Gson().fromJson(array.get(0), String.class)).getAsJsonArray();
+
 				for(int i=0;i<array1.size();i++){
-					id.add(new Gson().fromJson(array1.get(i), String.class));
-				}
-				
-				for(int i=0;i<array2.size();i++){
-					installment.add(new Gson().fromJson(array2.get(i), String.class));
-				}
-				
-				for(int i=0;i<array3.size();i++){
-					zones.add(new Gson().fromJson(array3.get(i), String.class));
-				}
-				
-				for(int i=0;i<array4.size();i++){
-					efficiency.add(new Gson().fromJson(array4.get(i), Double.class));
-				}
-				
-				for(int i=0;i<array5.size();i++){
-					effectivity.add(new Gson().fromJson(array5.get(i), Integer.class));
+					installments.add(new Gson().fromJson(array1.get(i), Installment.class));
 				}
 				
 				parser = null;
 				array = null;
 				array1 = null;
-				array2 = null;
-				array3 = null;
-				array4 = null;
-				array5 = null;
 				
 				setLayout();
 			}
@@ -376,45 +349,18 @@ public class SectorActivity extends Activity {
 			} else if(res.toString().equals("0")){
 				Toast.makeText(SectorActivity.this, "Internal error..", Toast.LENGTH_LONG).show();
 			} else {
-				id = new ArrayList<String>();
-				installment = new ArrayList<String>();
-				zones = new ArrayList<String>();
-				efficiency = new ArrayList<Double>();
-				effectivity = new ArrayList<Integer>();
+				installments = new ArrayList<Installment>();
 				JsonParser parser = new JsonParser();
-				JsonArray array = parser.parse(res.toString()).getAsJsonArray(),
-						array1 = parser.parse(new Gson().fromJson(array.get(0), String.class)).getAsJsonArray(),
-						array2 = parser.parse(new Gson().fromJson(array.get(1), String.class)).getAsJsonArray(),
-						array3 = parser.parse(new Gson().fromJson(array.get(2), String.class)).getAsJsonArray(),
-						array4 = parser.parse(new Gson().fromJson(array.get(3), String.class)).getAsJsonArray(),
-						array5 = parser.parse(new Gson().fromJson(array.get(4), String.class)).getAsJsonArray();
-				for(int i=0;i<array1.size();i++){
-					id.add(new Gson().fromJson(array1.get(i), String.class));
-				}
-				
-				for(int i=0;i<array2.size();i++){
-					installment.add(new Gson().fromJson(array2.get(i), String.class));
-				}
-				
-				for(int i=0;i<array3.size();i++){
-					zones.add(new Gson().fromJson(array3.get(i), String.class));
-				}
-				
-				for(int i=0;i<array4.size();i++){
-					efficiency.add(new Gson().fromJson(array4.get(i), Double.class));
-				}
-				
-				for(int i=0;i<array5.size();i++){
-					effectivity.add(new Gson().fromJson(array5.get(i), Integer.class));
+				JsonArray array = parser.parse(res.toString()).getAsJsonArray();
+//						array1 = parser.parse(new Gson().fromJson(array.get(0), String.class)).getAsJsonArray();
+
+				for(int i=0;i<array.size();i++){
+					installments.add(new Gson().fromJson(array.get(i), Installment.class));
 				}
 				
 				parser = null;
 				array = null;
-				array1 = null;
-				array2 = null;
-				array3 = null;
-				array4 = null;
-				array5 = null;
+//				array1 = null;
 				
 				setLayout();
 			}

@@ -711,7 +711,7 @@ public class BankProposalTabActivity extends TabActivity {
 			detailsData.addView(row);
 			
 			CheckBox checkStorage = new CheckBox(c);
-			checkStorage.setText(R.string.storage);
+			checkStorage.setText(R.string.buy_storage);
 			checkStorage.setLayoutParams(new TableRow.LayoutParams(1));
 			checkStorage.setChecked(true);
 			checkStorage.setOnCheckedChangeListener(new OnCheckedChangeHandler());

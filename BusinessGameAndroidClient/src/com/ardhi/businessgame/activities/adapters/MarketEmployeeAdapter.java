@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
@@ -44,6 +45,8 @@ public class MarketEmployeeAdapter extends BaseAdapter{
 		if(newView == null){
 			v = inflater.inflate(R.layout.listrow_market_employee, null);
 		}
+		
+		ImageView img = (ImageView)v.findViewById(R.id.img); 
 		TextView txtEmployee = (TextView)v.findViewById(R.id.txt_employee),
 				txtPrice = (TextView)v.findViewById(R.id.txt_price),
 				txtOperational = (TextView)v.findViewById(R.id.txt_operational);
@@ -52,6 +55,7 @@ public class MarketEmployeeAdapter extends BaseAdapter{
 		
 		MarketEmployee employee = employees.get(pos);
 		
+		img.setImageResource(employee.getDraw());
 		txtEmployee.setText(employee.getEmployee());
 		txtPrice.setText("Price to hire : "+employee.getPrice()+" ZE");
 		txtOperational.setText("Operational cost : "+employee.getOperational()+" ZE");

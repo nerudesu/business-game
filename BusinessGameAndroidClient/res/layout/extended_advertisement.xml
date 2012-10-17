@@ -1,0 +1,45 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".activities.MyProfileTabActivity" >
+      
+    <TableLayout android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+	    android:layout_margin="10dp"
+	    android:stretchColumns="1">
+    
+	    <TableRow android:layout_margin="5dp">
+	        
+	        <TextView android:text="@string/product"
+	            android:textAppearance="?android:attr/textAppearanceMedium"/>
+	        
+	        <Spinner android:id="@+id/spin_product" />
+	        
+	    </TableRow>
+	    
+	    <TableRow android:layout_margin="5dp">
+	        
+	        <TextView android:text="@string/ads_type"
+	            android:textAppearance="?android:attr/textAppearanceMedium"/>
+	        	
+	        <Spinner android:id="@+id/spin_ads_type" />
+	         
+	    </TableRow>
+	    
+	    <TableRow android:layout_margin="5dp">
+	        
+	        <TextView android:text="@string/turn"
+	            android:textAppearance="?android:attr/textAppearanceMedium"/>
+	        	
+	        <EditText android:inputType="number"
+	            android:id="@+id/txt_turn"/>
+	         
+	    </TableRow>
+	    
+	    <Button android:text="@string/advertise"
+	        android:id="@+id/btn_advertise"/>
+
+	</TableLayout>
+
+</ScrollView>

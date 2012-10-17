@@ -43,6 +43,8 @@ public class BusinessGameController {
 		listActionGet.add("loadInstallmentDetails");
 		listActionGet.add("loadInstallmentOwnedByEquipment");
 		listActionGet.add("queryTotalBundle");
+		listActionGet.add("loadUserData");
+		listActionGet.add("loadPlayerInfo");
 		listActionGet.add("deleteUserData");
 //		listActionGet.add("tesBatch");
 		
@@ -64,6 +66,12 @@ public class BusinessGameController {
 		listActionPost.add("cancelSupplyInstallment");
 		listActionPost.add("buySectorBlueprint");
 		listActionPost.add("buyBundleEquipmentEmployee");
+		listActionPost.add("markMessageAsRead");
+		listActionPost.add("advertiseProduct");
+		listActionPost.add("sendMessage");
+		listActionPost.add("makeContract");
+		listActionPost.add("confirmContract");
+		listActionPost.add("cancelRejectContract");
 	}
 	
 	@RequestMapping(method=RequestMethod.GET)
@@ -102,6 +110,10 @@ public class BusinessGameController {
 		case 12:
 			return businessGameService.queryTotalBundle(req);
 		case 13:
+			return businessGameService.loadUserData(req);
+		case 14:
+			return businessGameService.loadPlayerInfo(req);
+		case 15:
 			return businessGameService.deleteUserData(req);
 		default:
 			return "-1";
@@ -154,6 +166,18 @@ public class BusinessGameController {
 				return businessGameService.buySectorBlueprint(req);
 			case 17:
 				return businessGameService.buyBundleEquipmentEmployee(req);
+			case 18:
+				return businessGameService.markMessageAsRead(req);
+			case 19:
+				return businessGameService.advertiseProduct(req);
+			case 20:
+				return businessGameService.sendMessage(req);
+			case 21:
+				return businessGameService.makeContract(req);
+			case 22:
+				return businessGameService.confirmContract(req);
+			case 23:
+				return businessGameService.cancelRejectContract(req);
 			default:
 				return "-1";
 		}

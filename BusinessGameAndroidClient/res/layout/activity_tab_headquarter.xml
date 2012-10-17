@@ -12,50 +12,73 @@
 	
 	    <LinearLayout android:layout_width="fill_parent"
 	        android:layout_height="fill_parent"
-	        android:padding="5dip"
 	        android:orientation="vertical">
-	        <TabWidget android:layout_width="fill_parent"
-	            android:layout_height="wrap_content"
-	            android:id="@android:id/tabs"/>
+	        <HorizontalScrollView android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:fillViewport="true"
+                android:scrollbars="none">
+		        <TabWidget android:layout_width="wrap_content"
+		            android:layout_height="wrap_content"
+		            android:id="@android:id/tabs"/>
+	        </HorizontalScrollView>
 	        <FrameLayout android:layout_width="fill_parent"
 	            android:layout_height="fill_parent"
 	            android:padding="5dip"
 	            android:id="@android:id/tabcontent"/>
 	    </LinearLayout>
 	</TabHost>
-    <TextView android:layout_width="fill_parent"
+    
+    <TextView
+        android:layout_width="fill_parent"
         android:layout_height="3dp"
-        android:background="@android:color/white"/>
-    <TableLayout android:layout_width="fill_parent"
+        android:background="@android:color/white" />
+
+    <TableLayout
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:weightSum="1"
-        android:stretchColumns="1">
-        <TableRow >
-            <TextView android:text="@string/zone"
-                android:textSize="15sp"/>
-            <EditText android:inputType="none"
+        android:stretchColumns="1"
+        android:weightSum="1" >
+
+        <TableRow>
+
+            <TextView
+                android:text="@string/zone"
+                android:textSize="15sp" />
+
+            <EditText
+                android:id="@+id/zone"
+                android:background="@null"
                 android:focusable="false"
-                android:textColor="@android:color/white"
-                android:background="@android:color/black"
-                android:id="@+id/zone"/>
+                android:inputType="none"
+                android:textColor="@android:color/white" />
         </TableRow>
-        <TableRow >
-            <TextView android:text="@string/money"
-                android:textSize="15sp"/>
-            <EditText android:inputType="none"
+
+        <TableRow>
+
+            <TextView
+                android:text="@string/money"
+                android:textSize="15sp" />
+
+            <EditText
+                android:id="@+id/money"
+                android:background="@null"
                 android:focusable="false"
-                android:textColor="@android:color/white"
-                android:background="@android:color/black"
-                android:id="@+id/money"/>
+                android:inputType="none"
+                android:textColor="@android:color/white" />
         </TableRow>
-        <TableRow >
-            <TextView android:text="@string/next_turn"
-                android:textSize="15sp"/>
-            <EditText android:inputType="none"
+
+        <TableRow>
+
+            <TextView
+                android:text="@string/next_turn"
+                android:textSize="15sp" />
+
+            <EditText
+                android:id="@+id/next_turn"
+                android:background="@null"
                 android:focusable="false"
-                android:textColor="@android:color/white"
-                android:background="@android:color/black"
-                android:id="@+id/next_turn"/>
+                android:inputType="none"
+                android:textColor="@android:color/white" />
         </TableRow>
     </TableLayout>
 

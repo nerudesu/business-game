@@ -18,9 +18,9 @@
 
         <activity
             android:name=".activities.LoginActivity"
-            android:label="@string/app_name" 
-            android:screenOrientation="portrait"
-            android:configChanges="keyboard|keyboardHidden|orientation" >
+            android:configChanges="keyboard|keyboardHidden|orientation"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -29,111 +29,132 @@
         </activity>
         <activity
             android:name=".activities.MainBusinessGameActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation"
             android:label="@string/title_activity_main_business_game"
-            android:screenOrientation="portrait"
-            android:configChanges="keyboard|keyboardHidden|orientation" >
+            android:screenOrientation="portrait" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.ardhi.businessgame.activities.LoginActivity" />
         </activity>
         <activity
             android:name=".activities.RegisterActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation"
             android:label="@string/title_activity_register"
-            android:screenOrientation="portrait"
-            android:configChanges="keyboard|keyboardHidden|orientation" >
+            android:screenOrientation="portrait" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.ardhi.businessgame.activities.LoginActivity" />
         </activity>
         <activity
             android:name=".activities.MyBusinessActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation"
             android:label="@string/title_activity_my_business"
-            android:screenOrientation="portrait"
-            android:configChanges="keyboard|keyboardHidden|orientation" >
+            android:screenOrientation="portrait" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.ardhi.businessgame.activities.MainBusinessGameActivity" />
         </activity>
         <activity
             android:name=".activities.BankLobbyActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation"
             android:label="@string/title_activity_bank_lobby"
-            android:screenOrientation="portrait"
-            android:configChanges="keyboard|keyboardHidden|orientation" >
+            android:screenOrientation="portrait" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.ardhi.businessgame.activities.MyBusinessActivity" />
         </activity>
         <activity
             android:name=".activities.BankProposalTabActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation"
             android:label="@string/title_activity_bank_proposal_tab"
-            android:screenOrientation="portrait"
-            android:configChanges="keyboard|keyboardHidden|orientation" >
+            android:screenOrientation="portrait" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.ardhi.businessgame.activities.BankLobbyActivity" />
         </activity>
         <activity
             android:name=".activities.StorageTabActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation"
             android:label="@string/title_activity_tab_storage"
-            android:screenOrientation="portrait"
-            android:configChanges="keyboard|keyboardHidden|orientation" >
+            android:screenOrientation="portrait" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.ardhi.businessgame.activities.MyBusinessActivity" />
         </activity>
         <activity
             android:name=".activities.StorageTabContentActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation"
             android:label="@string/app_name"
-            android:screenOrientation="portrait"
-            android:configChanges="keyboard|keyboardHidden|orientation" >
+            android:screenOrientation="portrait" >
         </activity>
         <activity
             android:name=".activities.HeadquarterTabActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation"
             android:label="@string/title_activity_tab_headquarter"
-            android:screenOrientation="portrait"
-            android:configChanges="keyboard|keyboardHidden|orientation" >
+            android:screenOrientation="portrait" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.ardhi.businessgame.activities.MyBusinessActivity" />
         </activity>
         <activity
             android:name=".activities.HeadquarterTabContentActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation"
             android:label="@string/app_name"
-            android:screenOrientation="portrait"
-            android:configChanges="keyboard|keyboardHidden|orientation" >
+            android:screenOrientation="portrait" >
         </activity>
         <activity
             android:name=".activities.MarketTabActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation"
             android:label="@string/title_activity_tab_market"
-            android:screenOrientation="portrait"
-            android:configChanges="keyboard|keyboardHidden|orientation" >
+            android:screenOrientation="portrait" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.ardhi.businessgame.activities.MyBusinessActivity" />
         </activity>
         <activity
             android:name=".activities.MarketTabContentActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation"
             android:label="@string/app_name"
-            android:screenOrientation="portrait"
-            android:configChanges="keyboard|keyboardHidden|orientation" >
+            android:screenOrientation="portrait" >
         </activity>
         <activity
             android:name=".activities.SectorActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation"
             android:label="@string/title_activity_sector"
-            android:screenOrientation="portrait"
-            android:configChanges="keyboard|keyboardHidden|orientation" >
+            android:screenOrientation="portrait" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.ardhi.businessgame.activities.MyBusinessActivity" />
         </activity>
         <activity
             android:name=".activities.SectorDetailTabActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation"
             android:label="@string/title_activity_sector_detail_tab"
-            android:screenOrientation="portrait"
-            android:configChanges="keyboard|keyboardHidden|orientation" >
+            android:screenOrientation="portrait" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.ardhi.businessgame.activities.SectorActivity" />
+        </activity>
+        <activity
+            android:name=".activities.MyProfileTabActivity"
+            android:label="@string/title_activity_my_profile" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.ardhi.businessgame.activities.MainBusinessGameActivity" />
+        </activity>
+        <activity
+            android:name=".activities.MessageActivity"
+            android:label="@string/title_activity_message" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.ardhi.businessgame.activities.MyProfileTabActivity" />
+        </activity>
+        <activity
+            android:name=".activities.PlayerInfoActivity"
+            android:label="@string/title_activity_player_info" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.ardhi.businessgame.activities.HeadquarterTabActivity" />
         </activity>
     </application>
 

@@ -2,16 +2,17 @@ package com.ardhi.businessgame.models;
 
 public class InstallmentEquipment {
 	private String id,equipment;
-	private int quality;
+	private int quality,draw;
 	private double durability,size,operational;
 	
-	public InstallmentEquipment(String i, String e, int q, double d, double s, double o){
+	public InstallmentEquipment(String i, String e, int q, double d, double s, double o,String dw){
 		setId(i);
 		setEquipment(e);
 		setQuality(q);
 		setDurability(d);
 		setSize(s);
 		setOperational(o);
+		setDraw(dw);
 	}
 	
 	public String getId() {
@@ -53,5 +54,13 @@ public class InstallmentEquipment {
 
 	public void setOperational(double o) {
 		operational = o;
+	}
+
+	public int getDraw() {
+		return draw;
+	}
+
+	public void setDraw(String dw) {
+		draw = Integer.decode(dw);
 	}
 }

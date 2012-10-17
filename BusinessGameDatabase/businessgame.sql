@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Oct 08, 2012 at 10:48 AM
+-- Generation Time: Oct 17, 2012 at 02:36 PM
 -- Server version: 5.5.16
 -- PHP Version: 5.3.8
 
@@ -27,8 +27,8 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE IF NOT EXISTS `borrow_bank` (
-  `id` varchar(15) NOT NULL,
-  `user` varchar(15) NOT NULL,
+  `id` varchar(20) NOT NULL,
+  `user` varchar(25) NOT NULL,
   `turn` bigint(20) NOT NULL,
   `borrow` decimal(10,2) NOT NULL,
   PRIMARY KEY (`id`)
@@ -39,8 +39,7 @@ CREATE TABLE IF NOT EXISTS `borrow_bank` (
 --
 
 INSERT INTO `borrow_bank` (`id`, `user`, `turn`, `borrow`) VALUES
-('BB0810120000', 'Pioneer', 12, 2700.79),
-('BB0810120001', 'bagus', 7, 2700.79);
+('BB1310120000', 'bagus', 7, 1325.05);
 
 -- --------------------------------------------------------
 
@@ -50,8 +49,9 @@ INSERT INTO `borrow_bank` (`id`, `user`, `turn`, `borrow`) VALUES
 
 CREATE TABLE IF NOT EXISTS `desc_advertisement` (
   `id` varchar(15) NOT NULL,
-  `name` varchar(25) NOT NULL,
+  `advertise` varchar(25) NOT NULL,
   `multiplier` int(11) NOT NULL,
+  `price` decimal(10,2) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
@@ -59,10 +59,10 @@ CREATE TABLE IF NOT EXISTS `desc_advertisement` (
 -- Dumping data for table `desc_advertisement`
 --
 
-INSERT INTO `desc_advertisement` (`id`, `name`, `multiplier`) VALUES
-('ADINET', 'Internet', 3),
-('ADNEWS', 'Newspaper', 1),
-('ADTLVS', 'Television', 6);
+INSERT INTO `desc_advertisement` (`id`, `advertise`, `multiplier`, `price`) VALUES
+('ADINET', 'Internet', 3, 120.00),
+('ADNEWS', 'Newspaper', 1, 50.00),
+('ADTLVS', 'Television', 6, 250.00);
 
 -- --------------------------------------------------------
 
@@ -183,6 +183,7 @@ CREATE TABLE IF NOT EXISTS `info_employee` (
   `name` varchar(25) NOT NULL,
   `base_price` decimal(10,2) NOT NULL,
   `base_operational` decimal(10,2) NOT NULL,
+  `draw` varchar(15) NOT NULL,
   PRIMARY KEY (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
@@ -190,9 +191,9 @@ CREATE TABLE IF NOT EXISTS `info_employee` (
 -- Dumping data for table `info_employee`
 --
 
-INSERT INTO `info_employee` (`name`, `base_price`, `base_operational`) VALUES
-('Employee', 5.00, 0.30),
-('Manager', 15.00, 0.70);
+INSERT INTO `info_employee` (`name`, `base_price`, `base_operational`, `draw`) VALUES
+('Employee', 5.00, 0.30, '0x7f020001'),
+('Manager', 15.00, 0.70, '0x7f020002');
 
 -- --------------------------------------------------------
 
@@ -204,7 +205,8 @@ CREATE TABLE IF NOT EXISTS `info_equipment` (
   `name` varchar(25) NOT NULL,
   `base_price` decimal(10,2) NOT NULL,
   `base_operational` decimal(10,2) NOT NULL,
-  `size` decimal(10,2) NOT NULL,
+  `base_size` decimal(10,2) NOT NULL,
+  `draw` varchar(15) NOT NULL,
   PRIMARY KEY (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
@@ -212,12 +214,41 @@ CREATE TABLE IF NOT EXISTS `info_equipment` (
 -- Dumping data for table `info_equipment`
 --
 
-INSERT INTO `info_equipment` (`name`, `base_price`, `base_operational`, `size`) VALUES
-('Drill', 12.00, 0.06, 8.00),
-('Furnace', 20.00, 0.06, 4.00),
-('Generator', 8.00, 0.05, 6.00),
-('Machine', 7.50, 0.02, 6.00),
-('Pump', 9.00, 0.04, 6.00);
+INSERT INTO `info_equipment` (`name`, `base_price`, `base_operational`, `base_size`, `draw`) VALUES
+('Drill', 12.00, 0.06, 8.00, '0x7f020003'),
+('Furnace', 20.00, 0.06, 4.00, '0x7f020004'),
+('Generator', 8.00, 0.05, 6.00, '0x7f020005'),
+('Machine', 7.50, 0.02, 6.00, '0x7f020006'),
+('Pump', 9.00, 0.04, 6.00, '0x7f020007');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `info_finance`
+--
+
+CREATE TABLE IF NOT EXISTS `info_finance` (
+  `name` varchar(25) NOT NULL,
+  `factor` int(11) NOT NULL,
+  PRIMARY KEY (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `info_finance`
+--
+
+INSERT INTO `info_finance` (`name`, `factor`) VALUES
+('Advertisement', -1),
+('Depreciation', -1),
+('Electricity', -1),
+('Fixed', -1),
+('Interest', -1),
+('Operation', -1),
+('Raw Material', -1),
+('Retribution', -1),
+('Sales', 1),
+('Transport', -1),
+('Wage', -1);
 
 -- --------------------------------------------------------
 
@@ -228,6 +259,8 @@ INSERT INTO `info_equipment` (`name`, `base_price`, `base_operational`, `size`) 
 CREATE TABLE IF NOT EXISTS `info_product` (
   `name` varchar(25) NOT NULL,
   `base_price` decimal(10,2) NOT NULL,
+  `transport` decimal(10,2) NOT NULL,
+  `draw` varchar(15) NOT NULL,
   PRIMARY KEY (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
@@ -235,16 +268,16 @@ CREATE TABLE IF NOT EXISTS `info_product` (
 -- Dumping data for table `info_product`
 --
 
-INSERT INTO `info_product` (`name`, `base_price`) VALUES
-('Chemical', 18.05),
-('Crude Oil', 3.00),
-('Energy', 3.00),
-('Gasoline', 21.00),
-('Iron', 1.90),
-('Silica', 2.50),
-('Trash', -0.30),
-('Wastewater', -0.50),
-('Water', 1.00);
+INSERT INTO `info_product` (`name`, `base_price`, `transport`, `draw`) VALUES
+('Chemical', 18.05, 0.02, '0x7f02000f'),
+('Crude Oil', 3.00, 0.01, '0x7f020010'),
+('Energy', 3.00, 0.00, '0x7f020011'),
+('Gasoline', 21.00, 0.02, '0x7f020012'),
+('Iron', 1.90, 0.01, '0x7f020013'),
+('Silica', 2.50, 0.01, '0x7f020014'),
+('Trash', -0.30, 0.01, '0x7f020015'),
+('Wastewater', -0.50, 0.01, '0x7f020016'),
+('Water', 1.00, 0.01, '0x7f020017');
 
 -- --------------------------------------------------------
 
@@ -281,6 +314,7 @@ CREATE TABLE IF NOT EXISTS `info_sector` (
   `cost` decimal(10,2) NOT NULL,
   `prob` decimal(10,2) NOT NULL,
   `level` int(11) NOT NULL,
+  `draw` varchar(15) NOT NULL,
   PRIMARY KEY (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
@@ -288,14 +322,14 @@ CREATE TABLE IF NOT EXISTS `info_sector` (
 -- Dumping data for table `info_sector`
 --
 
-INSERT INTO `info_sector` (`name`, `cost`, `prob`, `level`) VALUES
-('Chemical Plant', 100.00, 0.70, 1),
-('Iron Mine', 200.00, 0.45, 2),
-('Oil Refinery', 100.00, 0.70, 1),
-('Oil Well', 200.00, 0.45, 2),
-('Petrol Power Plant', 300.00, 0.20, 3),
-('Silica Mine', 200.00, 0.45, 2),
-('Water Well', 200.00, 0.45, 2);
+INSERT INTO `info_sector` (`name`, `cost`, `prob`, `level`, `draw`) VALUES
+('Chemical Plant', 100.00, 0.70, 1, '0x7f020018'),
+('Iron Mine', 200.00, 0.45, 2, '0x7f020019'),
+('Oil Refinery', 100.00, 0.70, 1, '0x7f02001a'),
+('Oil Well', 200.00, 0.45, 2, '0x7f02001b'),
+('Petrol Power Plant', 300.00, 0.20, 3, '0x7f02001c'),
+('Silica Mine', 200.00, 0.45, 2, '0x7f02001d'),
+('Water Well', 200.00, 0.45, 2, '0x7f02001e');
 
 -- --------------------------------------------------------
 
@@ -304,7 +338,7 @@ INSERT INTO `info_sector` (`name`, `cost`, `prob`, `level`) VALUES
 --
 
 CREATE TABLE IF NOT EXISTS `info_sector_employee` (
-  `id` varchar(15) NOT NULL,
+  `id` varchar(20) NOT NULL,
   `sector` varchar(25) NOT NULL,
   `employee_type` varchar(20) NOT NULL,
   `items` int(11) NOT NULL,
@@ -316,20 +350,20 @@ CREATE TABLE IF NOT EXISTS `info_sector_employee` (
 --
 
 INSERT INTO `info_sector_employee` (`id`, `sector`, `employee_type`, `items`) VALUES
-('SM0610120000', 'Chemical Plant', 'Manager', 1),
-('SM0610120001', 'Chemical Plant', 'Employee', 3),
-('SM0610120002', 'Iron Mine', 'Manager', 1),
-('SM0610120003', 'Iron Mine', 'Employee', 3),
-('SM0610120004', 'Oil Refinery', 'Manager', 1),
-('SM0610120005', 'Oil Refinery', 'Employee', 4),
-('SM0610120006', 'Oil Well', 'Manager', 1),
-('SM0610120007', 'Oil Well', 'Employee', 4),
-('SM0610120008', 'Petrol Power Plant', 'Manager', 1),
-('SM0610120009', 'Petrol Power Plant', 'Employee', 5),
-('SM0610120010', 'Silica Mine', 'Manager', 1),
-('SM0610120011', 'Silica Mine', 'Employee', 3),
-('SM0610120012', 'Water Well', 'Manager', 1),
-('SM0610120013', 'Water Well', 'Employee', 4);
+('SM1350306791646000', 'Chemical Plant', 'Manager', 1),
+('SM1350306791646001', 'Chemical Plant', 'Employee', 3),
+('SM1350306791646002', 'Iron Mine', 'Manager', 1),
+('SM1350306791646003', 'Iron Mine', 'Employee', 3),
+('SM1350306791646004', 'Oil Refinery', 'Manager', 1),
+('SM1350306791646005', 'Oil Refinery', 'Employee', 4),
+('SM1350306791646006', 'Oil Well', 'Manager', 1),
+('SM1350306791646007', 'Oil Well', 'Employee', 4),
+('SM1350306791646008', 'Petrol Power Plant', 'Manager', 1),
+('SM1350306791646009', 'Petrol Power Plant', 'Employee', 5),
+('SM1350306791646010', 'Silica Mine', 'Manager', 1),
+('SM1350306791646011', 'Silica Mine', 'Employee', 3),
+('SM1350306791646012', 'Water Well', 'Manager', 1),
+('SM1350306791646013', 'Water Well', 'Employee', 4);
 
 -- --------------------------------------------------------
 
@@ -338,7 +372,7 @@ INSERT INTO `info_sector_employee` (`id`, `sector`, `employee_type`, `items`) VA
 --
 
 CREATE TABLE IF NOT EXISTS `info_sector_equipment` (
-  `id` varchar(15) NOT NULL,
+  `id` varchar(20) NOT NULL,
   `sector` varchar(25) NOT NULL,
   `equipment_type` varchar(20) NOT NULL,
   `items` int(11) NOT NULL,
@@ -350,31 +384,31 @@ CREATE TABLE IF NOT EXISTS `info_sector_equipment` (
 --
 
 INSERT INTO `info_sector_equipment` (`id`, `sector`, `equipment_type`, `items`) VALUES
-('SQ0610120000', 'Chemical Plant', 'Generator', 2),
-('SQ0610120001', 'Chemical Plant', 'Furnace', 13),
-('SQ0610120002', 'Chemical Plant', 'Pump', 9),
-('SQ0610120003', 'Chemical Plant', 'Machine', 7),
-('SQ0610120004', 'Iron Mine', 'Drill', 150),
-('SQ0610120005', 'Iron Mine', 'Machine', 20),
-('SQ0610120006', 'Iron Mine', 'Generator', 10),
-('SQ0610120007', 'Oil Refinery', 'Machine', 15),
-('SQ0610120008', 'Oil Refinery', 'Pump', 30),
-('SQ0610120009', 'Oil Refinery', 'Generator', 3),
-('SQ0610120010', 'Oil Well', 'Drill', 11),
-('SQ0610120011', 'Oil Well', 'Generator', 5),
-('SQ0610120012', 'Oil Well', 'Pump', 50),
-('SQ0610120013', 'Oil Well', 'Machine', 20),
-('SQ0610120014', 'Petrol Power Plant', 'Pump', 10),
-('SQ0610120015', 'Petrol Power Plant', 'Machine', 40),
-('SQ0610120016', 'Petrol Power Plant', 'Generator', 9),
-('SQ0610120017', 'Petrol Power Plant', 'Furnace', 20),
-('SQ0610120018', 'Silica Mine', 'Drill', 120),
-('SQ0610120019', 'Silica Mine', 'Machine', 60),
-('SQ0610120020', 'Silica Mine', 'Generator', 25),
-('SQ0610120021', 'Water Well', 'Generator', 5),
-('SQ0610120022', 'Water Well', 'Drill', 10),
-('SQ0610120023', 'Water Well', 'Pump', 75),
-('SQ0610120024', 'Water Well', 'Machine', 25);
+('SQ1350306791646000', 'Chemical Plant', 'Generator', 2),
+('SQ1350306791646001', 'Chemical Plant', 'Furnace', 13),
+('SQ1350306791646002', 'Chemical Plant', 'Pump', 9),
+('SQ1350306791646003', 'Chemical Plant', 'Machine', 7),
+('SQ1350306791646004', 'Iron Mine', 'Drill', 150),
+('SQ1350306791646005', 'Iron Mine', 'Machine', 20),
+('SQ1350306791646006', 'Iron Mine', 'Generator', 10),
+('SQ1350306791646007', 'Oil Refinery', 'Machine', 15),
+('SQ1350306791646008', 'Oil Refinery', 'Pump', 30),
+('SQ1350306791646009', 'Oil Refinery', 'Generator', 3),
+('SQ1350306791646010', 'Oil Well', 'Drill', 11),
+('SQ1350306791646011', 'Oil Well', 'Generator', 5),
+('SQ1350306791646012', 'Oil Well', 'Pump', 50),
+('SQ1350306791646013', 'Oil Well', 'Machine', 20),
+('SQ1350306791646014', 'Petrol Power Plant', 'Pump', 10),
+('SQ1350306791646015', 'Petrol Power Plant', 'Machine', 40),
+('SQ1350306791646016', 'Petrol Power Plant', 'Generator', 9),
+('SQ1350306791646017', 'Petrol Power Plant', 'Furnace', 20),
+('SQ1350306791646018', 'Silica Mine', 'Drill', 120),
+('SQ1350306791646019', 'Silica Mine', 'Machine', 60),
+('SQ1350306791646020', 'Silica Mine', 'Generator', 25),
+('SQ1350306791646021', 'Water Well', 'Generator', 5),
+('SQ1350306791646022', 'Water Well', 'Drill', 10),
+('SQ1350306791646023', 'Water Well', 'Pump', 75),
+('SQ1350306791646024', 'Water Well', 'Machine', 25);
 
 -- --------------------------------------------------------
 
@@ -383,7 +417,7 @@ INSERT INTO `info_sector_equipment` (`id`, `sector`, `equipment_type`, `items`) 
 --
 
 CREATE TABLE IF NOT EXISTS `info_sector_input` (
-  `id` varchar(15) NOT NULL,
+  `id` varchar(20) NOT NULL,
   `sector` varchar(25) NOT NULL,
   `input_type` varchar(20) NOT NULL,
   `size` decimal(10,2) NOT NULL,
@@ -395,21 +429,21 @@ CREATE TABLE IF NOT EXISTS `info_sector_input` (
 --
 
 INSERT INTO `info_sector_input` (`id`, `sector`, `input_type`, `size`) VALUES
-('SI0610120000', 'Chemical Plant', 'Energy', 25.00),
-('SI0610120001', 'Chemical Plant', 'Crude Oil', 15.00),
-('SI0610120002', 'Chemical Plant', 'Silica', 40.00),
-('SI0610120003', 'Chemical Plant', 'Iron', 50.00),
-('SI0610120004', 'Iron Mine', 'Water', 175.00),
-('SI0610120005', 'Iron Mine', 'Energy', 35.00),
-('SI0610120006', 'Oil Refinery', 'Crude Oil', 30.00),
-('SI0610120007', 'Oil Refinery', 'Energy', 30.00),
-('SI0610120008', 'Oil Well', 'Energy', 60.00),
-('SI0610120009', 'Petrol Power Plant', 'Chemical', 17.00),
-('SI0610120010', 'Petrol Power Plant', 'Gasoline', 19.00),
-('SI0610120011', 'Petrol Power Plant', 'Water', 70.00),
-('SI0610120012', 'Silica Mine', 'Energy', 35.00),
-('SI0610120013', 'Silica Mine', 'Water', 175.00),
-('SI0610120014', 'Water Well', 'Energy', 50.00);
+('SI1350306791646000', 'Chemical Plant', 'Energy', 25.00),
+('SI1350306791646001', 'Chemical Plant', 'Crude Oil', 15.00),
+('SI1350306791646002', 'Chemical Plant', 'Silica', 40.00),
+('SI1350306791646003', 'Chemical Plant', 'Iron', 50.00),
+('SI1350306791646004', 'Iron Mine', 'Water', 175.00),
+('SI1350306791646005', 'Iron Mine', 'Energy', 35.00),
+('SI1350306791646006', 'Oil Refinery', 'Crude Oil', 30.00),
+('SI1350306791646007', 'Oil Refinery', 'Energy', 30.00),
+('SI1350306791646008', 'Oil Well', 'Energy', 60.00),
+('SI1350306791646009', 'Petrol Power Plant', 'Chemical', 17.00),
+('SI1350306791646010', 'Petrol Power Plant', 'Gasoline', 19.00),
+('SI1350306791646011', 'Petrol Power Plant', 'Water', 70.00),
+('SI1350306791646012', 'Silica Mine', 'Energy', 35.00),
+('SI1350306791646013', 'Silica Mine', 'Water', 175.00),
+('SI1350306791646014', 'Water Well', 'Energy', 50.00);
 
 -- --------------------------------------------------------
 
@@ -418,7 +452,7 @@ INSERT INTO `info_sector_input` (`id`, `sector`, `input_type`, `size`) VALUES
 --
 
 CREATE TABLE IF NOT EXISTS `info_sector_output` (
-  `id` varchar(15) NOT NULL,
+  `id` varchar(20) NOT NULL,
   `sector` varchar(25) NOT NULL,
   `output_type` varchar(20) NOT NULL,
   `size` decimal(10,2) NOT NULL,
@@ -430,21 +464,21 @@ CREATE TABLE IF NOT EXISTS `info_sector_output` (
 --
 
 INSERT INTO `info_sector_output` (`id`, `sector`, `output_type`, `size`) VALUES
-('SO0610120000', 'Chemical Plant', 'Chemical', 40.00),
-('SO0610120001', 'Iron Mine', 'Iron', 300.00),
-('SO0610120002', 'Iron Mine', 'Trash', 90.00),
-('SO0610120003', 'Iron Mine', 'Wastewater', 40.00),
-('SO0610120004', 'Oil Refinery', 'Wastewater', 7.00),
-('SO0610120005', 'Oil Refinery', 'Gasoline', 11.00),
-('SO0610120006', 'Oil Well', 'Trash', 60.00),
-('SO0610120007', 'Oil Well', 'Crude Oil', 100.00),
-('SO0610120008', 'Petrol Power Plant', 'Energy', 300.00),
-('SO0610120009', 'Petrol Power Plant', 'Wastewater', 20.00),
-('SO0610120010', 'Silica Mine', 'Trash', 50.00),
-('SO0610120011', 'Silica Mine', 'Wastewater', 13.00),
-('SO0610120012', 'Silica Mine', 'Silica', 225.00),
-('SO0610120013', 'Water Well', 'Trash', 50.00),
-('SO0610120014', 'Water Well', 'Water', 300.00);
+('SO1350306791646000', 'Chemical Plant', 'Chemical', 40.00),
+('SO1350306791646001', 'Iron Mine', 'Iron', 300.00),
+('SO1350306791646002', 'Iron Mine', 'Trash', 90.00),
+('SO1350306791646003', 'Iron Mine', 'Wastewater', 40.00),
+('SO1350306791646004', 'Oil Refinery', 'Wastewater', 7.00),
+('SO1350306791646005', 'Oil Refinery', 'Gasoline', 11.00),
+('SO1350306791646006', 'Oil Well', 'Trash', 60.00),
+('SO1350306791646007', 'Oil Well', 'Crude Oil', 100.00),
+('SO1350306791646008', 'Petrol Power Plant', 'Energy', 300.00),
+('SO1350306791646009', 'Petrol Power Plant', 'Wastewater', 20.00),
+('SO1350306791646010', 'Silica Mine', 'Trash', 50.00),
+('SO1350306791646011', 'Silica Mine', 'Wastewater', 13.00),
+('SO1350306791646012', 'Silica Mine', 'Silica', 225.00),
+('SO1350306791646013', 'Water Well', 'Trash', 50.00),
+('SO1350306791646014', 'Water Well', 'Water', 300.00);
 
 -- --------------------------------------------------------
 
@@ -464,27 +498,34 @@ CREATE TABLE IF NOT EXISTS `info_values` (
 
 INSERT INTO `info_values` (`name`, `value`) VALUES
 ('cost_storage', '500'),
-('inc_borrow_bank', '2'),
-('inc_employee', '14'),
-('inc_equipment', '141'),
-('inc_installment', '3'),
+('cost_storage_upgrade', '250'),
+('inc_borrow_bank', '0'),
+('inc_employee', '0'),
+('inc_equipment', '0'),
+('inc_installment', '0'),
 ('inc_market_employee', '0'),
 ('inc_market_equipment', '0'),
-('inc_market_product', '3'),
+('inc_market_product', '0'),
 ('inc_market_share', '0'),
 ('inc_market_share_product', '0'),
-('inc_req_borrow_bank', '2'),
-('inc_storage', '6'),
-('inc_storage_product', '72'),
-('inc_user_market_license', '3'),
-('inc_user_sector_blueprint', '9'),
-('interest', '0.12'),
-('last_inc_set_date', '081012'),
+('inc_product_advertisement', '0'),
+('inc_req_borrow_bank', '0'),
+('inc_storage', '0'),
+('inc_storage_product', '0'),
+('inc_user_contract', '1'),
+('inc_user_finance', '0'),
+('inc_user_market_license', '0'),
+('inc_user_message', '0'),
+('inc_user_sector_blueprint', '0'),
+('interest', '0.15'),
+('last_inc_set_date', '151012'),
+('last_inc_set_millis', '1350466138686'),
 ('max_turn_bank', '540'),
 ('sector', '1000'),
 ('storage', '1000'),
 ('storage_inc', '500'),
-('turn', '1581');
+('tax', '0.20'),
+('turn', '1594');
 
 -- --------------------------------------------------------
 
@@ -497,6 +538,7 @@ CREATE TABLE IF NOT EXISTS `info_zone` (
   `cost` decimal(10,2) NOT NULL,
   `transport_in` decimal(10,2) NOT NULL,
   `transport_out` decimal(10,2) NOT NULL,
+  `retribution` decimal(10,2) NOT NULL,
   `resident_cost` decimal(10,2) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
@@ -505,9 +547,9 @@ CREATE TABLE IF NOT EXISTS `info_zone` (
 -- Dumping data for table `info_zone`
 --
 
-INSERT INTO `info_zone` (`id`, `cost`, `transport_in`, `transport_out`, `resident_cost`) VALUES
-('A', 100.00, 0.05, 0.20, 2000.00),
-('B', 100.00, 0.05, 0.20, 2000.00);
+INSERT INTO `info_zone` (`id`, `cost`, `transport_in`, `transport_out`, `retribution`, `resident_cost`) VALUES
+('A', 100.00, 0.05, 0.20, 0.03, 2000.00),
+('B', 100.00, 0.05, 0.20, 0.03, 2000.00);
 
 -- --------------------------------------------------------
 
@@ -516,11 +558,11 @@ INSERT INTO `info_zone` (`id`, `cost`, `transport_in`, `transport_out`, `residen
 --
 
 CREATE TABLE IF NOT EXISTS `installment` (
-  `id` varchar(15) NOT NULL,
-  `user` varchar(15) NOT NULL,
+  `id` varchar(20) NOT NULL,
+  `user` varchar(25) NOT NULL,
   `zone` varchar(5) NOT NULL,
   `type` varchar(25) NOT NULL,
-  `supply` varchar(15) NOT NULL,
+  `supply` varchar(20) NOT NULL,
   `planned_supply` decimal(10,2) NOT NULL,
   `actual_supply` decimal(10,2) NOT NULL,
   `tariff` decimal(10,2) NOT NULL,
@@ -532,9 +574,8 @@ CREATE TABLE IF NOT EXISTS `installment` (
 --
 
 INSERT INTO `installment` (`id`, `user`, `zone`, `type`, `supply`, `planned_supply`, `actual_supply`, `tariff`) VALUES
-('IN0810120000', 'demigodA', 'A', 'Petrol Power Plant', '', 0.00, 0.00, 3.00),
-('IN0810120001', 'Pioneer', 'A', 'Chemical Plant', 'IN0810120000', 25.00, 0.00, 0.00),
-('IN0810120002', 'bagus', 'A', 'Chemical Plant', 'IN0810120000', 25.00, 0.00, 0.00);
+('IN1350306791646000', 'demigodA', 'A', 'Petrol Power Plant', '', 0.00, 0.00, 3.00),
+('IN1350306791646001', 'bagus', 'A', 'Oil Refinery', '', 30.00, 30.00, 0.00);
 
 -- --------------------------------------------------------
 
@@ -543,8 +584,8 @@ INSERT INTO `installment` (`id`, `user`, `zone`, `type`, `supply`, `planned_supp
 --
 
 CREATE TABLE IF NOT EXISTS `installment_employee` (
-  `id` varchar(15) NOT NULL,
-  `installment` varchar(15) NOT NULL,
+  `id` varchar(20) NOT NULL,
+  `installment` varchar(20) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
@@ -553,20 +594,17 @@ CREATE TABLE IF NOT EXISTS `installment_employee` (
 --
 
 INSERT INTO `installment_employee` (`id`, `installment`) VALUES
-('EM0810120000', 'IN0810120000'),
-('EM0810120001', 'IN0810120000'),
-('EM0810120002', 'IN0810120000'),
-('EM0810120003', 'IN0810120000'),
-('EM0810120004', 'IN0810120000'),
-('EM0810120005', 'IN0810120000'),
-('EM0810120006', 'IN0810120001'),
-('EM0810120007', 'IN0810120001'),
-('EM0810120008', 'IN0810120001'),
-('EM0810120009', 'IN0810120001'),
-('EM0810120010', 'IN0810120002'),
-('EM0810120011', 'IN0810120002'),
-('EM0810120012', 'IN0810120002'),
-('EM0810120013', 'IN0810120002');
+('EM0810120000', 'IN1350306791646000'),
+('EM0810120001', 'IN1350306791646000'),
+('EM0810120002', 'IN1350306791646000'),
+('EM0810120003', 'IN1350306791646000'),
+('EM0810120004', 'IN1350306791646000'),
+('EM0810120005', 'IN1350306791646000'),
+('EM1310120000', 'IN1350306791646001'),
+('EM1310120001', 'IN1350306791646001'),
+('EM1310120002', 'IN1350306791646001'),
+('EM1310120003', 'IN1350306791646001'),
+('EM1310120004', 'IN1350306791646001');
 
 -- --------------------------------------------------------
 
@@ -575,8 +613,8 @@ INSERT INTO `installment_employee` (`id`, `installment`) VALUES
 --
 
 CREATE TABLE IF NOT EXISTS `installment_equipment` (
-  `id` varchar(15) NOT NULL,
-  `installment` varchar(15) NOT NULL,
+  `id` varchar(20) NOT NULL,
+  `installment` varchar(20) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
@@ -585,147 +623,133 @@ CREATE TABLE IF NOT EXISTS `installment_equipment` (
 --
 
 INSERT INTO `installment_equipment` (`id`, `installment`) VALUES
-('EQ0810120000', 'IN0810120000'),
-('EQ0810120001', 'IN0810120000'),
-('EQ0810120002', 'IN0810120000'),
-('EQ0810120003', 'IN0810120000'),
-('EQ0810120004', 'IN0810120000'),
-('EQ0810120005', 'IN0810120000'),
-('EQ0810120006', 'IN0810120000'),
-('EQ0810120007', 'IN0810120000'),
-('EQ0810120008', 'IN0810120000'),
-('EQ0810120009', 'IN0810120000'),
-('EQ0810120010', 'IN0810120000'),
-('EQ0810120011', 'IN0810120000'),
-('EQ0810120012', 'IN0810120000'),
-('EQ0810120013', 'IN0810120000'),
-('EQ0810120014', 'IN0810120000'),
-('EQ0810120015', 'IN0810120000'),
-('EQ0810120016', 'IN0810120000'),
-('EQ0810120017', 'IN0810120000'),
-('EQ0810120018', 'IN0810120000'),
-('EQ0810120019', 'IN0810120000'),
-('EQ0810120020', 'IN0810120000'),
-('EQ0810120021', 'IN0810120000'),
-('EQ0810120022', 'IN0810120000'),
-('EQ0810120023', 'IN0810120000'),
-('EQ0810120024', 'IN0810120000'),
-('EQ0810120025', 'IN0810120000'),
-('EQ0810120026', 'IN0810120000'),
-('EQ0810120027', 'IN0810120000'),
-('EQ0810120028', 'IN0810120000'),
-('EQ0810120029', 'IN0810120000'),
-('EQ0810120030', 'IN0810120000'),
-('EQ0810120031', 'IN0810120000'),
-('EQ0810120032', 'IN0810120000'),
-('EQ0810120033', 'IN0810120000'),
-('EQ0810120034', 'IN0810120000'),
-('EQ0810120035', 'IN0810120000'),
-('EQ0810120036', 'IN0810120000'),
-('EQ0810120037', 'IN0810120000'),
-('EQ0810120038', 'IN0810120000'),
-('EQ0810120039', 'IN0810120000'),
-('EQ0810120040', 'IN0810120000'),
-('EQ0810120041', 'IN0810120000'),
-('EQ0810120042', 'IN0810120000'),
-('EQ0810120043', 'IN0810120000'),
-('EQ0810120044', 'IN0810120000'),
-('EQ0810120045', 'IN0810120000'),
-('EQ0810120046', 'IN0810120000'),
-('EQ0810120047', 'IN0810120000'),
-('EQ0810120048', 'IN0810120000'),
-('EQ0810120049', 'IN0810120000'),
-('EQ0810120050', 'IN0810120000'),
-('EQ0810120051', 'IN0810120000'),
-('EQ0810120052', 'IN0810120000'),
-('EQ0810120053', 'IN0810120000'),
-('EQ0810120054', 'IN0810120000'),
-('EQ0810120055', 'IN0810120000'),
-('EQ0810120056', 'IN0810120000'),
-('EQ0810120057', 'IN0810120000'),
-('EQ0810120058', 'IN0810120000'),
-('EQ0810120059', 'IN0810120000'),
-('EQ0810120060', 'IN0810120000'),
-('EQ0810120061', 'IN0810120000'),
-('EQ0810120062', 'IN0810120000'),
-('EQ0810120063', 'IN0810120000'),
-('EQ0810120064', 'IN0810120000'),
-('EQ0810120065', 'IN0810120000'),
-('EQ0810120066', 'IN0810120000'),
-('EQ0810120067', 'IN0810120000'),
-('EQ0810120068', 'IN0810120000'),
-('EQ0810120069', 'IN0810120000'),
-('EQ0810120070', 'IN0810120000'),
-('EQ0810120071', 'IN0810120000'),
-('EQ0810120072', 'IN0810120000'),
-('EQ0810120073', 'IN0810120000'),
-('EQ0810120074', 'IN0810120000'),
-('EQ0810120075', 'IN0810120000'),
-('EQ0810120076', 'IN0810120000'),
-('EQ0810120077', 'IN0810120000'),
-('EQ0810120078', 'IN0810120000'),
-('EQ0810120079', 'IN0810120001'),
-('EQ0810120080', 'IN0810120001'),
-('EQ0810120081', 'IN0810120001'),
-('EQ0810120082', 'IN0810120001'),
-('EQ0810120083', 'IN0810120001'),
-('EQ0810120084', 'IN0810120001'),
-('EQ0810120085', 'IN0810120001'),
-('EQ0810120086', 'IN0810120001'),
-('EQ0810120087', 'IN0810120001'),
-('EQ0810120088', 'IN0810120001'),
-('EQ0810120089', 'IN0810120001'),
-('EQ0810120090', 'IN0810120001'),
-('EQ0810120091', 'IN0810120001'),
-('EQ0810120092', 'IN0810120001'),
-('EQ0810120093', 'IN0810120001'),
-('EQ0810120094', 'IN0810120001'),
-('EQ0810120095', 'IN0810120001'),
-('EQ0810120096', 'IN0810120001'),
-('EQ0810120097', 'IN0810120001'),
-('EQ0810120098', 'IN0810120001'),
-('EQ0810120099', 'IN0810120001'),
-('EQ0810120100', 'IN0810120001'),
-('EQ0810120101', 'IN0810120001'),
-('EQ0810120102', 'IN0810120001'),
-('EQ0810120103', 'IN0810120001'),
-('EQ0810120104', 'IN0810120001'),
-('EQ0810120105', 'IN0810120001'),
-('EQ0810120106', 'IN0810120001'),
-('EQ0810120107', 'IN0810120001'),
-('EQ0810120108', 'IN0810120001'),
-('EQ0810120109', 'IN0810120001'),
-('EQ0810120110', 'IN0810120002'),
-('EQ0810120111', 'IN0810120002'),
-('EQ0810120112', 'IN0810120002'),
-('EQ0810120113', 'IN0810120002'),
-('EQ0810120114', 'IN0810120002'),
-('EQ0810120115', 'IN0810120002'),
-('EQ0810120116', 'IN0810120002'),
-('EQ0810120117', 'IN0810120002'),
-('EQ0810120118', 'IN0810120002'),
-('EQ0810120119', 'IN0810120002'),
-('EQ0810120120', 'IN0810120002'),
-('EQ0810120121', 'IN0810120002'),
-('EQ0810120122', 'IN0810120002'),
-('EQ0810120123', 'IN0810120002'),
-('EQ0810120124', 'IN0810120002'),
-('EQ0810120125', 'IN0810120002'),
-('EQ0810120126', 'IN0810120002'),
-('EQ0810120127', 'IN0810120002'),
-('EQ0810120128', 'IN0810120002'),
-('EQ0810120129', 'IN0810120002'),
-('EQ0810120130', 'IN0810120002'),
-('EQ0810120131', 'IN0810120002'),
-('EQ0810120132', 'IN0810120002'),
-('EQ0810120133', 'IN0810120002'),
-('EQ0810120134', 'IN0810120002'),
-('EQ0810120135', 'IN0810120002'),
-('EQ0810120136', 'IN0810120002'),
-('EQ0810120137', 'IN0810120002'),
-('EQ0810120138', 'IN0810120002'),
-('EQ0810120139', 'IN0810120002'),
-('EQ0810120140', 'IN0810120002');
+('EQ0810120000', 'IN1350306791646000'),
+('EQ0810120001', 'IN1350306791646000'),
+('EQ0810120002', 'IN1350306791646000'),
+('EQ0810120003', 'IN1350306791646000'),
+('EQ0810120004', 'IN1350306791646000'),
+('EQ0810120005', 'IN1350306791646000'),
+('EQ0810120006', 'IN1350306791646000'),
+('EQ0810120007', 'IN1350306791646000'),
+('EQ0810120008', 'IN1350306791646000'),
+('EQ0810120009', 'IN1350306791646000'),
+('EQ0810120010', 'IN1350306791646000'),
+('EQ0810120011', 'IN1350306791646000'),
+('EQ0810120012', 'IN1350306791646000'),
+('EQ0810120013', 'IN1350306791646000'),
+('EQ0810120014', 'IN1350306791646000'),
+('EQ0810120015', 'IN1350306791646000'),
+('EQ0810120016', 'IN1350306791646000'),
+('EQ0810120017', 'IN1350306791646000'),
+('EQ0810120018', 'IN1350306791646000'),
+('EQ0810120019', 'IN1350306791646000'),
+('EQ0810120020', 'IN1350306791646000'),
+('EQ0810120021', 'IN1350306791646000'),
+('EQ0810120022', 'IN1350306791646000'),
+('EQ0810120023', 'IN1350306791646000'),
+('EQ0810120024', 'IN1350306791646000'),
+('EQ0810120025', 'IN1350306791646000'),
+('EQ0810120026', 'IN1350306791646000'),
+('EQ0810120027', 'IN1350306791646000'),
+('EQ0810120028', 'IN1350306791646000'),
+('EQ0810120029', 'IN1350306791646000'),
+('EQ0810120030', 'IN1350306791646000'),
+('EQ0810120031', 'IN1350306791646000'),
+('EQ0810120032', 'IN1350306791646000'),
+('EQ0810120033', 'IN1350306791646000'),
+('EQ0810120034', 'IN1350306791646000'),
+('EQ0810120035', 'IN1350306791646000'),
+('EQ0810120036', 'IN1350306791646000'),
+('EQ0810120037', 'IN1350306791646000'),
+('EQ0810120038', 'IN1350306791646000'),
+('EQ0810120039', 'IN1350306791646000'),
+('EQ0810120040', 'IN1350306791646000'),
+('EQ0810120041', 'IN1350306791646000'),
+('EQ0810120042', 'IN1350306791646000'),
+('EQ0810120043', 'IN1350306791646000'),
+('EQ0810120044', 'IN1350306791646000'),
+('EQ0810120045', 'IN1350306791646000'),
+('EQ0810120046', 'IN1350306791646000'),
+('EQ0810120047', 'IN1350306791646000'),
+('EQ0810120048', 'IN1350306791646000'),
+('EQ0810120049', 'IN1350306791646000'),
+('EQ0810120050', 'IN1350306791646000'),
+('EQ0810120051', 'IN1350306791646000'),
+('EQ0810120052', 'IN1350306791646000'),
+('EQ0810120053', 'IN1350306791646000'),
+('EQ0810120054', 'IN1350306791646000'),
+('EQ0810120055', 'IN1350306791646000'),
+('EQ0810120056', 'IN1350306791646000'),
+('EQ0810120057', 'IN1350306791646000'),
+('EQ0810120058', 'IN1350306791646000'),
+('EQ0810120059', 'IN1350306791646000'),
+('EQ0810120060', 'IN1350306791646000'),
+('EQ0810120061', 'IN1350306791646000'),
+('EQ0810120062', 'IN1350306791646000'),
+('EQ0810120063', 'IN1350306791646000'),
+('EQ0810120064', 'IN1350306791646000'),
+('EQ0810120065', 'IN1350306791646000'),
+('EQ0810120066', 'IN1350306791646000'),
+('EQ0810120067', 'IN1350306791646000'),
+('EQ0810120068', 'IN1350306791646000'),
+('EQ0810120069', 'IN1350306791646000'),
+('EQ0810120070', 'IN1350306791646000'),
+('EQ0810120071', 'IN1350306791646000'),
+('EQ0810120072', 'IN1350306791646000'),
+('EQ0810120073', 'IN1350306791646000'),
+('EQ0810120074', 'IN1350306791646000'),
+('EQ0810120075', 'IN1350306791646000'),
+('EQ0810120076', 'IN1350306791646000'),
+('EQ0810120077', 'IN1350306791646000'),
+('EQ0810120078', 'IN1350306791646000'),
+('EQ1310120000', 'IN1350306791646001'),
+('EQ1310120001', 'IN1350306791646001'),
+('EQ1310120002', 'IN1350306791646001'),
+('EQ1310120003', 'IN1350306791646001'),
+('EQ1310120004', 'IN1350306791646001'),
+('EQ1310120005', 'IN1350306791646001'),
+('EQ1310120006', 'IN1350306791646001'),
+('EQ1310120007', 'IN1350306791646001'),
+('EQ1310120008', 'IN1350306791646001'),
+('EQ1310120009', 'IN1350306791646001'),
+('EQ1310120010', 'IN1350306791646001'),
+('EQ1310120011', 'IN1350306791646001'),
+('EQ1310120012', 'IN1350306791646001'),
+('EQ1310120013', 'IN1350306791646001'),
+('EQ1310120014', 'IN1350306791646001'),
+('EQ1310120015', 'IN1350306791646001'),
+('EQ1310120016', 'IN1350306791646001'),
+('EQ1310120017', 'IN1350306791646001'),
+('EQ1310120018', 'IN1350306791646001'),
+('EQ1310120019', 'IN1350306791646001'),
+('EQ1310120020', 'IN1350306791646001'),
+('EQ1310120021', 'IN1350306791646001'),
+('EQ1310120022', 'IN1350306791646001'),
+('EQ1310120023', 'IN1350306791646001'),
+('EQ1310120024', 'IN1350306791646001'),
+('EQ1310120025', 'IN1350306791646001'),
+('EQ1310120026', 'IN1350306791646001'),
+('EQ1310120027', 'IN1350306791646001'),
+('EQ1310120028', 'IN1350306791646001'),
+('EQ1310120029', 'IN1350306791646001'),
+('EQ1310120030', 'IN1350306791646001'),
+('EQ1310120031', 'IN1350306791646001'),
+('EQ1310120032', 'IN1350306791646001'),
+('EQ1310120033', 'IN1350306791646001'),
+('EQ1310120034', 'IN1350306791646001'),
+('EQ1310120035', 'IN1350306791646001'),
+('EQ1310120036', 'IN1350306791646001'),
+('EQ1310120037', 'IN1350306791646001'),
+('EQ1310120038', 'IN1350306791646001'),
+('EQ1310120039', 'IN1350306791646001'),
+('EQ1310120040', 'IN1350306791646001'),
+('EQ1310120041', 'IN1350306791646001'),
+('EQ1310120042', 'IN1350306791646001'),
+('EQ1310120043', 'IN1350306791646001'),
+('EQ1310120044', 'IN1350306791646001'),
+('EQ1310120045', 'IN1350306791646001'),
+('EQ1310120046', 'IN1350306791646001'),
+('EQ1310120047', 'IN1350306791646001');
 
 -- --------------------------------------------------------
 
@@ -734,7 +758,7 @@ INSERT INTO `installment_equipment` (`id`, `installment`) VALUES
 --
 
 CREATE TABLE IF NOT EXISTS `list_employee` (
-  `id` varchar(15) NOT NULL,
+  `id` varchar(20) NOT NULL,
   `desc` varchar(15) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
@@ -750,14 +774,11 @@ INSERT INTO `list_employee` (`id`, `desc`) VALUES
 ('EM0810120003', 'EMEMPL02'),
 ('EM0810120004', 'EMEMPL02'),
 ('EM0810120005', 'EMEMPL02'),
-('EM0810120006', 'EMMNGR02'),
-('EM0810120007', 'EMEMPL02'),
-('EM0810120008', 'EMEMPL02'),
-('EM0810120009', 'EMEMPL02'),
-('EM0810120010', 'EMMNGR02'),
-('EM0810120011', 'EMEMPL02'),
-('EM0810120012', 'EMEMPL02'),
-('EM0810120013', 'EMEMPL02');
+('EM1310120000', 'EMMNGR02'),
+('EM1310120001', 'EMEMPL02'),
+('EM1310120002', 'EMEMPL02'),
+('EM1310120003', 'EMEMPL02'),
+('EM1310120004', 'EMEMPL02');
 
 -- --------------------------------------------------------
 
@@ -766,9 +787,10 @@ INSERT INTO `list_employee` (`id`, `desc`) VALUES
 --
 
 CREATE TABLE IF NOT EXISTS `list_equipment` (
-  `id` varchar(15) NOT NULL,
+  `id` varchar(20) NOT NULL,
   `desc` varchar(15) NOT NULL,
   `durability` decimal(10,2) NOT NULL,
+  `buy_price` decimal(10,2) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
@@ -776,148 +798,134 @@ CREATE TABLE IF NOT EXISTS `list_equipment` (
 -- Dumping data for table `list_equipment`
 --
 
-INSERT INTO `list_equipment` (`id`, `desc`, `durability`) VALUES
-('EQ0810120000', 'EQPUMP02', 99.94),
-('EQ0810120001', 'EQPUMP02', 99.94),
-('EQ0810120002', 'EQPUMP02', 99.94),
-('EQ0810120003', 'EQPUMP02', 99.94),
-('EQ0810120004', 'EQPUMP02', 99.94),
-('EQ0810120005', 'EQPUMP02', 99.94),
-('EQ0810120006', 'EQPUMP02', 99.94),
-('EQ0810120007', 'EQPUMP02', 99.94),
-('EQ0810120008', 'EQPUMP02', 99.94),
-('EQ0810120009', 'EQPUMP02', 99.94),
-('EQ0810120010', 'EQMCHN02', 99.94),
-('EQ0810120011', 'EQMCHN02', 99.94),
-('EQ0810120012', 'EQMCHN02', 99.94),
-('EQ0810120013', 'EQMCHN02', 99.94),
-('EQ0810120014', 'EQMCHN02', 99.94),
-('EQ0810120015', 'EQMCHN02', 99.94),
-('EQ0810120016', 'EQMCHN02', 99.94),
-('EQ0810120017', 'EQMCHN02', 99.94),
-('EQ0810120018', 'EQMCHN02', 99.94),
-('EQ0810120019', 'EQMCHN02', 99.94),
-('EQ0810120020', 'EQMCHN02', 99.94),
-('EQ0810120021', 'EQMCHN02', 99.94),
-('EQ0810120022', 'EQMCHN02', 99.94),
-('EQ0810120023', 'EQMCHN02', 99.94),
-('EQ0810120024', 'EQMCHN02', 99.94),
-('EQ0810120025', 'EQMCHN02', 99.94),
-('EQ0810120026', 'EQMCHN02', 99.94),
-('EQ0810120027', 'EQMCHN02', 99.94),
-('EQ0810120028', 'EQMCHN02', 99.94),
-('EQ0810120029', 'EQMCHN02', 99.94),
-('EQ0810120030', 'EQMCHN02', 99.94),
-('EQ0810120031', 'EQMCHN02', 99.94),
-('EQ0810120032', 'EQMCHN02', 99.94),
-('EQ0810120033', 'EQMCHN02', 99.94),
-('EQ0810120034', 'EQMCHN02', 99.94),
-('EQ0810120035', 'EQMCHN02', 99.94),
-('EQ0810120036', 'EQMCHN02', 99.94),
-('EQ0810120037', 'EQMCHN02', 99.94),
-('EQ0810120038', 'EQMCHN02', 99.94),
-('EQ0810120039', 'EQMCHN02', 99.94),
-('EQ0810120040', 'EQMCHN02', 99.94),
-('EQ0810120041', 'EQMCHN02', 99.94),
-('EQ0810120042', 'EQMCHN02', 99.94),
-('EQ0810120043', 'EQMCHN02', 99.94),
-('EQ0810120044', 'EQMCHN02', 99.94),
-('EQ0810120045', 'EQMCHN02', 99.94),
-('EQ0810120046', 'EQMCHN02', 99.94),
-('EQ0810120047', 'EQMCHN02', 99.94),
-('EQ0810120048', 'EQMCHN02', 99.94),
-('EQ0810120049', 'EQMCHN02', 99.94),
-('EQ0810120050', 'EQGNTR02', 99.94),
-('EQ0810120051', 'EQGNTR02', 99.94),
-('EQ0810120052', 'EQGNTR02', 99.94),
-('EQ0810120053', 'EQGNTR02', 99.94),
-('EQ0810120054', 'EQGNTR02', 99.94),
-('EQ0810120055', 'EQGNTR02', 99.94),
-('EQ0810120056', 'EQGNTR02', 99.94),
-('EQ0810120057', 'EQGNTR02', 99.94),
-('EQ0810120058', 'EQGNTR02', 99.94),
-('EQ0810120059', 'EQFRNC02', 99.94),
-('EQ0810120060', 'EQFRNC02', 99.94),
-('EQ0810120061', 'EQFRNC02', 99.94),
-('EQ0810120062', 'EQFRNC02', 99.94),
-('EQ0810120063', 'EQFRNC02', 99.94),
-('EQ0810120064', 'EQFRNC02', 99.94),
-('EQ0810120065', 'EQFRNC02', 99.94),
-('EQ0810120066', 'EQFRNC02', 99.94),
-('EQ0810120067', 'EQFRNC02', 99.94),
-('EQ0810120068', 'EQFRNC02', 99.94),
-('EQ0810120069', 'EQFRNC02', 99.94),
-('EQ0810120070', 'EQFRNC02', 99.94),
-('EQ0810120071', 'EQFRNC02', 99.94),
-('EQ0810120072', 'EQFRNC02', 99.94),
-('EQ0810120073', 'EQFRNC02', 99.94),
-('EQ0810120074', 'EQFRNC02', 99.94),
-('EQ0810120075', 'EQFRNC02', 99.94),
-('EQ0810120076', 'EQFRNC02', 99.94),
-('EQ0810120077', 'EQFRNC02', 99.94),
-('EQ0810120078', 'EQFRNC02', 99.94),
-('EQ0810120079', 'EQGNTR02', 100.00),
-('EQ0810120080', 'EQGNTR02', 100.00),
-('EQ0810120081', 'EQFRNC02', 100.00),
-('EQ0810120082', 'EQFRNC02', 100.00),
-('EQ0810120083', 'EQFRNC02', 100.00),
-('EQ0810120084', 'EQFRNC02', 100.00),
-('EQ0810120085', 'EQFRNC02', 100.00),
-('EQ0810120086', 'EQFRNC02', 100.00),
-('EQ0810120087', 'EQFRNC02', 100.00),
-('EQ0810120088', 'EQFRNC02', 100.00),
-('EQ0810120089', 'EQFRNC02', 100.00),
-('EQ0810120090', 'EQFRNC02', 100.00),
-('EQ0810120091', 'EQFRNC02', 100.00),
-('EQ0810120092', 'EQFRNC02', 100.00),
-('EQ0810120093', 'EQFRNC02', 100.00),
-('EQ0810120094', 'EQPUMP02', 100.00),
-('EQ0810120095', 'EQPUMP02', 100.00),
-('EQ0810120096', 'EQPUMP02', 100.00),
-('EQ0810120097', 'EQPUMP02', 100.00),
-('EQ0810120098', 'EQPUMP02', 100.00),
-('EQ0810120099', 'EQPUMP02', 100.00),
-('EQ0810120100', 'EQPUMP02', 100.00),
-('EQ0810120101', 'EQPUMP02', 100.00),
-('EQ0810120102', 'EQPUMP02', 100.00),
-('EQ0810120103', 'EQMCHN02', 100.00),
-('EQ0810120104', 'EQMCHN02', 100.00),
-('EQ0810120105', 'EQMCHN02', 100.00),
-('EQ0810120106', 'EQMCHN02', 100.00),
-('EQ0810120107', 'EQMCHN02', 100.00),
-('EQ0810120108', 'EQMCHN02', 100.00),
-('EQ0810120109', 'EQMCHN02', 100.00),
-('EQ0810120110', 'EQGNTR02', 99.97),
-('EQ0810120111', 'EQGNTR02', 99.97),
-('EQ0810120112', 'EQFRNC02', 99.97),
-('EQ0810120113', 'EQFRNC02', 99.97),
-('EQ0810120114', 'EQFRNC02', 99.97),
-('EQ0810120115', 'EQFRNC02', 99.97),
-('EQ0810120116', 'EQFRNC02', 99.97),
-('EQ0810120117', 'EQFRNC02', 99.97),
-('EQ0810120118', 'EQFRNC02', 99.97),
-('EQ0810120119', 'EQFRNC02', 99.97),
-('EQ0810120120', 'EQFRNC02', 99.97),
-('EQ0810120121', 'EQFRNC02', 99.97),
-('EQ0810120122', 'EQFRNC02', 99.97),
-('EQ0810120123', 'EQFRNC02', 99.97),
-('EQ0810120124', 'EQFRNC02', 99.97),
-('EQ0810120125', 'EQPUMP02', 99.97),
-('EQ0810120126', 'EQPUMP02', 99.97),
-('EQ0810120127', 'EQPUMP02', 99.97),
-('EQ0810120128', 'EQPUMP02', 99.97),
-('EQ0810120129', 'EQPUMP02', 99.97),
-('EQ0810120130', 'EQPUMP02', 99.97),
-('EQ0810120131', 'EQPUMP02', 99.97),
-('EQ0810120132', 'EQPUMP02', 99.97),
-('EQ0810120133', 'EQPUMP02', 99.97),
-('EQ0810120134', 'EQMCHN02', 99.97),
-('EQ0810120135', 'EQMCHN02', 99.97),
-('EQ0810120136', 'EQMCHN02', 99.97),
-('EQ0810120137', 'EQMCHN02', 99.97),
-('EQ0810120138', 'EQMCHN02', 99.97),
-('EQ0810120139', 'EQMCHN02', 99.97),
-('EQ0810120140', 'EQMCHN02', 99.97);
+INSERT INTO `list_equipment` (`id`, `desc`, `durability`, `buy_price`) VALUES
+('EQ0810120000', 'EQPUMP02', 100.00, 0.00),
+('EQ0810120001', 'EQPUMP02', 100.00, 0.00),
+('EQ0810120002', 'EQPUMP02', 100.00, 0.00),
+('EQ0810120003', 'EQPUMP02', 100.00, 0.00),
+('EQ0810120004', 'EQPUMP02', 100.00, 0.00),
+('EQ0810120005', 'EQPUMP02', 100.00, 0.00),
+('EQ0810120006', 'EQPUMP02', 100.00, 0.00),
+('EQ0810120007', 'EQPUMP02', 100.00, 0.00),
+('EQ0810120008', 'EQPUMP02', 100.00, 0.00),
+('EQ0810120009', 'EQPUMP02', 100.00, 0.00),
+('EQ0810120010', 'EQMCHN02', 100.00, 0.00),
+('EQ0810120011', 'EQMCHN02', 100.00, 0.00),
+('EQ0810120012', 'EQMCHN02', 100.00, 0.00),
+('EQ0810120013', 'EQMCHN02', 100.00, 0.00),
+('EQ0810120014', 'EQMCHN02', 100.00, 0.00),
+('EQ0810120015', 'EQMCHN02', 100.00, 0.00),
+('EQ0810120016', 'EQMCHN02', 100.00, 0.00),
+('EQ0810120017', 'EQMCHN02', 100.00, 0.00),
+('EQ0810120018', 'EQMCHN02', 100.00, 0.00),
+('EQ0810120019', 'EQMCHN02', 100.00, 0.00),
+('EQ0810120020', 'EQMCHN02', 100.00, 0.00),
+('EQ0810120021', 'EQMCHN02', 100.00, 0.00),
+('EQ0810120022', 'EQMCHN02', 100.00, 0.00),
+('EQ0810120023', 'EQMCHN02', 100.00, 0.00),
+('EQ0810120024', 'EQMCHN02', 100.00, 0.00),
+('EQ0810120025', 'EQMCHN02', 100.00, 0.00),
+('EQ0810120026', 'EQMCHN02', 100.00, 0.00),
+('EQ0810120027', 'EQMCHN02', 100.00, 0.00),
+('EQ0810120028', 'EQMCHN02', 100.00, 0.00),
+('EQ0810120029', 'EQMCHN02', 100.00, 0.00),
+('EQ0810120030', 'EQMCHN02', 100.00, 0.00),
+('EQ0810120031', 'EQMCHN02', 100.00, 0.00),
+('EQ0810120032', 'EQMCHN02', 100.00, 0.00),
+('EQ0810120033', 'EQMCHN02', 100.00, 0.00),
+('EQ0810120034', 'EQMCHN02', 100.00, 0.00),
+('EQ0810120035', 'EQMCHN02', 100.00, 0.00),
+('EQ0810120036', 'EQMCHN02', 100.00, 0.00),
+('EQ0810120037', 'EQMCHN02', 100.00, 0.00),
+('EQ0810120038', 'EQMCHN02', 100.00, 0.00),
+('EQ0810120039', 'EQMCHN02', 100.00, 0.00),
+('EQ0810120040', 'EQMCHN02', 100.00, 0.00),
+('EQ0810120041', 'EQMCHN02', 100.00, 0.00),
+('EQ0810120042', 'EQMCHN02', 100.00, 0.00),
+('EQ0810120043', 'EQMCHN02', 100.00, 0.00),
+('EQ0810120044', 'EQMCHN02', 100.00, 0.00),
+('EQ0810120045', 'EQMCHN02', 100.00, 0.00),
+('EQ0810120046', 'EQMCHN02', 100.00, 0.00),
+('EQ0810120047', 'EQMCHN02', 100.00, 0.00),
+('EQ0810120048', 'EQMCHN02', 100.00, 0.00),
+('EQ0810120049', 'EQMCHN02', 100.00, 0.00),
+('EQ0810120050', 'EQGNTR02', 100.00, 0.00),
+('EQ0810120051', 'EQGNTR02', 100.00, 0.00),
+('EQ0810120052', 'EQGNTR02', 100.00, 0.00),
+('EQ0810120053', 'EQGNTR02', 100.00, 0.00),
+('EQ0810120054', 'EQGNTR02', 100.00, 0.00),
+('EQ0810120055', 'EQGNTR02', 100.00, 0.00),
+('EQ0810120056', 'EQGNTR02', 100.00, 0.00),
+('EQ0810120057', 'EQGNTR02', 100.00, 0.00),
+('EQ0810120058', 'EQGNTR02', 100.00, 0.00),
+('EQ0810120059', 'EQFRNC02', 100.00, 0.00),
+('EQ0810120060', 'EQFRNC02', 100.00, 0.00),
+('EQ0810120061', 'EQFRNC02', 100.00, 0.00),
+('EQ0810120062', 'EQFRNC02', 100.00, 0.00),
+('EQ0810120063', 'EQFRNC02', 100.00, 0.00),
+('EQ0810120064', 'EQFRNC02', 100.00, 0.00),
+('EQ0810120065', 'EQFRNC02', 100.00, 0.00),
+('EQ0810120066', 'EQFRNC02', 100.00, 0.00),
+('EQ0810120067', 'EQFRNC02', 100.00, 0.00),
+('EQ0810120068', 'EQFRNC02', 100.00, 0.00),
+('EQ0810120069', 'EQFRNC02', 100.00, 0.00),
+('EQ0810120070', 'EQFRNC02', 100.00, 0.00),
+('EQ0810120071', 'EQFRNC02', 100.00, 0.00),
+('EQ0810120072', 'EQFRNC02', 100.00, 0.00),
+('EQ0810120073', 'EQFRNC02', 100.00, 0.00),
+('EQ0810120074', 'EQFRNC02', 100.00, 0.00),
+('EQ0810120075', 'EQFRNC02', 100.00, 0.00),
+('EQ0810120076', 'EQFRNC02', 100.00, 0.00),
+('EQ0810120077', 'EQFRNC02', 100.00, 0.00),
+('EQ0810120078', 'EQFRNC02', 100.00, 0.00),
+('EQ1310120000', 'EQMCHN02', 99.97, 7.50),
+('EQ1310120001', 'EQMCHN02', 99.97, 7.50),
+('EQ1310120002', 'EQMCHN02', 99.97, 7.50),
+('EQ1310120003', 'EQMCHN02', 99.97, 7.50),
+('EQ1310120004', 'EQMCHN02', 99.97, 7.50),
+('EQ1310120005', 'EQMCHN02', 99.97, 7.50),
+('EQ1310120006', 'EQMCHN02', 99.97, 7.50),
+('EQ1310120007', 'EQMCHN02', 99.97, 7.50),
+('EQ1310120008', 'EQMCHN02', 99.97, 7.50),
+('EQ1310120009', 'EQMCHN02', 99.97, 7.50),
+('EQ1310120010', 'EQMCHN02', 99.97, 7.50),
+('EQ1310120011', 'EQMCHN02', 99.97, 7.50),
+('EQ1310120012', 'EQMCHN02', 99.97, 7.50),
+('EQ1310120013', 'EQMCHN02', 99.97, 7.50),
+('EQ1310120014', 'EQMCHN02', 99.97, 7.50),
+('EQ1310120015', 'EQPUMP02', 99.97, 9.00),
+('EQ1310120016', 'EQPUMP02', 99.97, 9.00),
+('EQ1310120017', 'EQPUMP02', 99.97, 9.00),
+('EQ1310120018', 'EQPUMP02', 99.97, 9.00),
+('EQ1310120019', 'EQPUMP02', 99.97, 9.00),
+('EQ1310120020', 'EQPUMP02', 99.97, 9.00),
+('EQ1310120021', 'EQPUMP02', 99.97, 9.00),
+('EQ1310120022', 'EQPUMP02', 99.97, 9.00),
+('EQ1310120023', 'EQPUMP02', 99.97, 9.00),
+('EQ1310120024', 'EQPUMP02', 99.97, 9.00),
+('EQ1310120025', 'EQPUMP02', 99.97, 9.00),
+('EQ1310120026', 'EQPUMP02', 99.97, 9.00),
+('EQ1310120027', 'EQPUMP02', 99.97, 9.00),
+('EQ1310120028', 'EQPUMP02', 99.97, 9.00),
+('EQ1310120029', 'EQPUMP02', 99.97, 9.00),
+('EQ1310120030', 'EQPUMP02', 99.97, 9.00),
+('EQ1310120031', 'EQPUMP02', 99.97, 9.00),
+('EQ1310120032', 'EQPUMP02', 99.97, 9.00),
+('EQ1310120033', 'EQPUMP02', 99.97, 9.00),
+('EQ1310120034', 'EQPUMP02', 99.97, 9.00),
+('EQ1310120035', 'EQPUMP02', 99.97, 9.00),
+('EQ1310120036', 'EQPUMP02', 99.97, 9.00),
+('EQ1310120037', 'EQPUMP02', 99.97, 9.00),
+('EQ1310120038', 'EQPUMP02', 99.97, 9.00),
+('EQ1310120039', 'EQPUMP02', 99.97, 9.00),
+('EQ1310120040', 'EQPUMP02', 99.97, 9.00),
+('EQ1310120041', 'EQPUMP02', 99.97, 9.00),
+('EQ1310120042', 'EQPUMP02', 99.97, 9.00),
+('EQ1310120043', 'EQPUMP02', 99.97, 9.00),
+('EQ1310120044', 'EQPUMP02', 99.97, 9.00),
+('EQ1310120045', 'EQGNTR02', 99.97, 8.00),
+('EQ1310120046', 'EQGNTR02', 99.97, 8.00),
+('EQ1310120047', 'EQGNTR02', 99.97, 8.00);
 
 -- --------------------------------------------------------
 
@@ -926,7 +934,7 @@ INSERT INTO `list_equipment` (`id`, `desc`, `durability`) VALUES
 --
 
 CREATE TABLE IF NOT EXISTS `market_employee` (
-  `id` varchar(15) NOT NULL,
+  `id` varchar(20) NOT NULL,
   `desc` varchar(15) NOT NULL,
   `zone` varchar(5) NOT NULL,
   `price` decimal(10,2) NOT NULL,
@@ -940,8 +948,8 @@ CREATE TABLE IF NOT EXISTS `market_employee` (
 --
 
 CREATE TABLE IF NOT EXISTS `market_equipment` (
-  `id` varchar(15) NOT NULL,
-  `storage_equipment_id` varchar(15) NOT NULL,
+  `id` varchar(20) NOT NULL,
+  `storage_equipment_id` varchar(20) NOT NULL,
   `desc` varchar(15) NOT NULL,
   `zone` varchar(5) NOT NULL,
   `price` decimal(10,2) NOT NULL,
@@ -955,8 +963,8 @@ CREATE TABLE IF NOT EXISTS `market_equipment` (
 --
 
 CREATE TABLE IF NOT EXISTS `market_product` (
-  `id` varchar(15) NOT NULL,
-  `storage_product_id` varchar(15) NOT NULL,
+  `id` varchar(20) NOT NULL,
+  `storage_product_id` varchar(20) NOT NULL,
   `desc` varchar(15) NOT NULL,
   `zone` varchar(5) NOT NULL,
   `price` decimal(10,2) NOT NULL,
@@ -969,13 +977,10 @@ CREATE TABLE IF NOT EXISTS `market_product` (
 --
 
 INSERT INTO `market_product` (`id`, `storage_product_id`, `desc`, `zone`, `price`, `size`) VALUES
-('MP0810120000', 'PR0810120060', '', 'A', 14.88, 62.50),
-('MP0810120001', 'PR0810120061', '', 'A', 13.44, 40.00),
-('MP0810120002', 'PR0810120060', '', 'A', 14.00, 17.50),
-('MP0908120000', '', 'PRCROL02', 'A', 3.00, 851.58),
-('MP0908120001', '', 'PRIRON02', 'A', 1.90, 608.09),
-('MP0908120002', '', 'PRSLCA02', 'A', 2.50, 686.50),
-('MP0908120003', '', 'PRWATR02', 'A', 1.00, 1000.00);
+('MP1350306791646000', '', 'PRCROL02', 'A', 3.00, 793.85),
+('MP1350306791646001', '', 'PRIRON02', 'A', 1.90, 608.09),
+('MP1350306791646002', '', 'PRSLCA02', 'A', 2.50, 686.50),
+('MP1350306791646003', '', 'PRWATR02', 'A', 1.00, 1000.00);
 
 -- --------------------------------------------------------
 
@@ -984,7 +989,7 @@ INSERT INTO `market_product` (`id`, `storage_product_id`, `desc`, `zone`, `price
 --
 
 CREATE TABLE IF NOT EXISTS `market_share` (
-  `id` varchar(15) NOT NULL,
+  `id` varchar(20) NOT NULL,
   `zone` varchar(5) NOT NULL,
   `product` varchar(25) NOT NULL,
   `value` decimal(10,2) NOT NULL,
@@ -996,8 +1001,8 @@ CREATE TABLE IF NOT EXISTS `market_share` (
 --
 
 INSERT INTO `market_share` (`id`, `zone`, `product`, `value`) VALUES
-('MS0410120000', 'A', 'Gasoline', 1000.00),
-('MS0410120001', 'A', 'Chemical', 1000.00);
+('MS1350306791646000', 'A', 'Gasoline', 1000.00),
+('MS1350306791646001', 'A', 'Chemical', 1000.00);
 
 -- --------------------------------------------------------
 
@@ -1006,14 +1011,21 @@ INSERT INTO `market_share` (`id`, `zone`, `product`, `value`) VALUES
 --
 
 CREATE TABLE IF NOT EXISTS `product_advertisement` (
-  `id` varchar(15) NOT NULL,
+  `id` varchar(20) NOT NULL,
   `user` varchar(25) NOT NULL,
   `product` varchar(25) NOT NULL,
   `zone` varchar(5) NOT NULL,
-  `adv` varchar(15) NOT NULL,
-  `count` bigint(20) NOT NULL,
+  `ads` varchar(15) NOT NULL,
+  `turn` bigint(20) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `product_advertisement`
+--
+
+INSERT INTO `product_advertisement` (`id`, `user`, `product`, `zone`, `ads`, `turn`) VALUES
+('PA1350396586151000', 'bagus', 'Chemical', 'A', 'ADNEWS', 1);
 
 -- --------------------------------------------------------
 
@@ -1022,8 +1034,8 @@ CREATE TABLE IF NOT EXISTS `product_advertisement` (
 --
 
 CREATE TABLE IF NOT EXISTS `req_borrow_bank` (
-  `id` varchar(15) NOT NULL,
-  `user` varchar(15) NOT NULL,
+  `id` varchar(20) NOT NULL,
+  `user` varchar(25) NOT NULL,
   `turn` bigint(20) NOT NULL,
   `sector` varchar(25) NOT NULL,
   `raw_turn` int(11) NOT NULL,
@@ -1039,8 +1051,8 @@ CREATE TABLE IF NOT EXISTS `req_borrow_bank` (
 --
 
 CREATE TABLE IF NOT EXISTS `storage` (
-  `id` varchar(15) NOT NULL,
-  `user` varchar(15) NOT NULL,
+  `id` varchar(20) NOT NULL,
+  `user` varchar(25) NOT NULL,
   `zone` varchar(5) NOT NULL,
   `level` bigint(20) NOT NULL,
   PRIMARY KEY (`id`)
@@ -1051,9 +1063,8 @@ CREATE TABLE IF NOT EXISTS `storage` (
 --
 
 INSERT INTO `storage` (`id`, `user`, `zone`, `level`) VALUES
-('ST0810120002', 'Pioneer', 'A', 1),
-('ST0810120003', 'bagus', 'A', 1),
-('ST0810120005', 'demigodA', 'A', 1);
+('ST1350306791646000', 'demigodA', 'A', 1),
+('ST1350306791646001', 'bagus', 'A', 1);
 
 -- --------------------------------------------------------
 
@@ -1062,8 +1073,8 @@ INSERT INTO `storage` (`id`, `user`, `zone`, `level`) VALUES
 --
 
 CREATE TABLE IF NOT EXISTS `storage_equipment` (
-  `id` varchar(15) NOT NULL,
-  `storage` varchar(15) NOT NULL,
+  `id` varchar(20) NOT NULL,
+  `storage` varchar(20) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
@@ -1074,10 +1085,11 @@ CREATE TABLE IF NOT EXISTS `storage_equipment` (
 --
 
 CREATE TABLE IF NOT EXISTS `storage_product` (
-  `id` varchar(15) NOT NULL,
+  `id` varchar(20) NOT NULL,
   `desc` varchar(15) NOT NULL,
-  `storage` varchar(15) NOT NULL,
+  `storage` varchar(20) NOT NULL,
   `size` decimal(10,2) NOT NULL,
+  `avg_price` decimal(10,2) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
@@ -1085,19 +1097,9 @@ CREATE TABLE IF NOT EXISTS `storage_product` (
 -- Dumping data for table `storage_product`
 --
 
-INSERT INTO `storage_product` (`id`, `desc`, `storage`, `size`) VALUES
-('PR0810120045', 'PRWWTR02', 'ST0810120000', 20.00),
-('PR0810120049', 'PRWWTR02', 'ST0810120001', 20.00),
-('PR0810120050', 'PRCROL02', 'ST0810120002', 35.92),
-('PR0810120051', 'PRIRON02', 'ST0810120002', 40.75),
-('PR0810120052', 'PRSLCA02', 'ST0810120002', 30.28),
-('PR0810120053', 'PRCROL02', 'ST0810120003', 22.50),
-('PR0810120054', 'PRSLCA02', 'ST0810120003', 43.22),
-('PR0810120055', 'PRIRON02', 'ST0810120003', 51.16),
-('PR0810120059', 'PRWWTR02', 'ST0810120004', 20.00),
-('PR0810120060', 'PRCMCL01', 'ST0810120002', 120.00),
-('PR0810120061', 'PRCMCL01', 'ST0810120003', 120.00),
-('PR0810120065', 'PRWWTR02', 'ST0810120005', 60.00);
+INSERT INTO `storage_product` (`id`, `desc`, `storage`, `size`, `avg_price`) VALUES
+('PR1350306791646048', 'PRCROL02', '', 10.00, 3.00),
+('PR1350306791646074', 'PRWWTR02', '', 15.80, -0.50);
 
 -- --------------------------------------------------------
 
@@ -1106,7 +1108,7 @@ INSERT INTO `storage_product` (`id`, `desc`, `storage`, `size`) VALUES
 --
 
 CREATE TABLE IF NOT EXISTS `user` (
-  `name` varchar(15) NOT NULL,
+  `name` varchar(25) NOT NULL,
   `pass` varchar(15) NOT NULL,
   `email` varchar(25) NOT NULL,
   `dob` varchar(50) NOT NULL,
@@ -1124,9 +1126,56 @@ CREATE TABLE IF NOT EXISTS `user` (
 --
 
 INSERT INTO `user` (`name`, `pass`, `email`, `dob`, `about`, `avatar`, `money`, `rep`, `zone`, `level`) VALUES
-('bagus', 'bagus', 'bagus@a.c', 'Apr 1 1990', 'This is me', '', 270.23, 0, 'A', 2),
-('demigodA', 'Adogimed', 'demigod@bizgame.net', 'Apr 4 1990', 'This is me', '', 75666.70, 0, 'A', 4),
-('Pioneer', '1234', 'yahoo@jp', 'Nov 9 1990', 'This is me', '', 282.10, 0, 'A', 2);
+('bagus', 'bagus', 'bagus@g.a', 'Apr 1 1990', 'Life is chance. Death is certain.', '', 3305.94, 0, 'A', 2),
+('demigodA', 'Adogimed', 'demigod@bizgame.net', 'Apr 4 1990', 'This is me', '', 79550.42, 0, 'A', 4);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `user_contract`
+--
+
+CREATE TABLE IF NOT EXISTS `user_contract` (
+  `id` varchar(20) NOT NULL,
+  `request_storage` varchar(20) NOT NULL,
+  `supplier_storage` varchar(20) NOT NULL,
+  `product_desc` varchar(15) NOT NULL,
+  `size` decimal(10,2) NOT NULL,
+  `price` decimal(10,2) NOT NULL,
+  `turn` bigint(20) NOT NULL,
+  `accept` tinyint(1) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `user_finance`
+--
+
+CREATE TABLE IF NOT EXISTS `user_finance` (
+  `id` varchar(20) NOT NULL,
+  `user` varchar(25) NOT NULL,
+  `type` varchar(25) NOT NULL,
+  `total` decimal(10,2) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `user_finance`
+--
+
+INSERT INTO `user_finance` (`id`, `user`, `type`, `total`) VALUES
+('UF1350306791646006', 'bagus', 'Sales', 1425.69),
+('UF1350306791646007', 'bagus', 'Transport', -3.39),
+('UF1350306791646008', 'bagus', 'Retribution', -2.04),
+('UF1350306791646022', 'bagus', 'Interest', -0.09),
+('UF1350306791646023', 'bagus', 'Electricity', -540.00),
+('UF1350306791646024', 'bagus', 'Raw Material', -203.19),
+('UF1350306791646025', 'bagus', 'Wage', -5.70),
+('UF1350306791646026', 'bagus', 'Operation', -4.95),
+('UF1350306791646027', 'bagus', 'Depreciation', -12.18),
+('UF1350396585835000', 'bagus', 'Advertisement', -50.00);
 
 -- --------------------------------------------------------
 
@@ -1135,8 +1184,8 @@ INSERT INTO `user` (`name`, `pass`, `email`, `dob`, `about`, `avatar`, `money`, 
 --
 
 CREATE TABLE IF NOT EXISTS `user_market_license` (
-  `id` varchar(15) NOT NULL,
-  `user` varchar(15) NOT NULL,
+  `id` varchar(20) NOT NULL,
+  `user` varchar(25) NOT NULL,
   `zone` varchar(5) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
@@ -1146,9 +1195,31 @@ CREATE TABLE IF NOT EXISTS `user_market_license` (
 --
 
 INSERT INTO `user_market_license` (`id`, `user`, `zone`) VALUES
-('UM0810120000', 'demigodA', 'A'),
-('UM0810120001', 'Pioneer', 'A'),
-('UM0810120002', 'bagus', 'A');
+('UM1350306791646000', 'demigodA', 'A'),
+('UM1350306791646001', 'bagus', 'A');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `user_message`
+--
+
+CREATE TABLE IF NOT EXISTS `user_message` (
+  `id` varchar(20) NOT NULL,
+  `sender` varchar(25) NOT NULL,
+  `recipient` varchar(25) NOT NULL,
+  `message` text NOT NULL,
+  `unread` tinyint(1) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `user_message`
+--
+
+INSERT INTO `user_message` (`id`, `sender`, `recipient`, `message`, `unread`) VALUES
+('UP1350452715164000', 'bagus', 'demigodA', 'tes', 0),
+('UP1350453123940000', 'demigodA', 'bagus', 'ape?', 0);
 
 -- --------------------------------------------------------
 
@@ -1157,8 +1228,8 @@ INSERT INTO `user_market_license` (`id`, `user`, `zone`) VALUES
 --
 
 CREATE TABLE IF NOT EXISTS `user_sector_blueprint` (
-  `id` varchar(15) NOT NULL,
-  `user` varchar(15) NOT NULL,
+  `id` varchar(20) NOT NULL,
+  `user` varchar(25) NOT NULL,
   `sector` varchar(25) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
@@ -1168,15 +1239,14 @@ CREATE TABLE IF NOT EXISTS `user_sector_blueprint` (
 --
 
 INSERT INTO `user_sector_blueprint` (`id`, `user`, `sector`) VALUES
-('US0810120000', 'demigodA', 'Chemical Plant'),
-('US0810120001', 'demigodA', 'Iron Mine'),
-('US0810120002', 'demigodA', 'Oil Refinery'),
-('US0810120003', 'demigodA', 'Oil Well'),
-('US0810120004', 'demigodA', 'Petrol Power Plant'),
-('US0810120005', 'demigodA', 'Silica Mine'),
-('US0810120006', 'demigodA', 'Water Well'),
-('US0810120007', 'Pioneer', 'Chemical Plant'),
-('US0810120008', 'bagus', 'Chemical Plant');
+('US1350306791646000', 'demigodA', 'Chemical Plant'),
+('US1350306791646001', 'demigodA', 'Iron Mine'),
+('US1350306791646002', 'demigodA', 'Oil Refinery'),
+('US1350306791646003', 'demigodA', 'Oil Well'),
+('US1350306791646004', 'demigodA', 'Petrol Power Plant'),
+('US1350306791646005', 'demigodA', 'Silica Mine'),
+('US1350306791646006', 'demigodA', 'Water Well'),
+('US1450306791646000', 'bagus', 'Oil Refinery');
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;

@@ -2,15 +2,16 @@ package com.ardhi.businessgame.models;
 
 public class MarketEmployee {
 	private String id,employee;
-	private int quality;
+	private int quality,draw;
 	private double price,operational;
 	
-	public MarketEmployee(String i, String e, double pr, int q, double o){
+	public MarketEmployee(String i, String e, double pr, int q, double o, String d){
 		setId(i);
 		setEmployee(e);
 		setPrice(pr);
 		setQuality(q);
 		setOperational(o);
+		setDraw(d);
 	}
 	
 	public String getId() {
@@ -42,5 +43,13 @@ public class MarketEmployee {
 	}
 	public void setOperational(double o) {
 		operational = o;
+	}
+
+	public int getDraw() {
+		return draw;
+	}
+
+	public void setDraw(String d) {
+		draw = Integer.decode(d);
 	}
 }

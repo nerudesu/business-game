@@ -569,110 +569,105 @@ public class SectorDetailTabActivity extends TabActivity {
 			} else {
 				JsonParser parser = new JsonParser();
 				JsonArray array = parser.parse(res.toString()).getAsJsonArray(),
-						array1 = parser.parse(new Gson().fromJson(array.get(0), String.class)).getAsJsonArray(),
-						array2 = parser.parse(new Gson().fromJson(array.get(1), String.class)).getAsJsonArray(),
-						array3 = parser.parse(new Gson().fromJson(array.get(2), String.class)).getAsJsonArray(),
-						array4 = parser.parse(new Gson().fromJson(array1.get(3), String.class)).getAsJsonArray(),
-						array5 = parser.parse(new Gson().fromJson(array1.get(4), String.class)).getAsJsonArray(),
-						array6 = parser.parse(new Gson().fromJson(array1.get(5), String.class)).getAsJsonArray(),
-						array7 = parser.parse(new Gson().fromJson(array1.get(6), String.class)).getAsJsonArray();
+						array1 = parser.parse(new Gson().fromJson(array.get(3), String.class)).getAsJsonArray(),
+						array2 = parser.parse(new Gson().fromJson(array.get(4), String.class)).getAsJsonArray();
 				
-				sectorType = new Gson().fromJson(array1.get(0), String.class);
-				efficiency = new Gson().fromJson(array1.get(1), Double.class);
-				effectivity = new Gson().fromJson(array1.get(2), Double.class);
+				sectorType = new Gson().fromJson(array.get(0), String.class);
+				efficiency = new Gson().fromJson(array.get(1), Double.class);
+				effectivity = new Gson().fromJson(array.get(2), Double.class);
 				input = new ArrayList<String>();
 				inputVal = new ArrayList<Double>();
 				output = new ArrayList<String>();
 				outputVal = new ArrayList<Double>();
 				
-				for(int i=0;i<array4.size();i++){
-					input.add(new Gson().fromJson(array4.get(i), String.class));
-					inputVal.add(new Gson().fromJson(array5.get(i), Double.class));
+				for(int i=0;i<array1.size();i++){
+					input.add(new Gson().fromJson(array1.get(i), String.class));
+					inputVal.add(new Gson().fromJson(array2.get(i), Double.class));
 				}
 				
-				for(int i=0;i<array6.size();i++){
-					output.add(new Gson().fromJson(array6.get(i), String.class));
-					outputVal.add(new Gson().fromJson(array7.get(i), Double.class));
+				array1 = parser.parse(new Gson().fromJson(array.get(5), String.class)).getAsJsonArray();
+				array2 = parser.parse(new Gson().fromJson(array.get(6), String.class)).getAsJsonArray();
+				
+				for(int i=0;i<array1.size();i++){
+					output.add(new Gson().fromJson(array1.get(i), String.class));
+					outputVal.add(new Gson().fromJson(array2.get(i), Double.class));
 				}
 				
+				array1 = parser.parse(new Gson().fromJson(array.get(7), String.class)).getAsJsonArray();
 				equipments = new ArrayList<InstallmentEquipment>();
-				for(int i=0;i<array2.size();i++){
-					equipments.add(new Gson().fromJson(array2.get(i), InstallmentEquipment.class));
+				for(int i=0;i<array1.size();i++){
+					equipments.add(new Gson().fromJson(array1.get(i), InstallmentEquipment.class));
 				}
 				
+				array1 = parser.parse(new Gson().fromJson(array.get(8), String.class)).getAsJsonArray();
 				employees = new ArrayList<InstallmentEmployee>();
-				for(int i=0;i<array3.size();i++){
-					employees.add(new Gson().fromJson(array3.get(i), InstallmentEmployee.class));
+				for(int i=0;i<array1.size();i++){
+					employees.add(new Gson().fromJson(array1.get(i), InstallmentEmployee.class));
 				}
 				
 				if(sectorType.equals("Petrol Power Plant")){
 					totalKwh = 0;
-					tariff = new Gson().fromJson(array.get(3), Double.class);
-					array4 = parser.parse(new Gson().fromJson(array.get(4), String.class)).getAsJsonArray();
-					array5 = parser.parse(new Gson().fromJson(array.get(5), String.class)).getAsJsonArray();
-					array6 = parser.parse(new Gson().fromJson(array.get(6), String.class)).getAsJsonArray();
-					array7 = parser.parse(new Gson().fromJson(array.get(7), String.class)).getAsJsonArray();
+					tariff = new Gson().fromJson(array.get(9), Double.class);
 					
+					array1 = parser.parse(new Gson().fromJson(array.get(10), String.class)).getAsJsonArray();
 					types = new ArrayList<String>();
-					for(int i=0;i<array4.size();i++){
-						types.add(new Gson().fromJson(array4.get(i), String.class));
+					for(int i=0;i<array1.size();i++){
+						types.add(new Gson().fromJson(array1.get(i), String.class));
 					}
 					
+					array1 = parser.parse(new Gson().fromJson(array.get(11), String.class)).getAsJsonArray();
 					users = new ArrayList<String>();
-					for(int i=0;i<array5.size();i++){
-						users.add(new Gson().fromJson(array5.get(i), String.class));
+					for(int i=0;i<array1.size();i++){
+						users.add(new Gson().fromJson(array1.get(i), String.class));
 					}
 					
+					array1 = parser.parse(new Gson().fromJson(array.get(12), String.class)).getAsJsonArray();
 					supplies = new ArrayList<Double>();
-					for(int i=0;i<array6.size();i++){
-						supplies.add(new Gson().fromJson(array6.get(i), Double.class));
-						totalKwh += new Gson().fromJson(array6.get(i), Double.class);
+					for(int i=0;i<array1.size();i++){
+						supplies.add(new Gson().fromJson(array1.get(i), Double.class));
+						totalKwh += new Gson().fromJson(array1.get(i), Double.class);
 					}
 					
 					totalKwh = new BigDecimal(Double.valueOf(totalKwh)).setScale(2, BigDecimal.ROUND_HALF_EVEN).doubleValue();
 					
+					array1 = parser.parse(new Gson().fromJson(array.get(13), String.class)).getAsJsonArray();
 					idSupplies = new ArrayList<String>();
-					for(int i=0;i<array7.size();i++){
-						idSupplies.add(new Gson().fromJson(array7.get(i), String.class));
+					for(int i=0;i<array1.size();i++){
+						idSupplies.add(new Gson().fromJson(array1.get(i), String.class));
 					}
-				} else {
-					currentKwh = new Gson().fromJson(array.get(7), Double.class);
-					currentSupply = new Gson().fromJson(array.get(8), String.class);
-					array4 = parser.parse(new Gson().fromJson(array.get(3), String.class)).getAsJsonArray();
-					array5 = parser.parse(new Gson().fromJson(array.get(4), String.class)).getAsJsonArray();
-					array6 = parser.parse(new Gson().fromJson(array.get(5), String.class)).getAsJsonArray();
-					array7 = parser.parse(new Gson().fromJson(array.get(6), String.class)).getAsJsonArray();
-					
+				} else {					
+					array1 = parser.parse(new Gson().fromJson(array.get(9), String.class)).getAsJsonArray();
 					idSupplies = new ArrayList<String>();
-					for(int i=0;i<array4.size();i++){
-						idSupplies.add(new Gson().fromJson(array4.get(i), String.class));
+					for(int i=0;i<array1.size();i++){
+						idSupplies.add(new Gson().fromJson(array1.get(i), String.class));
 					}
 					
+					array1 = parser.parse(new Gson().fromJson(array.get(10), String.class)).getAsJsonArray();
 					users = new ArrayList<String>();
-					for(int i=0;i<array5.size();i++){
-						users.add(new Gson().fromJson(array5.get(i), String.class));
+					for(int i=0;i<array1.size();i++){
+						users.add(new Gson().fromJson(array1.get(i), String.class));
 					}
 					
+					array1 = parser.parse(new Gson().fromJson(array.get(11), String.class)).getAsJsonArray();
 					tariffs = new ArrayList<Double>();
-					for(int i=0;i<array6.size();i++){
-						tariffs.add(new Gson().fromJson(array6.get(i), Double.class));
+					for(int i=0;i<array1.size();i++){
+						tariffs.add(new Gson().fromJson(array1.get(i), Double.class));
 					}
 					
+					array1 = parser.parse(new Gson().fromJson(array.get(12), String.class)).getAsJsonArray();
 					availables = new ArrayList<Double>();
-					for(int i=0;i<array7.size();i++){
-						availables.add(new Gson().fromJson(array7.get(i), Double.class));
+					for(int i=0;i<array1.size();i++){
+						availables.add(new Gson().fromJson(array1.get(i), Double.class));
 					}
+					
+					currentKwh = new Gson().fromJson(array.get(13), Double.class);
+					currentSupply = new Gson().fromJson(array.get(14), String.class);
 				}
 				
 				parser = null;
 				array = null;
 				array1 = null;
 				array2 = null;
-				array3 = null;
-				array4 = null;
-				array5 = null;
-				array6 = null;
-				array7 = null;
 				
 				setLayout(0);
 			}

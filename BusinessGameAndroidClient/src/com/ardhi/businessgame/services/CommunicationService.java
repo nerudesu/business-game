@@ -16,7 +16,7 @@ import android.net.NetworkInfo;
 public class CommunicationService {
 	
 	public static final int HTTP_TIMEOUT = 30 * 1000; // milliseconds
-	public static final String URL = "http://192.168.1.3:8080/BusinessGame/businessGame",
+	public static final String URL = "http://192.168.43.6:8080/BusinessGame/businessGame",
 			GET_GET_GAME_TIME = "?action=getGameTime",
 			GET_GET_ENTIRE_ZONE = "?action=getEntireZone",
 			GET_LOAD_BANK_DATA = "?action=loadBankData",
@@ -28,9 +28,10 @@ public class CommunicationService {
 			GET_LOAD_SECTOR_OWNED = "?action=loadSectorOwned",
 			GET_LOAD_INSTALLMENT_OWNED_BY_USER = "?action=loadInstallmentOwnedByUser",
 			GET_LOAD_INSTALLMENT_DETAILS = "?action=loadInstallmentDetails",
-			GET_GET_AVAILABLE_INSTALLMENT = "?action=getAvailableInstallment",
 			GET_LOAD_INSTALLMENT_OWNED_BY_EQUIPMENT = "?action=loadInstallmentOwnedByEquipment",
 			GET_QUERY_TOTAL_BUNDLE = "?action=queryTotalBundle",
+			GET_LOAD_USER_DATA = "?action=loadUserData",
+			GET_LOAD_PLAYER_INFO = "?action=loadPlayerInfo",
 			
 			POST_LOGIN = "loginUser",
 			POST_REGISTER_USER = "registerUser",
@@ -49,7 +50,13 @@ public class CommunicationService {
 			POST_UPDATE_SUPPLY_KWH = "updateSupplyKwh",
 			POST_CANCEL_SUPPLY_INSTALLMENT = "cancelSupplyInstallment",
 			POST_BUY_SECTOR_BLUEPRINT = "buySectorBlueprint",
-			POST_BUY_BUNDLE_EQUIPMENT_EMPLOYEE = "buyBundleEquipmentEmployee";
+			POST_BUY_BUNDLE_EQUIPMENT_EMPLOYEE = "buyBundleEquipmentEmployee",
+			POST_MARK_MESSAGE_AS_READ = "markMessageAsRead",
+			POST_ADVERTISE_PRODUCT = "advertiseProduct",
+			POST_SEND_MESSAGE = "sendMessage",
+			POST_MAKE_CONTRACT = "makeContract",
+			POST_CONFIRM_CONTRACT = "confirmContract",
+			POST_CANCEL_REJECT_CONTRACT = "cancelRejectContract";
 	
 	public static boolean isOnline(Activity act){
 		ConnectivityManager conn = (ConnectivityManager)act.getSystemService(Context.CONNECTIVITY_SERVICE);

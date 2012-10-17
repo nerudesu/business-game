@@ -2,10 +2,10 @@ package com.ardhi.businessgame.models;
 
 public class MarketEquipment {
 	private String id,user,equipment;
-	private int quality;
+	private int quality,draw;
 	private double price,durability,size,operational;
 	
-	public MarketEquipment(String i, String u, String e, double pr, int q, double d, double s, double o){
+	public MarketEquipment(String i, String u, String e, double pr, int q, double d, double s, double o, String dw){
 		setId(i);
 		setUser(u);
 		setEquipment(e);
@@ -14,6 +14,7 @@ public class MarketEquipment {
 		setDurability(d);
 		setSize(s);
 		setOperational(o);
+		setDraw(dw);
 	}
 	
 	public String getId() {
@@ -71,5 +72,13 @@ public class MarketEquipment {
 
 	public void setPrice(double p) {
 		price = p;
+	}
+
+	public int getDraw() {
+		return draw;
+	}
+
+	public void setDraw(String dw) {
+		draw = Integer.decode(dw);
 	}
 }

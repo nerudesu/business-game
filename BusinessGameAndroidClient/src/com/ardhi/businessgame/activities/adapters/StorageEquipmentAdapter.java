@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RatingBar;
 import android.widget.TextView;
@@ -45,6 +46,8 @@ public class StorageEquipmentAdapter extends BaseAdapter{
 		if(newView == null){
 			v = inflater.inflate(R.layout.listrow_storage_equipment, null);
 		}
+		
+		ImageView img = (ImageView)v.findViewById(R.id.img);
 		TextView txtEquipment = (TextView)v.findViewById(R.id.txt_equipment),
 				txtSize = (TextView)v.findViewById(R.id.txt_size);
 		RatingBar rateQuality = (RatingBar)v.findViewById(R.id.rate_quality);
@@ -54,6 +57,7 @@ public class StorageEquipmentAdapter extends BaseAdapter{
 		
 		StorageEquipment equipment = equipments.get(pos);
 		
+		img.setImageResource(equipment.getDraw());
 		txtEquipment.setText(equipment.getEquipment());
 		txtSize.setText("Size : "+equipment.getSize());
 		rateQuality.setRating(equipment.getQuality());
