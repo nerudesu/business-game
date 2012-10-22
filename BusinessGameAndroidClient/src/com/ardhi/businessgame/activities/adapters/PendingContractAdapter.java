@@ -65,7 +65,7 @@ public class PendingContractAdapter extends BaseAdapter{
 		} else {
 			btnAcceptConfirm.setText(R.string.btn_awaiting_confirmation);
 			btnAcceptConfirm.setClickable(false);
-			btnAcceptConfirm.setFocusable(false);
+			btnAcceptConfirm.setEnabled(false);
 			btnCancelReject.setText(R.string.btn_cancel);
 		}
 		

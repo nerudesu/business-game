@@ -802,6 +802,9 @@ public class BankProposalTabActivity extends TabActivity {
 			} else if(res.toString().equals("1")){
 				Toast.makeText(getApplicationContext(), "You have submit a proposal. Please wait until next turn..", Toast.LENGTH_SHORT).show();
 				finish();
+			} else if(res.toString().equals("2")){
+				Toast.makeText(getApplicationContext(), "You still have loan. Please pay your debt first..", Toast.LENGTH_SHORT).show();
+				finish();
 			} else {
 				JsonParser parser = new JsonParser();
 				JsonArray array = parser.parse(res.toString()).getAsJsonArray(),

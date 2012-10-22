@@ -242,7 +242,7 @@ public class RegisterActivity extends Activity {
 				pass_re.setText("");
 				progressDialog.dismiss();
 			} else {
-				db.addUser(new User(user.getText().toString(), email.getText().toString(), spinMonth.getSelectedItem().toString()+" "+spinDate.getSelectedItem().toString()+" "+spinYear.getSelectedItem().toString(), "This is me", "", 0.00, 0, spinZone.getSelectedItem().toString(), new HashMap<String, String>(), 0));
+				db.addUser(new User(user.getText().toString(), email.getText().toString(), spinMonth.getSelectedItem().toString()+" "+spinDate.getSelectedItem().toString()+" "+spinYear.getSelectedItem().toString(), "This is me", 0.00, 0, spinZone.getSelectedItem().toString(), new HashMap<String, String>(), 0));
 				Intent intent = new Intent(RegisterActivity.this, MainBusinessGameActivity.class);
 				startActivity(intent);
 			}

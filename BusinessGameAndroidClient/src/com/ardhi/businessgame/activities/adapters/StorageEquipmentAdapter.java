@@ -2,10 +2,6 @@ package com.ardhi.businessgame.activities.adapters;
 
 import java.util.ArrayList;
 
-import com.ardhi.businessgame.R;
-import com.ardhi.businessgame.activities.StorageTabContentActivity;
-import com.ardhi.businessgame.models.StorageEquipment;
-
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,13 +13,17 @@ import android.widget.ProgressBar;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
+import com.ardhi.businessgame.R;
+import com.ardhi.businessgame.activities.StorageTabActivity;
+import com.ardhi.businessgame.models.StorageEquipment;
+
 public class StorageEquipmentAdapter extends BaseAdapter{
 
-	private StorageTabContentActivity act;
+	private StorageTabActivity act;
 	private ArrayList<StorageEquipment> equipments;
 	private static LayoutInflater inflater = null;
 	
-	public StorageEquipmentAdapter(StorageTabContentActivity a, ArrayList<StorageEquipment> e) {
+	public StorageEquipmentAdapter(StorageTabActivity a, ArrayList<StorageEquipment> e) {
 		act = a;
 		equipments = e;
 		inflater = (LayoutInflater)act.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -53,7 +53,8 @@ public class StorageEquipmentAdapter extends BaseAdapter{
 		RatingBar rateQuality = (RatingBar)v.findViewById(R.id.rate_quality);
 		ProgressBar progressDurability = (ProgressBar)v.findViewById(R.id.progress_durability);
 		Button btnSell = (Button)v.findViewById(R.id.btn_sell),
-				btnAttach = (Button)v.findViewById(R.id.btn_attach);
+				btnAttach = (Button)v.findViewById(R.id.btn_attach),
+				btnFix = (Button)v.findViewById(R.id.btn_fix);
 		
 		StorageEquipment equipment = equipments.get(pos);
 		
@@ -63,7 +64,10 @@ public class StorageEquipmentAdapter extends BaseAdapter{
 		rateQuality.setRating(equipment.getQuality());
 		progressDurability.setProgress((int)equipment.getDurability());
 		btnSell.setOnClickListener(new OnClickHandlerSell(equipment.getId()));
-		btnAttach.setOnClickListener(new OnClickHandlerAttach(equipment.getId(),equipment.getEquipment()));
+		btnAttach.setOnClickListener(new OnClickHandlerAttach(equipment.getId()));
+		btnFix.setClickable((equipment.getDurability() < 95));
+		btnFix.setEnabled((equipment.getDurability() < 95));
+		btnFix.setOnClickListener(new OnClickHandlerFix(equipment.getId()));
 		return v;
 	}
 	
@@ -76,21 +80,34 @@ public class StorageEquipmentAdapter extends BaseAdapter{
 		
 		@Override
 		public void onClick(View v) {
-			act.showMyDialog(id, 0, 2);
+			act.showSellDialog(3, id, 0);
 		}
 	}
 	
 	private class OnClickHandlerAttach implements View.OnClickListener{
-		private String id, type;
+		private String id;
 		
-		public OnClickHandlerAttach(String i,String t){
+		public OnClickHandlerAttach(String i){
 			id = i;
-			type = t;
 		}
 
 		@Override
 		public void onClick(View v) {
-			act.showAttachDialog(id,type);
+			act.showAttachDialog(id);
+		}
+		
+	}
+	
+	private class OnClickHandlerFix implements View.OnClickListener{
+		private String id;
+		
+		public OnClickHandlerFix(String i){
+			id = i;
+		}
+
+		@Override
+		public void onClick(View v) {
+			act.showFixDialog(id);
 		}
 		
 	}

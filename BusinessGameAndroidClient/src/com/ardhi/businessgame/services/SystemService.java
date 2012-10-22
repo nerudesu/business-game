@@ -112,7 +112,11 @@ public class SystemService extends Service {
 		@Override
 		protected void onPostExecute(Object res) {
 			if(res == null){
-				Toast.makeText(SystemService.this, "No response from server..", Toast.LENGTH_SHORT).show();
+				Toast.makeText(getApplicationContext(), "No response from server..", Toast.LENGTH_SHORT).show();
+//				Intent i = new Intent(getApplicationContext(), LoginActivity.class);
+//				i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+//				startActivity(i);
+//				onDestroy();
 			} else if(res.toString().equals("-1")){
 				Toast.makeText(SystemService.this, "Server is not ready..", Toast.LENGTH_SHORT).show();
 			} else if(res.toString().equals("0")){

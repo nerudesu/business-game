@@ -1,21 +1,30 @@
 package com.ardhi.businessgame.activities;
 
+import java.util.HashMap;
+
 import com.ardhi.businessgame.R;
 import com.ardhi.businessgame.models.User;
+import com.ardhi.businessgame.services.CommunicationService;
 import com.ardhi.businessgame.services.DBAccess;
 import com.ardhi.businessgame.services.SystemService;
 import com.ardhi.businessgame.services.TimeSync;
+import com.google.gson.Gson;
 
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -34,6 +43,8 @@ public class BankLobbyActivity extends Activity {
 	private TimeSync timeSync;
 	private Handler h;
 	private Thread t;
+	private ProgressDialog progressDialog;
+	private double loan;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -122,10 +133,128 @@ public class BankLobbyActivity extends Activity {
 			case 0:
 				startActivity(new Intent(BankLobbyActivity.this, BankProposalTabActivity.class));
 				break;
+				
+			case 1:
+				new GetBorrowedMoney().execute();
+				break;
 
 			default:
 				break;
 			}
 		}
 	};
+	
+	private AlertDialog dialog(int d){
+		AlertDialog dialog = null;
+		final LayoutInflater factory;
+		final View view;
+		switch (d) {
+		case 1:
+			factory = LayoutInflater.from(this);
+			view = factory.inflate(R.layout.question_pay_borrow, null);
+			final EditText txtLoan = (EditText)view.findViewById(R.id.txt_loan),
+					txtMoney = (EditText)view.findViewById(R.id.txt_money);
+			
+			txtLoan.setText(loan+" ZE");
+			txtMoney.setText("0");
+			dialog = new AlertDialog.Builder(this)
+			.setView(view)
+			.setPositiveButton("Pay", new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int which) {
+					if(user.getMoney() >= (Double.parseDouble(txtMoney.getText().toString())))
+						doPositiveClickDialogPayBorrowedMoney(Double.parseDouble(txtMoney.getText().toString()));
+					else Toast.makeText(BankLobbyActivity.this, "Insufficient funds..", Toast.LENGTH_LONG).show();
+				}
+			})
+			.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int which) {
+					
+				}
+			})
+			.setCancelable(false)
+			.create();
+			
+			break;
+
+		default:
+			break;
+		}
+		return dialog;
+	}
+	
+	private void doPositiveClickDialogPayBorrowedMoney(double money){
+		if(CommunicationService.isOnline(this)){
+			progressDialog = ProgressDialog.show(this, "", "Processing..");
+			new PayBorrowedMoney().execute(""+money);
+		} else {
+			Toast.makeText(this, "Device is offline..", Toast.LENGTH_SHORT).show();
+		}
+	}
+	
+	private class GetBorrowedMoney extends AsyncTask<String, Void, Object>{
+
+		@Override
+		protected Object doInBackground(String... params) {
+			try {
+				return CommunicationService.get(CommunicationService.GET_GET_BORROWED_MONEY+"&user="+user.getName());
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return null;
+			}
+		}
+		
+		@Override
+		protected void onPostExecute(Object res) {
+			progressDialog.dismiss();
+			if(res == null){
+				Toast.makeText(BankLobbyActivity.this, "No response from server. Try again later.", Toast.LENGTH_LONG).show();
+			} else if(res.toString().equals("-1")){
+				Toast.makeText(BankLobbyActivity.this, "Server is not ready..", Toast.LENGTH_LONG).show();
+			} else if(res.toString().equals("0")){
+				Toast.makeText(BankLobbyActivity.this, "Internal error..", Toast.LENGTH_LONG).show();
+			} else if(res.toString().equals("1")){
+				Toast.makeText(BankLobbyActivity.this, "You have no loan..", Toast.LENGTH_LONG).show();
+			} else {
+				loan = new Gson().fromJson(res.toString(), Double.class);
+				
+				dialog(1).show();
+			}
+		}
+	}
+	
+	private class PayBorrowedMoney extends AsyncTask<String, Void, Object>{
+		
+		@Override
+		protected Object doInBackground(String... params) {
+			HashMap<String, String> postParameters = new HashMap<String, String>();
+			postParameters.put("user", user.getName());
+			postParameters.put("pay", params[0]);
+			String res = null;
+			try {
+				res = CommunicationService.post(CommunicationService.POST_PAY_BORROWED_MONEY, postParameters);
+			} catch (Exception e) {
+				e.printStackTrace();
+				res = null;
+			}
+			
+			postParameters = null;
+			
+			return res;
+		}
+		
+		@Override
+		protected void onPostExecute(Object res) {
+			progressDialog.dismiss();
+			if(res == null){
+				Toast.makeText(BankLobbyActivity.this, "No response from server. Try again later.", Toast.LENGTH_LONG).show();
+			} else if(res.toString().equals("-1")){
+				Toast.makeText(BankLobbyActivity.this, "Server is not ready..", Toast.LENGTH_LONG).show();
+			} else if(res.toString().equals("0")){
+				Toast.makeText(BankLobbyActivity.this, "Internal error..", Toast.LENGTH_LONG).show();
+			} else if(res.toString().equals("1")){
+				
+			}
+		}
+	}
 }

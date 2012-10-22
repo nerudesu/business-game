@@ -5,26 +5,40 @@
     android:orientation="vertical"
     tools:context=".activities.MainBusinessGameActivity" >
     
-    <LinearLayout android:layout_width="fill_parent"
+    <LinearLayout android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="vertical">
         
-        <TextView android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/price_kwh"/>
+        <TableLayout android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:stretchColumns="1">
+            
+            <TableRow >
+                
+                <TextView android:text="@string/subscription"/>
+     
+				<EditText android:inputType="numberDecimal"
+				    android:id="@+id/txt_subscription"/>
+                
+            </TableRow>
+            
+            <TableRow >
+                
+                <TextView android:text="@string/price_kwh"/>
+     
+				<EditText android:inputType="numberDecimal"
+				    android:id="@+id/txt_price_kwh"/>
+                
+            </TableRow>
+            
+        </TableLayout>
         
-        <EditText android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:inputType="numberDecimal"
-            android:id="@+id/txt_price_kwh"/>
-        
-        <Button android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+        <Button android:layout_width="match_parent"
+            android:layout_height="wrap_content" 
             android:text="@string/submit"
             android:id="@+id/btn_submit"/>
         
-    </LinearLayout>
+	</LinearLayout>
 
     <ListView
         android:id="@+id/supply_list"

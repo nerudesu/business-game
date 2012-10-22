@@ -2,10 +2,6 @@ package com.ardhi.businessgame.activities.adapters;
 
 import java.util.ArrayList;
 
-import com.ardhi.businessgame.R;
-import com.ardhi.businessgame.activities.StorageTabContentActivity;
-import com.ardhi.businessgame.models.StorageProduct;
-
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,13 +12,17 @@ import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
+import com.ardhi.businessgame.R;
+import com.ardhi.businessgame.activities.StorageTabActivity;
+import com.ardhi.businessgame.models.StorageProduct;
+
 public class StorageProductAdapter extends BaseAdapter{
 
-	private StorageTabContentActivity act;
+	private StorageTabActivity act;
 	private ArrayList<StorageProduct> products;
 	private static LayoutInflater inflater = null;
 	
-	public StorageProductAdapter(StorageTabContentActivity a, ArrayList<StorageProduct> p) {
+	public StorageProductAdapter(StorageTabActivity a, ArrayList<StorageProduct> p) {
 		act = a;
 		products = p;
 		inflater = (LayoutInflater)act.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -72,7 +72,7 @@ public class StorageProductAdapter extends BaseAdapter{
 		
 		@Override
 		public void onClick(View v) {
-			act.showMyDialog(id, size, 1);
+			act.showSellDialog(2, id, size);
 		}
 	}
 }

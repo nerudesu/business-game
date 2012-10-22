@@ -42,6 +42,18 @@
 	        
 	        <TableRow >
 	            
+	            <TextView android:text="@string/subscription"/>
+	            
+	            <EditText android:id="@+id/txt_subscription"
+	                android:background="@null"
+	                android:focusable="false"
+	                android:inputType="none"
+	                android:textColor="@android:color/white" />
+	            
+	        </TableRow>
+	        
+	        <TableRow >
+	            
 	            <TextView android:text="@string/price_kwh"/>
 	            
 	            <EditText android:id="@+id/txt_price_kwh"

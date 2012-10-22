@@ -1,5 +1,6 @@
 package com.ardhi.businessgame.activities;
 
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -34,11 +35,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.Spinner;
 import android.widget.Toast;
 import android.support.v4.app.NavUtils;
 
@@ -52,10 +51,9 @@ public class SectorActivity extends Activity {
 	private Thread t;
 	private TimeSync timeSync;
 	private ProgressDialog progressDialog;
-	private ArrayList<String> sectors;
-	private ArrayList<Double> costs;
 	private ArrayList<Installment> installments;
-	private double price;
+	private double buildCost,propCost;
+	private String sector;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -75,18 +73,13 @@ public class SectorActivity extends Activity {
         zone.setText(user.getZone());
         money.setText(user.getMoney()+" ZE");
         btnNewInstallment.setOnClickListener(new OnClickHandler());
+        sector = getIntent().getExtras().getString("sector");
+        buildCost = getIntent().getExtras().getDouble("buildCost");
+        propCost = getIntent().getExtras().getDouble("propCost");
         
         h = new Handler();
         timeSync = new TimeSync(h, nextTurn, money, db);
         bindService(new Intent(this, SystemService.class), serviceConnection, Context.BIND_AUTO_CREATE);
-        
-        if(CommunicationService.isOnline(this)){
-        	progressDialog = ProgressDialog.show(this, "", "Checking installment owned..");
-            new LoadInstallmentOwnedByUser().execute();
-        } else {
-        	Toast.makeText(getApplicationContext(), "Device is offline..", Toast.LENGTH_SHORT).show();
-        	finish();
-        }
     }
     
     @Override
@@ -105,6 +98,14 @@ public class SectorActivity extends Activity {
 		user = db.getUser();
 		zone.setText(user.getZone());
         money.setText(user.getMoney()+" ZE");
+        
+        if(CommunicationService.isOnline(this)){
+        	progressDialog = ProgressDialog.show(this, "", "Checking installment owned..");
+            new LoadInstallmentOwnedByUserFromSelectedType().execute();
+        } else {
+        	Toast.makeText(getApplicationContext(), "Device is offline..", Toast.LENGTH_SHORT).show();
+        	finish();
+        }
 	}
 	
 	@Override
@@ -154,12 +155,7 @@ public class SectorActivity extends Activity {
 
 		@Override
 		public void onClick(View v) {
-			if(CommunicationService.isOnline(SectorActivity.this)){
-	        	progressDialog = ProgressDialog.show(SectorActivity.this, "", "Checking sector owned..");
-	            new LoadSectorOwned().execute();
-	        } else {
-	        	Toast.makeText(SectorActivity.this, "Device is offline..", Toast.LENGTH_SHORT).show();
-	        }
+			dialog(1).show();
 		}
 		
 	}
@@ -167,36 +163,24 @@ public class SectorActivity extends Activity {
 	public AlertDialog dialog(int id){
 		final LayoutInflater factory;
 		final View view;
-		final Spinner spinSector;
-		final EditText txtPrice;
-		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, sectors);
-		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		AlertDialog dialog = null;
 		switch (id) {
 			case 1:
 				factory = LayoutInflater.from(this);
 				view = factory.inflate(R.layout.question_installment_type, null);
-				spinSector = (Spinner)view.findViewById(R.id.spin_sector);
-				txtPrice = (EditText)view.findViewById(R.id.txt_price);
-				spinSector.setAdapter(adapter);
-				spinSector.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-
-					@Override
-					public void onItemSelected(AdapterView<?> spinner, View v, int pos, long id) {
-						txtPrice.setText(price+costs.get(pos)+" ZE");
-					}
-
-					@Override
-					public void onNothingSelected(AdapterView<?> arg0) {
-						
-					}
-				});
+				final EditText txtSector = (EditText)view.findViewById(R.id.txt_sector),
+						txtBuildCost = (EditText)view.findViewById(R.id.txt_build_cost),
+						txtPropCost = (EditText)view.findViewById(R.id.txt_prop_cost);
+				
+				txtSector.setText(sector);
+				txtBuildCost.setText(buildCost+" ZE");
+				txtPropCost.setText(propCost+" ZE");
 				dialog = new AlertDialog.Builder(this)
 				.setView(view)
 				.setPositiveButton("Create", new DialogInterface.OnClickListener() {
 					public void onClick(DialogInterface dialog, int which) {
-						if(user.getMoney() >= (price+costs.get(spinSector.getSelectedItemPosition())))
-							createNewInstallment(spinSector.getSelectedItem().toString());
+						if(user.getMoney() >= (buildCost+propCost))
+							createNewInstallment();
 						else Toast.makeText(SectorActivity.this, "Insufficient funds..", Toast.LENGTH_LONG).show();
 					}
 				})
@@ -219,59 +203,13 @@ public class SectorActivity extends Activity {
         lv.setOnItemClickListener(onItemClickHandler);
     }
 	
-	private void createNewInstallment(String sector){
+	private void createNewInstallment(){
 		if(CommunicationService.isOnline(this)){
         	progressDialog = ProgressDialog.show(this, "", "Creating new installment..");
-            new CreateNewInstallment().execute(sector);
+            new CreateNewInstallment().execute();
         } else {
         	Toast.makeText(this, "Device is offline..", Toast.LENGTH_SHORT).show();
         }
-	}
-	
-	private class LoadSectorOwned extends AsyncTask<String, Void, Object>{
-		
-		@Override
-		protected Object doInBackground(String... params) {
-			try {
-				return CommunicationService.get(CommunicationService.GET_LOAD_SECTOR_OWNED+"&user="+user.getName());
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				return null;
-			}
-		}
-		
-		@Override
-		protected void onPostExecute(Object res) {
-			progressDialog.dismiss();
-			if(res == null){
-				Toast.makeText(SectorActivity.this, "No response from server. Try again later.", Toast.LENGTH_LONG).show();
-			} else if(res.toString().equals("-1")){
-				Toast.makeText(SectorActivity.this, "Server is not ready..", Toast.LENGTH_LONG).show();
-			} else if(res.toString().equals("0")){
-				Toast.makeText(SectorActivity.this, "Internal error..", Toast.LENGTH_LONG).show();
-			} else {
-				sectors = new ArrayList<String>();
-				costs = new ArrayList<Double>();
-				JsonParser parser = new JsonParser();
-				JsonArray array = parser.parse(res.toString()).getAsJsonArray(),
-						array1 = parser.parse(new Gson().fromJson(array.get(0), String.class)).getAsJsonArray(),
-						array2 = parser.parse(new Gson().fromJson(array.get(1), String.class)).getAsJsonArray();
-				
-				for(int i=0;i<array1.size();i++){
-					sectors.add(new Gson().fromJson(array1.get(i), String.class));
-				}
-				
-				for(int i=0;i<array2.size();i++){
-					costs.add(new Gson().fromJson(array2.get(i), Double.class));
-				}
-				
-				price = new Gson().fromJson(array.get(2), Double.class);
-				
-				dialog(1).show();
-			}
-		}
-		
 	}
 	
 	private class CreateNewInstallment extends AsyncTask<String, Void, Object>{
@@ -281,7 +219,7 @@ public class SectorActivity extends Activity {
 			HashMap<String, String> postParameters = new HashMap<String, String>();
 			postParameters.put("user", user.getName());
 			postParameters.put("zone", user.getZone());
-			postParameters.put("type", params[0]);
+			postParameters.put("type", sector);
 			
 			String res = null;
 			try {
@@ -310,28 +248,26 @@ public class SectorActivity extends Activity {
 			} else {
 				installments = new ArrayList<Installment>();
 				JsonParser parser = new JsonParser();
-				JsonArray array = parser.parse(res.toString()).getAsJsonArray(),
-						array1 = parser.parse(new Gson().fromJson(array.get(0), String.class)).getAsJsonArray();
+				JsonArray array = parser.parse(res.toString()).getAsJsonArray();
 
-				for(int i=0;i<array1.size();i++){
-					installments.add(new Gson().fromJson(array1.get(i), Installment.class));
+				for(int i=0;i<array.size();i++){
+					installments.add(new Gson().fromJson(array.get(i), Installment.class));
 				}
 				
 				parser = null;
 				array = null;
-				array1 = null;
 				
 				setLayout();
 			}
 		}
 	}
 	
-	private class LoadInstallmentOwnedByUser extends AsyncTask<String, Void, Object>{
+	private class LoadInstallmentOwnedByUserFromSelectedType extends AsyncTask<String, Void, Object>{
 
 		@Override
 		protected Object doInBackground(String... params) {
 			try {
-				return CommunicationService.get(CommunicationService.GET_LOAD_INSTALLMENT_OWNED_BY_USER+"&user="+user.getName());
+				return CommunicationService.get(CommunicationService.GET_LOAD_INSTALLMENT_OWNED_BY_USER_FROM_SELECTED_TYPE+"&user="+user.getName()+"&type="+URLEncoder.encode(sector, "UTF-8"));
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -352,7 +288,6 @@ public class SectorActivity extends Activity {
 				installments = new ArrayList<Installment>();
 				JsonParser parser = new JsonParser();
 				JsonArray array = parser.parse(res.toString()).getAsJsonArray();
-//						array1 = parser.parse(new Gson().fromJson(array.get(0), String.class)).getAsJsonArray();
 
 				for(int i=0;i<array.size();i++){
 					installments.add(new Gson().fromJson(array.get(i), Installment.class));
@@ -360,7 +295,6 @@ public class SectorActivity extends Activity {
 				
 				parser = null;
 				array = null;
-//				array1 = null;
 				
 				setLayout();
 			}

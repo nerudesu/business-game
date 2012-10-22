@@ -182,7 +182,8 @@ public class MainBusinessGameActivity extends Activity {
     	public void onItemClick(AdapterView<?> parent, View v, int pos, long id) {
 			switch (pos) {
 			case 0:
-				startActivity(new Intent(MainBusinessGameActivity.this, MyBusinessActivity.class));
+//				startActivity(new Intent(MainBusinessGameActivity.this, MyBusinessActivity.class));
+				startActivity(new Intent(MainBusinessGameActivity.this, GDXSummoner.class));
 				break;
 				
 			case 1:

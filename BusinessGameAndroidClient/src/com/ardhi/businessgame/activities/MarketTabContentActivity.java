@@ -470,27 +470,28 @@ public class MarketTabContentActivity extends Activity {
 			} else {
 				installments = new ArrayList<Installment>();
 				JsonParser parser = new JsonParser();
-				JsonArray array = parser.parse(res.toString()).getAsJsonArray(),
-						array1 = parser.parse(new Gson().fromJson(array.get(0), String.class)).getAsJsonArray();
+				JsonArray array = parser.parse(res.toString()).getAsJsonArray();
+				if(array.size() == 0)
+					Toast.makeText(MarketTabContentActivity.this, "You have no installment..", Toast.LENGTH_LONG).show();
+				else{
 
-				for(int i=0;i<array1.size();i++){
-					installments.add(new Gson().fromJson(array1.get(i), Installment.class));
-				}
-				
-				parser = null;
-				array = null;
-				array1 = null;
-				
-				switch (check) {
-				case 0:
-					dialog(id, 4, name, 0, price, 0, quality, operational).show();
-					break;
+					for(int i=0;i<array.size();i++){
+						installments.add(new Gson().fromJson(array.get(i), Installment.class));
+					}
 					
-				case 1:
-					bundleDialog(0).show();
-
-				default:
-					break;
+					parser = null;
+					array = null;
+					
+					switch (check) {
+					case 0:
+						dialog(id, 4, name, 0, price, 0, quality, operational).show();
+						break;
+						
+					case 1:
+						bundleDialog(0).show();
+					default:
+						break;
+					}
 				}
 			}
 		}

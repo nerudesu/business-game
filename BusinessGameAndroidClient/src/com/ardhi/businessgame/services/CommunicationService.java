@@ -16,7 +16,7 @@ import android.net.NetworkInfo;
 public class CommunicationService {
 	
 	public static final int HTTP_TIMEOUT = 30 * 1000; // milliseconds
-	public static final String URL = "http://192.168.43.6:8080/BusinessGame/businessGame",
+	public static final String URL = "http://192.168.2.1:8080/BusinessGame/businessGame",
 			GET_GET_GAME_TIME = "?action=getGameTime",
 			GET_GET_ENTIRE_ZONE = "?action=getEntireZone",
 			GET_LOAD_BANK_DATA = "?action=loadBankData",
@@ -32,6 +32,9 @@ public class CommunicationService {
 			GET_QUERY_TOTAL_BUNDLE = "?action=queryTotalBundle",
 			GET_LOAD_USER_DATA = "?action=loadUserData",
 			GET_LOAD_PLAYER_INFO = "?action=loadPlayerInfo",
+			GET_LOAD_INSTALLMENT_OWNED_BY_USER_FROM_SELECTED_TYPE = "?action=loadInstallmentOwnedByUserFromSelectedType",
+			GET_CALCULATE_FIX_PRICE = "?action=calculateFixPrice",
+			GET_GET_BORROWED_MONEY = "?action=getBorrowedMoney",
 			
 			POST_LOGIN = "loginUser",
 			POST_REGISTER_USER = "registerUser",
@@ -46,7 +49,7 @@ public class CommunicationService {
 			POST_DETACH_EQUIPMENT="detachEquipment",
 			POST_HIRE_EMPLOYEE_TO_INSTALLMENT = "hireEmployeeToInstallment",
 			POST_FIRE_EMPLOYEE = "fireEmployee",
-			POST_UPDATE_TARIFF = "updateTariff",
+			POST_UPDATE_SUBSCRIPTION_TARIFF = "updateSubscriptionTariff",
 			POST_UPDATE_SUPPLY_KWH = "updateSupplyKwh",
 			POST_CANCEL_SUPPLY_INSTALLMENT = "cancelSupplyInstallment",
 			POST_BUY_SECTOR_BLUEPRINT = "buySectorBlueprint",
@@ -56,7 +59,11 @@ public class CommunicationService {
 			POST_SEND_MESSAGE = "sendMessage",
 			POST_MAKE_CONTRACT = "makeContract",
 			POST_CONFIRM_CONTRACT = "confirmContract",
-			POST_CANCEL_REJECT_CONTRACT = "cancelRejectContract";
+			POST_CANCEL_REJECT_CONTRACT = "cancelRejectContract",
+			POST_CANCEL_OFFER_PRODUCT = "cancelOfferProduct",
+			POST_CANCEL_OFFER_EQUIPMENT = "cancelOfferEquipment",
+			POST_FIX_EQUIPMENT = "fixEquipment",
+			POST_PAY_BORROWED_MONEY = "payBorrowedMoney";
 	
 	public static boolean isOnline(Activity act){
 		ConnectivityManager conn = (ConnectivityManager)act.getSystemService(Context.CONNECTIVITY_SERVICE);

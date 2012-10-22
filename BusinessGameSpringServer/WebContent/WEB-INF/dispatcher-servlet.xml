@@ -32,10 +32,8 @@
 	<context:component-scan base-package="com.ardhi.businessgame" />
 	
 	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close">
-		<property name="driverClass" value="com.mysql.jdbc.Driver" />
-		<property name="jdbcUrl" value="jdbc:mysql://localhost/businessgame" />
-		<property name="user" value="ardhi" />
-		<property name="password" value="ardhi" />
+		<property name="driverClass" value="com.microsoft.sqlserver.jdbc.SQLServerDriver" />
+		<property name="jdbcUrl" value="jdbc:sqlserver://192.168.56.101:1039;databaseName=businessgame;user=Ardhi;password=ardhi;" />
 		<property name="acquireIncrement" value="5" />
 		<property name="idleConnectionTestPeriod" value="60" />
 		<property name="maxPoolSize" value="100" />

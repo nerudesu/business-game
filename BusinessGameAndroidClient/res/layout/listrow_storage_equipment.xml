@@ -38,13 +38,20 @@
         android:progress="75" />
     <Button android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
+        android:layout_alignLeft="@+id/progress_durability"
+        android:layout_below="@+id/progress_durability"
         android:text="@string/btn_sell"
         android:id="@+id/btn_sell"/>
     <Button android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignTop="@+id/btn_sell"
-        android:layout_toLeftOf="@+id/btn_sell"
+        android:layout_toRightOf="@+id/btn_sell"
         android:text="@string/btn_attach"
         android:id="@+id/btn_attach"/>
+    <Button android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/btn_sell"
+        android:layout_toRightOf="@+id/btn_attach"
+        android:text="@string/btn_fix"
+        android:id="@+id/btn_fix"/>
 </RelativeLayout>

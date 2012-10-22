@@ -55,6 +55,12 @@
                 android:value="com.ardhi.businessgame.activities.MainBusinessGameActivity" />
         </activity>
         <activity
+            android:name=".activities.GDXSummoner"
+            android:configChanges="keyboard|keyboardHidden|orientation"
+            android:label="@string/title_activity_my_business"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
             android:name=".activities.BankLobbyActivity"
             android:configChanges="keyboard|keyboardHidden|orientation"
             android:label="@string/title_activity_bank_lobby"
@@ -155,6 +161,13 @@
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.ardhi.businessgame.activities.HeadquarterTabActivity" />
+        </activity>
+        <activity
+            android:name=".activities.HelpActivity"
+            android:label="@string/title_activity_help" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.ardhi.businessgame.activities.MainBusinessGameActivity" />
         </activity>
     </application>
 

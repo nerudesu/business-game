@@ -9,20 +9,37 @@
         <TextView android:textAppearance="?android:attr/textAppearanceMedium"
 		    android:text="@string/installment_type"/>
         
-        <Spinner android:id="@+id/spin_sector"/>
+        <EditText android:background="@null"
+            android:focusable="false"
+            android:inputType="none"
+            android:textColor="@android:color/white"
+            android:id="@+id/txt_sector"/>
         
     </TableRow>
     
     <TableRow >
         
         <TextView android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="@string/price"/>
+            android:text="@string/build_cost"/>
         
         <EditText android:background="@null"
             android:focusable="false"
             android:inputType="none"
             android:textColor="@android:color/white"
-            android:id="@+id/txt_price"/>
+            android:id="@+id/txt_build_cost"/>
+        
+    </TableRow>
+    
+    <TableRow >
+        
+        <TextView android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="@string/prop_cost"/>
+        
+        <EditText android:background="@null"
+            android:focusable="false"
+            android:inputType="none"
+            android:textColor="@android:color/white"
+            android:id="@+id/txt_prop_cost"/>
         
     </TableRow>
     

@@ -347,16 +347,16 @@ public class HeadquarterTabActivity extends TabActivity {
 	}
 	
 	private class TabSectorUnlocked implements TabHost.TabContentFactory {
-		Context c;
+		HeadquarterTabActivity a;
 		
 		public TabSectorUnlocked(){
-			c = HeadquarterTabActivity.this;
+			a = HeadquarterTabActivity.this;
 		}
 
 		@Override
 		public View createTabContent(String tag) {
-			ListView lv = new ListView(c);
-			lv.setAdapter(new ArrayAdapter<String>(c, android.R.layout.simple_list_item_1, sectors));
+			ListView lv = new ListView(a);
+			lv.setAdapter(new ArrayAdapter<String>(a, android.R.layout.simple_list_item_1, sectors));
 			lv.setOnItemClickListener(onItemClickHandlerSector);
 			lv.setTextFilterEnabled(true);
 			return lv;
@@ -365,16 +365,16 @@ public class HeadquarterTabActivity extends TabActivity {
 	}
 	
 	private class TabContractList implements TabHost.TabContentFactory {
-		Context c;
+		HeadquarterTabActivity a;
 		
 		public TabContractList(){
-			c = HeadquarterTabActivity.this;
+			a = HeadquarterTabActivity.this;
 		}
 
 		@Override
 		public View createTabContent(String tag) {
-			ListView lv = new ListView(c);
-			lv.setAdapter(new ContractAdapter(HeadquarterTabActivity.this, contracts));
+			ListView lv = new ListView(a);
+			lv.setAdapter(new ContractAdapter(a, contracts));
 			lv.setTextFilterEnabled(true);
 			return lv;
 		}
@@ -382,16 +382,16 @@ public class HeadquarterTabActivity extends TabActivity {
 	}
 	
 	private class TabPendingContractList implements TabHost.TabContentFactory {
-		Context c;
+		HeadquarterTabActivity a;
 		
 		public TabPendingContractList(){
-			c = HeadquarterTabActivity.this;
+			a = HeadquarterTabActivity.this;
 		}
 		
 		@Override
 		public View createTabContent(String tag) {
-			ListView lv = new ListView(c);
-			lv.setAdapter(new PendingContractAdapter(HeadquarterTabActivity.this, pendingContracts));
+			ListView lv = new ListView(a);
+			lv.setAdapter(new PendingContractAdapter(a, pendingContracts));
 			lv.setTextFilterEnabled(true);
 			return lv;
 		}
@@ -399,23 +399,23 @@ public class HeadquarterTabActivity extends TabActivity {
 	}
 	
 	private class TabAdvertisement implements TabHost.TabContentFactory {
-		Context c;
+		HeadquarterTabActivity a;
 		
 		public TabAdvertisement() {
-			c = HeadquarterTabActivity.this;
+			a = HeadquarterTabActivity.this;
 		}
 		
 		@Override
 		public View createTabContent(String tag) {
-			LayoutInflater inflater = (LayoutInflater)c.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+			LayoutInflater inflater = (LayoutInflater)a.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 			View v = inflater.inflate(R.layout.extended_advertisement, null);
 			final Spinner spinProduct = (Spinner)v.findViewById(R.id.spin_product),
 					spinAdsType = (Spinner)v.findViewById(R.id.spin_ads_type);
 			final EditText txtTurn = (EditText)v.findViewById(R.id.txt_turn);
 			Button btnAdvertise = (Button)v.findViewById(R.id.btn_advertise);
 			
-			ArrayAdapter<String> productAdapter = new ArrayAdapter<String>(c, android.R.layout.simple_spinner_item, products),
-					adsTypeAdapter = new ArrayAdapter<String>(c, android.R.layout.simple_spinner_item, advertises);
+			ArrayAdapter<String> productAdapter = new ArrayAdapter<String>(a, android.R.layout.simple_spinner_item, products),
+					adsTypeAdapter = new ArrayAdapter<String>(a, android.R.layout.simple_spinner_item, advertises);
 			productAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 			adsTypeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 			spinProduct.setAdapter(productAdapter);
@@ -432,15 +432,15 @@ public class HeadquarterTabActivity extends TabActivity {
 	}
 	
 	private class TabFinancial implements TabHost.TabContentFactory {
-		Context c;
+		HeadquarterTabActivity a;
 		
 		public TabFinancial(){
-			c = HeadquarterTabActivity.this;
+			a = HeadquarterTabActivity.this;
 		}
 		
 		@Override
 		public View createTabContent(String tag) {
-			LayoutInflater inflater = (LayoutInflater)c.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+			LayoutInflater inflater = (LayoutInflater)a.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 			View v = inflater.inflate(R.layout.extended_financial, null);
 			EditText txtSales = (EditText)v.findViewById(R.id.txt_sales),
 					txtRaw = (EditText)v.findViewById(R.id.txt_raw_material),
@@ -481,15 +481,15 @@ public class HeadquarterTabActivity extends TabActivity {
 	}
 	
 	private class TabAssets implements TabHost.TabContentFactory {
-		Context c;
+		HeadquarterTabActivity a;
 		
 		public TabAssets(){
-			c = HeadquarterTabActivity.this;
+			a = HeadquarterTabActivity.this;
 		}
 		
 		@Override
 		public View createTabContent(String tag) {
-			LayoutInflater inflater = (LayoutInflater)c.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+			LayoutInflater inflater = (LayoutInflater)a.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 			View v = inflater.inflate(R.layout.extended_asset, null);
 			EditText txtCash = (EditText)v.findViewById(R.id.txt_cash),
 				txtRawOnStorage = (EditText)v.findViewById(R.id.txt_raw_material),
@@ -513,16 +513,16 @@ public class HeadquarterTabActivity extends TabActivity {
 	}
 	
 	private class TabPlayers implements TabHost.TabContentFactory {
-		Context c;
+		HeadquarterTabActivity a;
 		
 		public TabPlayers() {
-			c = HeadquarterTabActivity.this;
+			a = HeadquarterTabActivity.this;
 		}
 		
 		@Override
 		public View createTabContent(String tag) {
-			ListView lv = new ListView(c);
-			lv.setAdapter(new ArrayAdapter<String>(c, android.R.layout.simple_list_item_1, players));
+			ListView lv = new ListView(a);
+			lv.setAdapter(new ArrayAdapter<String>(a, android.R.layout.simple_list_item_1, players));
 			lv.setOnItemClickListener(onItemClickHandlerPlayer);
 			lv.setTextFilterEnabled(true);
 			return lv;
@@ -783,6 +783,7 @@ public class HeadquarterTabActivity extends TabActivity {
 		protected Object doInBackground(String... params) {
 			HashMap<String, String> postParameters = new HashMap<String, String>();
 			postParameters.put("id", params[0]);
+			postParameters.put("user", user.getName());
 			id = params[0];
 			String res = null;
 			try {

@@ -45,6 +45,9 @@ public class BusinessGameController {
 		listActionGet.add("queryTotalBundle");
 		listActionGet.add("loadUserData");
 		listActionGet.add("loadPlayerInfo");
+		listActionGet.add("loadInstallmentOwnedByUserFromSelectedType");
+		listActionGet.add("calculateFixPrice");
+		listActionGet.add("getBorrowedMoney");
 		listActionGet.add("deleteUserData");
 //		listActionGet.add("tesBatch");
 		
@@ -61,7 +64,7 @@ public class BusinessGameController {
 		listActionPost.add("detachEquipment");
 		listActionPost.add("hireEmployeeToInstallment");
 		listActionPost.add("fireEmployee");
-		listActionPost.add("updateTariff");
+		listActionPost.add("updateSubscriptionTariff");
 		listActionPost.add("updateSupplyKwh");
 		listActionPost.add("cancelSupplyInstallment");
 		listActionPost.add("buySectorBlueprint");
@@ -72,6 +75,10 @@ public class BusinessGameController {
 		listActionPost.add("makeContract");
 		listActionPost.add("confirmContract");
 		listActionPost.add("cancelRejectContract");
+		listActionPost.add("cancelOfferProduct");
+		listActionPost.add("cancelOfferEquipment");
+		listActionPost.add("fixEquipment");
+		listActionPost.add("payBorrowedMoney");
 	}
 	
 	@RequestMapping(method=RequestMethod.GET)
@@ -114,6 +121,12 @@ public class BusinessGameController {
 		case 14:
 			return businessGameService.loadPlayerInfo(req);
 		case 15:
+			return businessGameService.loadInstallmentOwnedByUserFromSelectedType(req);
+		case 16:
+			return businessGameService.calculateFixPrice(req);
+		case 17:
+			return businessGameService.getBorrowedMoney(req);
+		case 18:
 			return businessGameService.deleteUserData(req);
 		default:
 			return "-1";
@@ -157,7 +170,7 @@ public class BusinessGameController {
 			case 12:
 				return businessGameService.fireEmployee(req);
 			case 13:
-				return businessGameService.updateTariff(req);
+				return businessGameService.updateSubscriptionTariff(req);
 			case 14:
 				return businessGameService.updateSupplyKwh(req);
 			case 15:
@@ -178,6 +191,14 @@ public class BusinessGameController {
 				return businessGameService.confirmContract(req);
 			case 23:
 				return businessGameService.cancelRejectContract(req);
+			case 24:
+				return businessGameService.cancelOfferProduct(req);
+			case 25:
+				return businessGameService.cancelOfferEquipment(req);
+			case 26:
+				return businessGameService.fixEquipment(req);
+			case 27:
+				return businessGameService.payBorrowedMoney(req);
 			default:
 				return "-1";
 		}

@@ -84,10 +84,12 @@ public class EngineCall implements Callable<Long> {
 				break;
 				
 			case SECTOR_POWER_PLANT :
+//				startingRawMaterialFromDemigod();
+//				
 //				giveRawProductToPPPDemigod();
-				
+//				
 //				sectorPowerPlantModule();
-				
+//				
 //				deleteRawProductDemigod();
 				break;
 				
@@ -118,8 +120,8 @@ public class EngineCall implements Callable<Long> {
 		String idInc = "",sqls[];
 		double storageCost,interest,buildCost,total,d = 0;
 		int res = 0;
-		SqlRowSet srs1 = db.getJdbc().queryForRowSet("select user,money,sector,prob,cost,raw_turn,storage,req_borrow_bank.zone from req_borrow_bank,info_sector,user where sector=info_sector.name and user.name=user"),
-				srs2 = db.getJdbc().queryForRowSet("select value from info_values where name='interest' union select value from info_values where name='cost_storage'");
+		SqlRowSet srs1 = db.getJdbc().queryForRowSet("select [user],money,sector,prob,cost,raw_turn,storage,req_borrow_bank.[zone] from req_borrow_bank,info_sector,businessgame.dbo.[user] where sector=info_sector.name and businessgame.dbo.[user].name=[user]"),
+				srs2 = db.getJdbc().queryForRowSet("select [value] from info_values where name='interest' union select [value] from info_values where name='cost_storage'");
 //				srs2 = db.getJdbc().queryForRowSet("select value from info_values where name='cost_storage'");
 		
 		srs2.next();
@@ -166,8 +168,8 @@ public class EngineCall implements Callable<Long> {
 					total += srs2.getDouble("base_price")*srs2.getDouble("size")*srs1.getInt("raw_turn");
 				}
 				
-				sqlL.add("update user set money='"+(total+srs1.getDouble("money"))+"' where name='"+srs1.getString("user")+"'");
-				idInc = getUniqueIncrementId("inc_borrow_bank");
+				sqlL.add("update businessgame.dbo.[user] set money='"+(total+srs1.getDouble("money"))+"' where name='"+srs1.getString("user")+"'");
+				idInc = getUniqueIncrementIdNew("borrow_bank");
 				sqlL.add("insert into borrow_bank values ('"+BusinessGameService.KEY_BORROW_BANK+idInc+"','"+srs1.getString("user")+"','0','"+total+"')");
 				
 				System.out.println("Tanda 4");
@@ -175,28 +177,29 @@ public class EngineCall implements Callable<Long> {
 		}
 		sqlL.add("delete from req_borrow_bank");
 		
-		srs1 = db.getJdbc().queryForRowSet("select id,borrow_bank.user,turn,money,borrow from borrow_bank,user where user.name=borrow_bank.user");
+		srs1 = db.getJdbc().queryForRowSet("select id,borrow_bank.[user],turn,money,borrow from borrow_bank,businessgame.dbo.[user] where businessgame.dbo.[user].name=borrow_bank.[user]");
 		while(srs1.next()){
 			if(srs1.getInt("turn") < BORROW_BANK_REQ_TIME){
 				sqlL.add("update borrow_bank set turn='"+(srs1.getInt("turn")+1)+"' where id='"+srs1.getString("id")+"'");
 				
-				srs2 = db.getJdbc().queryForRowSet("select id,total from user_finance where user='"+srs1.getString("user")+"' and type='Interest'");
-				if(srs2.next()){
-					db.getJdbc().execute("update user_finance set total='"+(((srs2.getDouble("total")*-1)+(srs1.getDouble("money")*interest/BORROW_BANK_REQ_TIME))*-1)+"' where id='"+srs2.getString("id")+"'");
-				} else {
-					idInc = getUniqueIncrementId("inc_user_finance");
-					db.getJdbc().execute("insert into user_finance values ('"+BusinessGameService.KEY_USER_FINANCE+idInc+"','"+srs1.getString("user")+"','Interest','"+((srs1.getDouble("money")*interest/BORROW_BANK_REQ_TIME)*-1)+"')");
-				}
-				sqlL.add("update user set money='"+(srs1.getDouble("money")-((srs1.getDouble("money")*interest/BORROW_BANK_REQ_TIME)))+"' where name='"+srs1.getString("user")+"'");
+//				srs2 = db.getJdbc().queryForRowSet("select id,total from user_finance where user='"+srs1.getString("user")+"' and type='Interest'");
+//				if(srs2.next()){
+//					db.getJdbc().execute("update user_finance set total='"+(((srs2.getDouble("total")*-1)+(srs1.getDouble("money")*interest/BORROW_BANK_REQ_TIME))*-1)+"' where id='"+srs2.getString("id")+"'");
+//				} else {
+//					idInc = getUniqueIncrementIdNew("user_finance");
+//					db.getJdbc().execute("insert into user_finance values ('"+BusinessGameService.KEY_USER_FINANCE+idInc+"','"+srs1.getString("user")+"','Interest','"+((srs1.getDouble("money")*interest/BORROW_BANK_REQ_TIME)*-1)+"')");
+//				}
+				accountingFinance(srs1.getString("user"), "Interest", srs1.getDouble("money")*interest/BORROW_BANK_REQ_TIME, false);
+				sqlL.add("update businessgame.dbo.[user] set money='"+(srs1.getDouble("money")-((srs1.getDouble("money")*interest/BORROW_BANK_REQ_TIME)))+"' where name='"+srs1.getString("user")+"'");
 			} else {
 				sqlL.add("delete from borrow_bank where id='"+srs1.getString("id")+"'");
-				sqlL.add("update user set money='"+(srs1.getDouble("money")-srs1.getDouble("borrow"))+"' where name='"+srs1.getString("user")+"'");
+				sqlL.add("update businessgame.dbo.[user] set money='"+(srs1.getDouble("money")-srs1.getDouble("borrow"))+"' where name='"+srs1.getString("user")+"'");
 			}
 		}
 		
-		srs1 = db.getJdbc().queryForRowSet("select value from info_values where name='turn'");
+		srs1 = db.getJdbc().queryForRowSet("select [value] from info_values where name='turn'");
 		if(srs1.next())
-			sqlL.add("update info_values set value='"+(Integer.parseInt(srs1.getString("value"))+1)+"' where name='turn'");
+			sqlL.add("update info_values set [value]='"+(Integer.parseInt(srs1.getString("value"))+1)+"' where name='turn'");
 		
 		sqls = new String[sqlL.size()];
 		sqlL.toArray(sqls);
@@ -219,9 +222,10 @@ public class EngineCall implements Callable<Long> {
 				qualityCalc = (ArrayList<Double>) data.get(5),
 				totalOperation = (ArrayList<Double>) data.get(6),
 				totalWage = (ArrayList<Double>) data.get(7),
-				totalDepreciation = (ArrayList<Double>) data.get(8);
+				totalDepreciation = (ArrayList<Double>) data.get(8),
+				fixed = (ArrayList<Double>) data.get(9);
 		ArrayList<Integer> effectivity = (ArrayList<Integer>) data.get(4);
-		HashMap<String, ArrayList<String>> installmentSqlL = (HashMap<String, ArrayList<String>>)data.get(9);
+		HashMap<String, ArrayList<String>> installmentSqlL = (HashMap<String, ArrayList<String>>)data.get(10);
 		HashMap<String, Double> inputMax = new HashMap<String, Double>(),
 				input = new HashMap<String, Double>(),
 				inputAvgPrice = new HashMap<String, Double>(),
@@ -229,10 +233,10 @@ public class EngineCall implements Callable<Long> {
 		HashMap<String, Integer> inputQuality = new HashMap<String, Integer>();
 		HashMap<String, String> inputId = new HashMap<String, String>();
 		
-		double tmpd1,tmpd2,tmpd3;
+		double tmpd1,tmpd2,tmpd3,tmpd4;
 		int tmpi;
 		SqlRowSet srs1,srs2;
-		String tmps1,idInc,sqls[];
+		String tmps1,tmps2,idInc,sqls[];
 		
 		System.out.println("Mulai Non Power Plant");
 		
@@ -247,6 +251,8 @@ public class EngineCall implements Callable<Long> {
 			tmpd2 = 0;
 			tmpd3 = 0;
 			tmpi = 0;
+			tmps1 = "";
+			tmps2 = "";
 			
 			srs1 = db.getJdbc().queryForRowSet("select input_type,size from info_sector_input where sector=(select type from installment where id='"+sectors.get(i)+"')");
 			while(srs1.next()){
@@ -258,8 +264,7 @@ public class EngineCall implements Callable<Long> {
 				outputRatio.put(srs1.getString("output_type"), srs1.getDouble("size"));
 			}
 			
-			tmps1 = "";
-			srs1 = db.getJdbc().queryForRowSet("select storage_product.id,storage,product,quality,size,avg_price from storage_product,desc_product where storage=(select id from storage where user='"+users.get(i)+"' and zone='"+zones.get(i)+"') and storage_product.desc=desc_product.id");
+			srs1 = db.getJdbc().queryForRowSet("select storage_product.id,storage,product,quality,size,avg_price from storage_product,desc_product where storage=(select id from storage where [user]='"+users.get(i)+"' and [zone]='"+zones.get(i)+"') and storage_product.[desc]=desc_product.id");
 			while(srs1.next()){
 				tmps1 = srs1.getString("storage");
 				tmpd2 = srs1.getDouble("size");
@@ -291,6 +296,8 @@ public class EngineCall implements Callable<Long> {
 			}
 			
 			tmpd2 = 0;
+			tmpd3 = 0;
+			tmpd4 = 0;
 			
 			srs1 = db.getJdbc().queryForRowSet("select actual_supply,supply from installment where id='"+sectors.get(i)+"'");
 			srs1.next();
@@ -300,18 +307,24 @@ public class EngineCall implements Callable<Long> {
 				inputId.put("Energy", "");
 				db.getJdbc().execute("update installment set actual_supply='0' where id='"+sectors.get(i)+"'");
 				
-				srs2 = db.getJdbc().queryForRowSet("select tariff from installment where id='"+srs1.getString("supply")+"'");
+				srs2 = db.getJdbc().queryForRowSet("select [user],subscription,tariff from installment where id='"+srs1.getString("supply")+"'");
 				if(srs2.next()){
-					tmpd2 = srs2.getDouble("tariff");
+					tmps2 = srs2.getString("user");
+					tmpd2 = srs2.getDouble("subscription");
+					tmpd4 = srs2.getDouble("tariff");
 				}
 				
-				srs2 = db.getJdbc().queryForRowSet("select total from user_finance where user='"+users.get(i)+"' and type='Electricity'");
-				if(srs2.next()){
-					db.getJdbc().execute("update user_finance set total='"+(((srs2.getDouble("total")*-1)+(tmpd2*srs1.getDouble("actual_supply")))*-1)+"' where user='"+users.get(i)+"' and type='Electricity'");
-				} else {
-					idInc = getUniqueIncrementId("inc_user_finance");
-					db.getJdbc().execute("insert into user_finance values ('"+BusinessGameService.KEY_USER_FINANCE+idInc+"','"+users.get(i)+"','Electricity','"+(tmpd2*srs1.getDouble("actual_supply")*-1)+"')");
-				}
+				accountingFinance(users.get(i), "Electricity", tmpd2, false);
+				
+				srs2 = db.getJdbc().queryForRowSet("select money from businessgame.dbo.[user] where name='"+users.get(i)+"'");
+				srs2.next();
+				db.getJdbc().execute("update businessgame.dbo.[user] set money='"+(srs2.getDouble("money")-tmpd2)+"' where name='"+users.get(i)+"'");
+				
+				accountingFinance(tmps2, "Electricity", tmpd2, true);
+				
+				srs2 = db.getJdbc().queryForRowSet("select money from businessgame.dbo.[user] where name='"+tmps2+"'");
+				srs2.next();
+				db.getJdbc().execute("update businessgame.dbo.[user] set money='"+(srs2.getDouble("money")+tmpd2)+"' where name='"+tmps2+"'");
 			}
 			
 			System.out.println("Storage : ");
@@ -328,15 +341,7 @@ public class EngineCall implements Callable<Long> {
 			
 			tmpd2 = 0;
 			
-			//script diaktifin pas ada fixed cost, utk accounting
-//			srs1 = db.getJdbc().queryForRowSet("select id,total from user_finance where user='"+users.get(i)+"' and type='Fixed'");
-//			if(srs1.next()){
-//				db.getJdbc().execute("update user_finance set total='"+(((srs1.getDouble("total")*-1)+totalOperation.get(i))*-1)+"' where id='"+srs1.getString("id")+"'");
-//			} else {
-//				idInc = getUniqueIncrementId("inc_user_finance");
-//				db.getJdbc().execute("insert into user_finance values ('"+BusinessGameService.KEY_USER_FINANCE+idInc+"','"+users.get(i)+"','Fixed','"+(totalOperation.get(i)*-1)+"')");
-//			}
-			
+			accountingFinance(users.get(i), "Fixed", fixed.get(i), false);
 			
 			if(inputMax.size() == input.size()){
 				//calculate quality :
@@ -377,13 +382,17 @@ public class EngineCall implements Callable<Long> {
 						
 						tmpd2 = inputMax.get(in)*tmpd3;
 						
-						srs2 = db.getJdbc().queryForRowSet("select id,total from user_finance where user='"+users.get(i)+"' and type='Raw Material'");
-						if(srs2.next()){
-							db.getJdbc().execute("update user_finance set total='"+(((srs2.getDouble("total")*-1)+(tmpd2*inputAvgPrice.get(in)))*-1)+"' where id='"+srs2.getString("id")+"'");
-						} else {
-							idInc = getUniqueIncrementId("inc_user_finance");
-							db.getJdbc().execute("insert into user_finance values ('"+BusinessGameService.KEY_USER_FINANCE+idInc+"','"+users.get(i)+"','Raw Material','"+(tmpd2*inputAvgPrice.get(in)*-1)+"')");
-						}
+						accountingFinance(users.get(i), "Raw Material", (tmpd2*inputAvgPrice.get(in)), false);
+					} else {
+						accountingFinance(users.get(i), "Electricity", (tmpd2*tmpd4), false);
+						srs2 = db.getJdbc().queryForRowSet("select money from businessgame.dbo.[user] where name='"+users.get(i)+"'");
+						srs2.next();
+						db.getJdbc().execute("update businessgame.dbo.[user] set money='"+(srs2.getDouble("money")-(tmpd2*tmpd4))+"' where name='"+users.get(i)+"'");
+						
+						accountingFinance(tmps2, "Electricity", (tmpd2*tmpd4), true);
+						srs2 = db.getJdbc().queryForRowSet("select money from businessgame.dbo.[user] where name='"+tmps2+"'");
+						srs2.next();
+						db.getJdbc().execute("update businessgame.dbo.[user] set money='"+(srs2.getDouble("money")+(tmpd2*tmpd4))+"' where name='"+tmps2+"'");
 					}
 				}
 				
@@ -395,11 +404,11 @@ public class EngineCall implements Callable<Long> {
 					tmpi = 3;
 				
 				for(String ou : outputRatio.keySet()){
-					srs1 = db.getJdbc().queryForRowSet("select id,size from storage_product where storage_product.desc=(select id from desc_product where product='"+ou+"' and quality='"+tmpi+"') and storage='"+tmps1+"'");
+					srs1 = db.getJdbc().queryForRowSet("select id,size from storage_product where storage_product.[desc]=(select id from desc_product where product='"+ou+"' and quality='"+tmpi+"') and storage='"+tmps1+"'");
 					if(srs1.next()){
 						db.getJdbc().execute("update storage_product set size='"+(srs1.getDouble("size")+(outputRatio.get(ou)*tmpd3))+"' where id='"+srs1.getString("id")+"'");
 					} else {
-						idInc = getUniqueIncrementId("inc_storage_product");
+						idInc = getUniqueIncrementIdNew("storage_product");
 						srs2 = db.getJdbc().queryForRowSet("select id,price from desc_product where product='"+ou+"' and quality='"+tmpi+"'");
 						srs2.next();
 						db.getJdbc().execute("insert into storage_product values ('"+BusinessGameService.KEY_PRODUCT+idInc+"','"+srs2.getString("id")+"','"+tmps1+"','"+(outputRatio.get(ou)*tmpd3)+"','"+srs2.getDouble("price")+"')");
@@ -407,33 +416,36 @@ public class EngineCall implements Callable<Long> {
 					System.out.println(ou+" "+(outputRatio.get(ou)*tmpd3));
 				}
 				
-				srs1 = db.getJdbc().queryForRowSet("select money from user where name='"+users.get(i)+"'");
+//				srs1 = db.getJdbc().queryForRowSet("select id,total from user_finance where user='"+users.get(i)+"' and type='Wage'");
+//				if(srs1.next()){
+//					db.getJdbc().execute("update user_finance set total='"+(((srs1.getDouble("total")*-1)+totalWage.get(i))*-1)+"' where id='"+srs1.getString("id")+"'");
+//				} else {
+//					idInc = getUniqueIncrementId("inc_user_finance");
+//					db.getJdbc().execute("insert into user_finance values ('"+BusinessGameService.KEY_USER_FINANCE+idInc+"','"+users.get(i)+"','Wage','"+(totalWage.get(i)*-1)+"')");
+//				}
+				accountingFinance(users.get(i), "Wage", totalWage.get(i), false);
+				
+//				srs1 = db.getJdbc().queryForRowSet("select id,total from user_finance where user='"+users.get(i)+"' and type='Operation'");
+//				if(srs1.next()){
+//					db.getJdbc().execute("update user_finance set total='"+(((srs1.getDouble("total")*-1)+totalOperation.get(i))*-1)+"' where id='"+srs1.getString("id")+"'");
+//				} else {
+//					idInc = getUniqueIncrementId("inc_user_finance");
+//					db.getJdbc().execute("insert into user_finance values ('"+BusinessGameService.KEY_USER_FINANCE+idInc+"','"+users.get(i)+"','Operation','"+(totalOperation.get(i)*-1)+"')");
+//				}
+				accountingFinance(users.get(i), "Operation", totalOperation.get(i), false);
+				
+//				srs1 = db.getJdbc().queryForRowSet("select id,total from user_finance where user='"+users.get(i)+"' and type='Depreciation'");
+//				if(srs1.next()){
+//					db.getJdbc().execute("update user_finance set total='"+(((srs1.getDouble("total")*-1)+totalDepreciation.get(i))*-1)+"' where id='"+srs1.getString("id")+"'");
+//				} else {
+//					idInc = getUniqueIncrementId("inc_user_finance");
+//					db.getJdbc().execute("insert into user_finance values ('"+BusinessGameService.KEY_USER_FINANCE+idInc+"','"+users.get(i)+"','Depreciation','"+(totalDepreciation.get(i)*-1)+"')");
+//				}
+				accountingFinance(users.get(i), "Depreciation", totalDepreciation.get(i), false);
+				
+				srs1 = db.getJdbc().queryForRowSet("select money from businessgame.dbo.[user] where name='"+users.get(i)+"'");
 				srs1.next();
-				db.getJdbc().execute("update user set money='"+(srs1.getDouble("money")-totalOperation.get(i)-totalWage.get(i))+"' where name='"+users.get(i)+"'");
-				
-				srs1 = db.getJdbc().queryForRowSet("select id,total from user_finance where user='"+users.get(i)+"' and type='Wage'");
-				if(srs1.next()){
-					db.getJdbc().execute("update user_finance set total='"+(((srs1.getDouble("total")*-1)+totalWage.get(i))*-1)+"' where id='"+srs1.getString("id")+"'");
-				} else {
-					idInc = getUniqueIncrementId("inc_user_finance");
-					db.getJdbc().execute("insert into user_finance values ('"+BusinessGameService.KEY_USER_FINANCE+idInc+"','"+users.get(i)+"','Wage','"+(totalWage.get(i)*-1)+"')");
-				}
-				
-				srs1 = db.getJdbc().queryForRowSet("select id,total from user_finance where user='"+users.get(i)+"' and type='Operation'");
-				if(srs1.next()){
-					db.getJdbc().execute("update user_finance set total='"+(((srs1.getDouble("total")*-1)+totalOperation.get(i))*-1)+"' where id='"+srs1.getString("id")+"'");
-				} else {
-					idInc = getUniqueIncrementId("inc_user_finance");
-					db.getJdbc().execute("insert into user_finance values ('"+BusinessGameService.KEY_USER_FINANCE+idInc+"','"+users.get(i)+"','Operation','"+(totalOperation.get(i)*-1)+"')");
-				}
-				
-				srs1 = db.getJdbc().queryForRowSet("select id,total from user_finance where user='"+users.get(i)+"' and type='Depreciation'");
-				if(srs1.next()){
-					db.getJdbc().execute("update user_finance set total='"+(((srs1.getDouble("total")*-1)+totalDepreciation.get(i))*-1)+"' where id='"+srs1.getString("id")+"'");
-				} else {
-					idInc = getUniqueIncrementId("inc_user_finance");
-					db.getJdbc().execute("insert into user_finance values ('"+BusinessGameService.KEY_USER_FINANCE+idInc+"','"+users.get(i)+"','Depreciation','"+(totalDepreciation.get(i)*-1)+"')");
-				}
+				db.getJdbc().execute("update businessgame.dbo.[user] set money='"+(srs1.getDouble("money")-totalOperation.get(i)-totalWage.get(i)-fixed.get(i))+"' where name='"+users.get(i)+"'");
 				
 				sqls = new String[installmentSqlL.get(sectors.get(i)).size()];
 				installmentSqlL.get(sectors.get(i)).toArray(sqls);
@@ -456,6 +468,8 @@ public class EngineCall implements Callable<Long> {
 		outputRatio = null;
 		inputQuality = null;
 		inputId = null;
+		
+		gc();
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -466,18 +480,22 @@ public class EngineCall implements Callable<Long> {
 				zones = (ArrayList<String>) data.get(2);
 		ArrayList<Double> efficiency = (ArrayList<Double>) data.get(3),
 				qualityCalc = (ArrayList<Double>) data.get(5),
-				totalCost = (ArrayList<Double>) data.get(6);
+				totalOperation = (ArrayList<Double>) data.get(6),
+				totalWage = (ArrayList<Double>) data.get(7),
+				totalDepreciation = (ArrayList<Double>) data.get(8),
+				fixed = (ArrayList<Double>) data.get(9);
 		ArrayList<Integer> effectivity = (ArrayList<Integer>) data.get(4);
-		HashMap<String, ArrayList<String>> installmentSqlL = (HashMap<String, ArrayList<String>>)data.get(7);
+		HashMap<String, ArrayList<String>> installmentSqlL = (HashMap<String, ArrayList<String>>)data.get(10);
 		HashMap<String, Double> inputMax = new HashMap<String, Double>(),
 				input = new HashMap<String, Double>(),
+				inputAvgPrice = new HashMap<String, Double>(),
 				outputRatio = new HashMap<String, Double>();
 		HashMap<String, Integer> inputQuality = new HashMap<String, Integer>();
 		HashMap<String, String> inputId = new HashMap<String, String>();
 		
 		double tmpd1,tmpd2,tmpd3;
 		int tmpi;
-		String tmps,idInc,sqls[];
+		String tmps1,idInc,sqls[];
 		SqlRowSet srs1,srs2;
 		
 		System.out.println("Mulai Power Plant");
@@ -504,10 +522,10 @@ public class EngineCall implements Callable<Long> {
 				outputRatio.put(srs1.getString("output_type"), srs1.getDouble("size"));
 			}
 			
-			tmps = "";
-			srs1 = db.getJdbc().queryForRowSet("select storage_product.id,storage,product,quality,size from storage_product,desc_product where storage=(select id from storage where user='"+users.get(i)+"' and zone='"+zones.get(i)+"') and storage_product.desc=desc_product.id");
+			tmps1 = "";
+			srs1 = db.getJdbc().queryForRowSet("select storage_product.id,storage,product,quality,size,avg_price from storage_product,desc_product where storage=(select id from storage where [user]='"+users.get(i)+"' and [zone]='"+zones.get(i)+"') and storage_product.[desc]=desc_product.id");
 			while(srs1.next()){
-				tmps = srs1.getString("storage");
+				tmps1 = srs1.getString("storage");
 				tmpd2 = srs1.getDouble("size");
 				srs2 = db.getJdbc().queryForRowSet("select size from market_product where storage_product_id='"+srs1.getString("id")+"'");
 				while(srs2.next()){
@@ -520,14 +538,17 @@ public class EngineCall implements Callable<Long> {
 								input.remove(srs1.getString("product"));
 								inputQuality.remove(srs1.getString("product"));
 								inputId.remove(srs1.getString("product"));
+								inputAvgPrice.remove(srs1.getString("product"));
 								input.put(srs1.getString("product"), srs1.getDouble("size"));
 								inputQuality.put(srs1.getString("product"), srs1.getInt("quality"));
 								inputId.put(srs1.getString("product"), srs1.getString("id"));
+								inputAvgPrice.put(srs1.getString("product"), srs1.getDouble("avg_price"));
 							}
 						} else {
 							input.put(srs1.getString("product"), srs1.getDouble("size"));
 							inputQuality.put(srs1.getString("product"), srs1.getInt("quality"));
 							inputId.put(srs1.getString("product"), srs1.getString("id"));
+							inputAvgPrice.put(srs1.getString("product"), srs1.getDouble("avg_price"));
 						}
 					}
 				} else break;
@@ -544,6 +565,8 @@ public class EngineCall implements Callable<Long> {
 			}
 			
 			tmpd2 = 0;
+			
+			accountingFinance(users.get(i), "Fixed", fixed.get(i), false);
 			
 			if(inputMax.size() == input.size()){
 				//calculate quality :
@@ -566,7 +589,7 @@ public class EngineCall implements Callable<Long> {
 					}
 					if(tmpd3 > (input.get(in)/inputMax.get(in))){
 						tmpd3 = input.get(in)/inputMax.get(in);
-						System.out.println("Eff akhir"+tmpd3);
+						System.out.println("Eff akhir "+tmpd3);
 					}
 				}
 				tmpd1 += tmpd2*45/100;
@@ -578,6 +601,10 @@ public class EngineCall implements Callable<Long> {
 					if(tmpd2 > 0)
 						db.getJdbc().execute("update storage_product set size='"+tmpd2+"' where id='"+inputId.get(in)+"'");
 					else db.getJdbc().execute("delete from storage_product where id='"+inputId.get(in)+"'");
+					
+					tmpd2 = inputMax.get(in)*tmpd3;
+					
+					accountingFinance(users.get(i), "Raw Material", (tmpd2*inputAvgPrice.get(in)), false);
 				}
 				
 				if(tmpd1 < 30){
@@ -596,6 +623,7 @@ public class EngineCall implements Callable<Long> {
 				for(String ou : outputRatio.keySet()){
 					if(ou.equals("Energy")){
 						tmpd2 = outputRatio.get(ou)+(outputRatio.get(ou)*tmpd2);
+						System.out.println(ou+" 1 "+tmpd2);
 						srs1 = db.getJdbc().queryForRowSet("select id,planned_supply from installment where supply='"+sectors.get(i)+"'");
 						while(srs1.next()){
 							if((tmpd2 - srs1.getDouble("planned_supply")) > 0){
@@ -606,22 +634,29 @@ public class EngineCall implements Callable<Long> {
 								tmpd2 = 0;
 							}
 						}
+						System.out.println(ou+" 2 "+tmpd2);
 					} else {
-						srs1 = db.getJdbc().queryForRowSet("select id,size from storage_product where storage_product.desc=(select id from desc_product where product='"+ou+"' and quality='"+tmpi+"') and storage='"+tmps+"'");
+						System.out.println(ou+" 1 "+(outputRatio.get(ou)*tmpd3));
+						srs1 = db.getJdbc().queryForRowSet("select id,size from storage_product where storage_product.[desc]=(select id from desc_product where product='"+ou+"' and quality='"+tmpi+"') and storage='"+tmps1+"'");
 						if(srs1.next()){
 							db.getJdbc().execute("update storage_product set size='"+(srs1.getDouble("size")+(outputRatio.get(ou)*tmpd3))+"' where id='"+srs1.getString("id")+"'");
 						} else {
-							idInc = getUniqueIncrementId("inc_storage_product");
-							srs2 = db.getJdbc().queryForRowSet("select id from desc_product where product='"+ou+"' and quality='"+tmpi+"'");
+							idInc = getUniqueIncrementIdNew("storage_product");
+							srs2 = db.getJdbc().queryForRowSet("select id,price from desc_product where product='"+ou+"' and quality='"+tmpi+"'");
 							srs2.next();
-							db.getJdbc().execute("insert into storage_product values ('"+BusinessGameService.KEY_PRODUCT+idInc+"','"+srs2.getString("id")+"','"+tmps+"','"+(outputRatio.get(ou)*tmpd3)+"')");
+							db.getJdbc().execute("insert into storage_product values ('"+BusinessGameService.KEY_PRODUCT+idInc+"','"+srs2.getString("id")+"','"+tmps1+"','"+(outputRatio.get(ou)*tmpd3)+"','"+srs2.getDouble("price")+"')");
 						}
+						System.out.println(ou+" 2 "+(outputRatio.get(ou)*tmpd3));
 					}
 				}
 				
-				srs1 = db.getJdbc().queryForRowSet("select money from user where name='"+users.get(i)+"'");
+				accountingFinance(users.get(i), "Wage", totalWage.get(i), false);
+				accountingFinance(users.get(i), "Operation", totalOperation.get(i), false);
+				accountingFinance(users.get(i), "Depreciation", totalDepreciation.get(i), false);
+				
+				srs1 = db.getJdbc().queryForRowSet("select money from businessgame.dbo.[user] where name='"+users.get(i)+"'");
 				srs1.next();
-				db.getJdbc().execute("update user set money='"+(srs1.getDouble("money")-totalCost.get(i))+"' where name='"+users.get(i)+"'");
+				db.getJdbc().execute("update businessgame.dbo.[user] set money='"+(srs1.getDouble("money")-totalOperation.get(i)-totalWage.get(i)-fixed.get(i))+"' where name='"+users.get(i)+"'");
 				
 				sqls = new String[installmentSqlL.get(sectors.get(i)).size()];
 				installmentSqlL.get(sectors.get(i)).toArray(sqls);
@@ -644,10 +679,15 @@ public class EngineCall implements Callable<Long> {
 		outputRatio = null;
 		inputQuality = null;
 		inputId = null;
+		
+		srs1 = null;
+		srs2 = null;
+		
+		gc();
 	}
 	
 	private void marketShareModule(){
-		SqlRowSet srs1 = db.getJdbc().queryForRowSet("select zone,product,value,transport_in,transport_out,retribution,transport from market_share,info_zone,info_product where zone=info_zone.id and name=product"),
+		SqlRowSet srs1 = db.getJdbc().queryForRowSet("select [zone],product,[value],transport_in,transport_out,retribution,transport from market_share,info_zone,info_product where [zone]=info_zone.id and name=product"),
 				srs2;
 		ArrayList<String> users = new ArrayList<String>(),
 				products = new ArrayList<String>(),
@@ -687,7 +727,7 @@ public class EngineCall implements Callable<Long> {
 			
 			System.out.println("Marker 0");
 			
-			srs2 = db.getJdbc().queryForRowSet("select user,money,market_product.id,market_product.price,quality,market_product.size from market_product,storage_product,storage,desc_product,user where market_product.zone='"+srs1.getString("zone")+"' and desc_product.product='"+srs1.getString("product")+"' and storage_product_id=storage_product.id and storage=storage.id and storage_product.desc=desc_product.id and user=name");
+			srs2 = db.getJdbc().queryForRowSet("select [user],money,market_product.id,market_product.price,quality,market_product.size from market_product,storage_product,storage,desc_product,businessgame.dbo.[user] where market_product.[zone]='"+srs1.getString("zone")+"' and desc_product.product='"+srs1.getString("product")+"' and storage_product_id=storage_product.id and storage=storage.id and storage_product.[desc]=desc_product.id and [user]=name");
 			while(srs2.next()){
 				if(!users.contains(srs2.getString("user"))){
 					users.add(srs2.getString("user"));
@@ -706,12 +746,12 @@ public class EngineCall implements Callable<Long> {
 			System.out.println("Marker 1");
 			
 //			srs2 = db.getJdbc().queryForRowSet("select product_id,multiplier,count from product_advertisement,desc_advertisement,storage_product,desc_product where adv=desc_advertisement.id and product_id=storage_product.id and storage_product.desc=desc_product.id and zone='"+srs1.getString("zone")+"' and desc_product.product='"+srs1.getString("product")+"'");
-			srs2 = db.getJdbc().queryForRowSet("select user,multiplier,count from product_advertisement,desc_advertisement where product='"+srs1.getString("product")+"' and zone='"+srs1.getString("zone")+"' and adv=desc_advertisement.id");
+			srs2 = db.getJdbc().queryForRowSet("select [user],multiplier from product_advertisement,desc_advertisement where product='"+srs1.getString("product")+"' and [zone]='"+srs1.getString("zone")+"' and adv=desc_advertisement.id");
 			while(srs2.next()){
 				if(users.contains(srs2.getString("user"))){
 					tmpi = users.indexOf(srs2.getString("user"));
 					tmpd1 = userScores.get(tmpi);
-					tmpd1 += (srs2.getInt("multiplier")*srs2.getLong("count"));
+					tmpd1 += srs2.getInt("multiplier");
 					userScores.set(tmpi, tmpd1);
 				}
 			}
@@ -766,8 +806,8 @@ public class EngineCall implements Callable<Long> {
 							System.out.println("Awal "+tmpd3);
 							
 							System.out.println("Tes 1");
-							System.out.println("select storage_product_id,storage_product.size,storage.zone from market_product,storage_product,storage where market_product.id='"+products.get(j)+"' and storage_product_id=storage_product.id and storage=storage.id");
-							srs2 = db.getJdbc().queryForRowSet("select storage_product_id,storage_product.size,storage.zone from market_product,storage_product,storage where market_product.id='"+products.get(j)+"' and storage_product_id=storage_product.id and storage=storage.id");
+							System.out.println("select storage_product_id,storage_product.size,storage.[zone] from market_product,storage_product,storage where market_product.id='"+products.get(j)+"' and storage_product_id=storage_product.id and storage=storage.id");
+							srs2 = db.getJdbc().queryForRowSet("select storage_product_id,storage_product.size,storage.[zone] from market_product,storage_product,storage where market_product.id='"+products.get(j)+"' and storage_product_id=storage_product.id and storage=storage.id");
 //							+"select storage_product_id,storage_product.size,zone from market_product,storage_product,storage where market_product.id='"+products.get(j)+"' and storage_product_id=storage_product.id and storage=storage.id");
 							if(srs2.next()){
 								tmps1 = srs2.getString("storage_product_id");
@@ -802,39 +842,45 @@ public class EngineCall implements Callable<Long> {
 							
 							System.out.println("Tes 2");
 							
-							srs2 = db.getJdbc().queryForRowSet("select id,total from user_finance where user='"+users.get(i)+"' and type='Sales'");
-							if(srs2.next()){
-								db.getJdbc().execute("update user_finance set total='"+(srs2.getDouble("total")+(tmpd5*productPrices.get(j)))+"' where id='"+srs2.getString("id")+"'");
-							} else {
-								idInc = getUniqueIncrementId("inc_user_finance");
-								db.getJdbc().execute("insert into user_finance values ('"+BusinessGameService.KEY_USER_FINANCE+idInc+"','"+users.get(i)+"','Sales','"+(tmpd5*productPrices.get(j))+"')");
-							}
+//							srs2 = db.getJdbc().queryForRowSet("select id,total from user_finance where user='"+users.get(i)+"' and type='Sales'");
+//							if(srs2.next()){
+//								db.getJdbc().execute("update user_finance set total='"+(srs2.getDouble("total")+(tmpd5*productPrices.get(j)))+"' where id='"+srs2.getString("id")+"'");
+//							} else {
+//								idInc = getUniqueIncrementIdNew("user_finance");
+//								db.getJdbc().execute("insert into user_finance values ('"+BusinessGameService.KEY_USER_FINANCE+idInc+"','"+users.get(i)+"','Sales','"+(tmpd5*productPrices.get(j))+"')");
+//							}
+							
+							accountingFinance(users.get(i), "Sales", tmpd5*productPrices.get(j), true);
 							
 							System.out.println("Tes 3");
 							
-							srs2 = db.getJdbc().queryForRowSet("select id,total from user_finance where user='"+users.get(i)+"' and type='Transport'");
-							if(srs2.next()){
-								db.getJdbc().execute("update user_finance set total='"+(((srs2.getDouble("total")*-1)+(tmpd5*tmpd7))*-1)+"' where id='"+srs2.getString("id")+"'");
-							} else {
-								idInc = getUniqueIncrementId("inc_user_finance");
-								db.getJdbc().execute("insert into user_finance values ('"+BusinessGameService.KEY_USER_FINANCE+idInc+"','"+users.get(i)+"','Transport','"+(tmpd5*tmpd7*-1)+"')");
-							}
+//							srs2 = db.getJdbc().queryForRowSet("select id,total from user_finance where user='"+users.get(i)+"' and type='Transport'");
+//							if(srs2.next()){
+//								db.getJdbc().execute("update user_finance set total='"+(((srs2.getDouble("total")*-1)+(tmpd5*tmpd7))*-1)+"' where id='"+srs2.getString("id")+"'");
+//							} else {
+//								idInc = getUniqueIncrementIdNew("user_finance");
+//								db.getJdbc().execute("insert into user_finance values ('"+BusinessGameService.KEY_USER_FINANCE+idInc+"','"+users.get(i)+"','Transport','"+(tmpd5*tmpd7*-1)+"')");
+//							}
+							
+							accountingFinance(users.get(i), "Transport", tmpd5*tmpd7, false);
 							
 							System.out.println("Tes 4");
 							
-							srs2 = db.getJdbc().queryForRowSet("select id,total from user_finance where user='"+users.get(i)+"' and type='Retribution'");
-							if(srs2.next()){
-								db.getJdbc().execute("update user_finance set total='"+(((srs2.getDouble("total")*-1)+(tmpd5*srs1.getDouble("retribution")))*-1)+"' where id='"+srs2.getString("id")+"'");
-							} else {
-								idInc = getUniqueIncrementId("inc_user_finance");
-								db.getJdbc().execute("insert into user_finance values ('"+BusinessGameService.KEY_USER_FINANCE+idInc+"','"+users.get(i)+"','Retribution','"+(tmpd5*srs1.getDouble("retribution")*-1)+"')");
-							}
+//							srs2 = db.getJdbc().queryForRowSet("select id,total from user_finance where user='"+users.get(i)+"' and type='Retribution'");
+//							if(srs2.next()){
+//								db.getJdbc().execute("update user_finance set total='"+(((srs2.getDouble("total")*-1)+(tmpd5*srs1.getDouble("retribution")))*-1)+"' where id='"+srs2.getString("id")+"'");
+//							} else {
+//								idInc = getUniqueIncrementIdNew("user_finance");
+//								db.getJdbc().execute("insert into user_finance values ('"+BusinessGameService.KEY_USER_FINANCE+idInc+"','"+users.get(i)+"','Retribution','"+(tmpd5*srs1.getDouble("retribution")*-1)+"')");
+//							}
+							
+							accountingFinance(users.get(i), "Retribution", tmpd5*srs1.getDouble("retribution"), false);
 							
 							System.out.println("Tes 5");
 							
 							tmpd6 = (tmpd5*productPrices.get(j)) - (tmpd5*tmpd7) - (tmpd5*srs1.getDouble("retribution"));
 							
-							db.getJdbc().execute("update user set money='"+(userMoneys.get(i)+tmpd6)+"' where name='"+users.get(i)+"'");
+							db.getJdbc().execute("update businessgame.dbo.[user] set money='"+(userMoneys.get(i)+tmpd6)+"' where name='"+users.get(i)+"'");
 							
 							System.out.println("Tes 6");
 						}
@@ -842,6 +888,21 @@ public class EngineCall implements Callable<Long> {
 				}
 			}
 		}
+		
+		srs1 = null;
+		srs2 = null;
+		users = null;
+		products = null;
+		productUsers = null;
+		userMoneys = null; 
+		userScores = null;
+		productScores = null;
+		productSizes = null;
+		productPrices = null;
+		basePrices = null;
+		baseQualities = null;
+		
+		gc();
 	}
 	
 	private void contractModule(){
@@ -853,7 +914,7 @@ public class EngineCall implements Callable<Long> {
 		
 		while(srs1.next()){
 			System.out.println("Marker 1");
-			srs2 = db.getJdbc().queryForRowSet("select user,money,rep,storage.zone,transport_in,transport_out from storage,user,info_zone where id='"+srs1.getString("request_storage")+"' and name=user and storage.zone=info_zone.id union select user,money,rep,storage.zone,transport_in,transport_out from storage,user,info_zone where id='"+srs1.getString("supplier_storage")+"' and name=user and storage.zone=info_zone.id");
+			srs2 = db.getJdbc().queryForRowSet("select [user],money,rep,storage.[zone],transport_in,transport_out from storage,businessgame.dbo.[user],info_zone where id='"+srs1.getString("request_storage")+"' and name=[user] and storage.[zone]=info_zone.id union select [user],money,rep,storage.[zone],transport_in,transport_out from storage,businessgame.dbo.[user],info_zone where id='"+srs1.getString("supplier_storage")+"' and name=[user] and storage.[zone]=info_zone.id");
 			if(srs2.next()){
 				user = srs2.getString("user");
 				userMoney = srs2.getDouble("money");
@@ -876,7 +937,7 @@ public class EngineCall implements Callable<Long> {
 			
 			System.out.println("Marker 3");
 			
-			srs2 = db.getJdbc().queryForRowSet("select id,transport,size from storage_product,desc_product,info_product where storage_product.desc='"+srs1.getString("product_desc")+"' and storage='"+srs1.getString("supplier_storage")+"' and desc_product.id=storage_product.desc and name=desc_product.product");
+			srs2 = db.getJdbc().queryForRowSet("select id,transport,size from storage_product,desc_product,info_product where storage_product.[desc]='"+srs1.getString("product_desc")+"' and storage='"+srs1.getString("supplier_storage")+"' and desc_product.id=storage_product.[desc] and name=desc_product.product");
 			if(srs2.next()){				
 				if(srs2.getDouble("size") >= srs1.getDouble("size")){
 					System.out.println("Marker 4");
@@ -884,62 +945,74 @@ public class EngineCall implements Callable<Long> {
 					totalPrice = srs1.getDouble("price")*srs1.getDouble("size");
 					db.getJdbc().execute("update storage_product set size='"+(srs2.getDouble("size")-srs1.getDouble("size"))+"' where id='"+srs2.getString("id")+"'");
 					
-					srs3 = db.getJdbc().queryForRowSet("select id,total from user_finance where user='"+seller+"' and type='Sales'");
-					if(srs3.next()){
-						db.getJdbc().execute("update user_finance set total='"+(srs3.getDouble("total")+(totalPrice))+"' where id='"+srs2.getString("id")+"'");
-					} else {
-						idInc = getUniqueIncrementId("inc_user_finance");
-						db.getJdbc().execute("insert into user_finance values ('"+BusinessGameService.KEY_USER_FINANCE+idInc+"','"+seller+"','Sales','"+(totalPrice)+"')");
-					}
+//					srs3 = db.getJdbc().queryForRowSet("select id,total from user_finance where user='"+seller+"' and type='Sales'");
+//					if(srs3.next()){
+//						db.getJdbc().execute("update user_finance set total='"+(srs3.getDouble("total")+(totalPrice))+"' where id='"+srs2.getString("id")+"'");
+//					} else {
+//						idInc = getUniqueIncrementIdNew("user_finance");
+//						db.getJdbc().execute("insert into user_finance values ('"+BusinessGameService.KEY_USER_FINANCE+idInc+"','"+seller+"','Sales','"+(totalPrice)+"')");
+//					}
+					
+					accountingFinance(seller, "Sales", totalPrice, true);
 					
 					System.out.println("Tes 3");
 					
-					srs2 = db.getJdbc().queryForRowSet("select id,total from user_finance where user='"+seller+"' and type='Transport'");
-					if(srs2.next()){
-						db.getJdbc().execute("update user_finance set total='"+(((srs2.getDouble("total")*-1)+(srs1.getDouble("size")*transport*srs2.getDouble("transport")))*-1)+"' where id='"+srs2.getString("id")+"'");
-					} else {
-						idInc = getUniqueIncrementId("inc_user_finance");
-						db.getJdbc().execute("insert into user_finance values ('"+BusinessGameService.KEY_USER_FINANCE+idInc+"','"+seller+"','Transport','"+(srs1.getDouble("size")*transport*srs2.getDouble("transport")*-1)+"')");
-					}
+//					srs2 = db.getJdbc().queryForRowSet("select id,total from user_finance where user='"+seller+"' and type='Transport'");
+//					if(srs2.next()){
+//						db.getJdbc().execute("update user_finance set total='"+(((srs2.getDouble("total")*-1)+(srs1.getDouble("size")*transport*srs2.getDouble("transport")))*-1)+"' where id='"+srs2.getString("id")+"'");
+//					} else {
+//						idInc = getUniqueIncrementIdNew("user_finance");
+//						db.getJdbc().execute("insert into user_finance values ('"+BusinessGameService.KEY_USER_FINANCE+idInc+"','"+seller+"','Transport','"+(srs1.getDouble("size")*transport*srs2.getDouble("transport")*-1)+"')");
+//					}
+					
+					accountingFinance(seller, "Transport", srs1.getDouble("size")*transport*srs2.getDouble("transport"), false);
 					
 					totalPrice -= srs1.getDouble("size")*transport*srs2.getDouble("transport");
 					
-					db.getJdbc().execute("update user set money='"+(sellerMoney+totalPrice)+"', rep='"+(sellerRep+1)+"' where name='"+seller+"'");
+					db.getJdbc().execute("update businessgame.dbo.[user] set money='"+(sellerMoney+totalPrice)+"', rep='"+(sellerRep+1)+"' where name='"+seller+"'");
 					
-					srs3 = db.getJdbc().queryForRowSet("select id,size from storage_product where storage_product.desc='"+srs1.getString("product_desc")+"' and storage='"+srs1.getString("request_storage")+"'");
+					srs3 = db.getJdbc().queryForRowSet("select id,size from storage_product where storage_product.[desc]='"+srs1.getString("product_desc")+"' and storage='"+srs1.getString("request_storage")+"'");
 					System.out.println("Marker 5");
 					if(srs3.next()){
 						db.getJdbc().execute("update storage_product set size='"+(srs3.getDouble("size")+srs1.getDouble("size"))+"' where id='"+srs3.getString("id")+"'");
 					} else {
-						idInc = getUniqueIncrementId("inc_storage_product");
+						idInc = getUniqueIncrementIdNew("storage_product");
 						db.getJdbc().execute("insert into storage_product values ('"+BusinessGameService.KEY_PRODUCT+idInc+"','"+srs1.getString("product_desc")+"','"+srs1.getString("request_storage")+"','"+srs1.getString("size")+"')");
 					}
 					
-					srs3 = db.getJdbc().queryForRowSet("select total from user_finance where user='"+user+"' and type='Raw Material'");
-					if(srs3.next()){
-						db.getJdbc().execute("update user_finance set total='"+(((srs3.getDouble("total")*-1)+totalPrice)*-1)+"' where user='"+user+"' and type='Raw Material'");
-					} else {
-						idInc = getUniqueIncrementId("inc_user_finance");
-						db.getJdbc().execute("insert into user_finance values ('"+BusinessGameService.KEY_USER_FINANCE+idInc+"','"+user+"','Raw Material','"+(-1*totalPrice)+"')");
-					}
+//					srs3 = db.getJdbc().queryForRowSet("select total from user_finance where user='"+user+"' and type='Raw Material'");
+//					if(srs3.next()){
+//						db.getJdbc().execute("update user_finance set total='"+(((srs3.getDouble("total")*-1)+totalPrice)*-1)+"' where user='"+user+"' and type='Raw Material'");
+//					} else {
+//						idInc = getUniqueIncrementIdNew("user_finance");
+//						db.getJdbc().execute("insert into user_finance values ('"+BusinessGameService.KEY_USER_FINANCE+idInc+"','"+user+"','Raw Material','"+(-1*totalPrice)+"')");
+//					}
 					
-					db.getJdbc().execute("update user set money='"+(userMoney-totalPrice)+"' where name='"+user+"'");
+					accountingFinance(user, "Raw Material", totalPrice, false);
+					
+					db.getJdbc().execute("update businessgame.dbo.[user] set money='"+(userMoney-totalPrice)+"' where name='"+user+"'");
 					db.getJdbc().execute("update user_contract set turn='"+(srs1.getInt("turn")-1)+"' where id='"+srs1.getString("id")+"'");
 					if(srs1.getInt("turn") < 1)
 						db.getJdbc().execute("delete from user_contract where id='"+srs1.getString("id")+"'");
 					System.out.println("Marker 6");
 				} else {
-					db.getJdbc().execute("update user set rep='"+(sellerRep-5)+"' where name='"+seller+"'");
+					db.getJdbc().execute("update businessgame.dbo.[user] set rep='"+(sellerRep-5)+"' where name='"+seller+"'");
 				}
 			}
 		}
+		
+		srs1 = null;
+		srs2 = null;
+		srs3 = null;
+		
+		gc();
 	}
 	
 	private ArrayList<Object> calculateInstallmentPowerPlant(){
 		String hiElement="";
-		double hiVal = 0, tmpQuality = 0, tmpSum = 0, quality = 0,tmpTotal;
+		double hiVal = 0, tmpQuality = 0, tmpSum = 0, quality = 0, tmpTotalOperation, tmpTotalWage, tmpTotalDepreciation;
 		int eff;
-		SqlRowSet srs1 = db.getJdbc().queryForRowSet("select id,user,zone from installment where type='Petrol Power Plant'"),
+		SqlRowSet srs1 = db.getJdbc().queryForRowSet("select id,[user],[zone],fixed from installment,info_sector where type='Petrol Power Plant' and type=name"),
 				srs2,srs3;
 		HashMap<String, Double> elementsRatio = new HashMap<String, Double>(),
 				elements = new HashMap<String, Double>(),
@@ -952,7 +1025,10 @@ public class EngineCall implements Callable<Long> {
 				tmpSqlL = new ArrayList<String>();
 		ArrayList<Double> efficiency = new ArrayList<Double>(),
 				qualityCalc = new ArrayList<Double>(),
-				totalCost = new ArrayList<Double>();
+				totalWage = new ArrayList<Double>(),
+				totalOperation = new ArrayList<Double>(),
+				totalDepreciation = new ArrayList<Double>(),
+				fixed = new ArrayList<Double>();
 		ArrayList<Integer> effectivity = new ArrayList<Integer>();
 		ArrayList<Object> data = new ArrayList<Object>();
 		boolean pass = false;
@@ -963,12 +1039,14 @@ public class EngineCall implements Callable<Long> {
 			tmpQuality = 0;
 			tmpSum = 0;
 			quality = 0;
-			tmpTotal = 0;
+			tmpTotalOperation = 0;
+			tmpTotalWage = 0;
+			tmpTotalDepreciation = 0;
 			elementsRatio.clear();
 			elements.clear();
 			elementsCalc.clear();
 			elementsTmpQuality.clear();
-			tmpSqlL.clear();
+			tmpSqlL = new ArrayList<String>();
 			pass = true;
 			
 			srs2 = db.getJdbc().queryForRowSet("select equipment_type,items from info_sector_equipment where sector='Petrol Power Plant'");
@@ -981,10 +1059,11 @@ public class EngineCall implements Callable<Long> {
 					hiElement = srs2.getString("equipment_type");
 					hiVal = srs2.getDouble("items");
 				}
-				srs3 = db.getJdbc().queryForRowSet("select installment_equipment.id,quality,durability,operational from installment_equipment,desc_equipment,list_equipment where installment='"+srs1.getString("id")+"' and equipment='"+srs2.getString("equipment_type")+"' and installment_equipment.id=list_equipment.id and list_equipment.desc=desc_equipment.id");
+				srs3 = db.getJdbc().queryForRowSet("select installment_equipment.id,quality,durability,operational,buy_price from installment_equipment,desc_equipment,list_equipment where installment='"+srs1.getString("id")+"' and equipment='"+srs2.getString("equipment_type")+"' and installment_equipment.id=list_equipment.id and list_equipment.[desc]=desc_equipment.id");
 				while(srs3.next()){
 					tmpSqlL.add("update list_equipment set durability='"+(srs3.getDouble("durability")-0.01)+"' where id='"+srs3.getString("id")+"'");
-					tmpTotal += srs3.getDouble("operational");
+					tmpTotalOperation += srs3.getDouble("operational");
+					tmpTotalDepreciation += srs3.getDouble("buy_price")*0.01;
 					switch (srs3.getInt("quality")) {
 					case 1:
 						tmpQuality += 20;
@@ -1022,9 +1101,9 @@ public class EngineCall implements Callable<Long> {
 					hiElement = srs2.getString("employee_type");
 					hiVal = srs2.getDouble("items");
 				}
-				srs3 = db.getJdbc().queryForRowSet("select quality,operational from installment_employee,desc_employee,list_employee where installment='"+srs1.getString("id")+"' and employee='"+srs2.getString("employee_type")+"' and installment_employee.id=list_employee.id and list_employee.desc=desc_employee.id");
+				srs3 = db.getJdbc().queryForRowSet("select quality,operational from installment_employee,desc_employee,list_employee where installment='"+srs1.getString("id")+"' and employee='"+srs2.getString("employee_type")+"' and installment_employee.id=list_employee.id and list_employee.[desc]=desc_employee.id");
 				while(srs3.next()){
-					tmpTotal += srs3.getDouble("operational");
+					tmpTotalWage += srs3.getDouble("operational");
 					switch (srs3.getInt("quality")) {
 					case 1:
 						tmpQuality += 20;
@@ -1072,7 +1151,10 @@ public class EngineCall implements Callable<Long> {
 					sectors.add(srs1.getString("id"));
 					user.add(srs1.getString("user"));
 					zone.add(srs1.getString("zone"));
-					totalCost.add(tmpTotal);
+					totalOperation.add(tmpTotalOperation);
+					totalWage.add(tmpTotalWage);
+					totalDepreciation.add(tmpTotalDepreciation);
+					fixed.add(srs1.getDouble("fixed"));
 					tmpInstallmentSqlL.put(srs1.getString("id"), tmpSqlL);
 					eff = elements.get(hiElement).intValue()/elementsRatio.get(hiElement).intValue();
 					if(elements.get(hiElement) % elementsRatio.get(hiElement) > 0){
@@ -1092,6 +1174,7 @@ public class EngineCall implements Callable<Long> {
 					break;
 				}
 			}
+			tmpSqlL = null;
 		}
 		data.add(sectors);
 		data.add(user);
@@ -1099,16 +1182,20 @@ public class EngineCall implements Callable<Long> {
 		data.add(efficiency);
 		data.add(effectivity);
 		data.add(qualityCalc);
-		data.add(totalCost);
+		data.add(totalOperation);
+		data.add(totalWage);
+		data.add(totalDepreciation);
+		data.add(fixed);
 		data.add(tmpInstallmentSqlL);
+		
 		return data;
 	}
 	
 	private ArrayList<Object> calculateInstallmentNonPowerPlant(){
 		String hiElement="";
-		double hiVal = 0, tmpQuality = 0, tmpSum = 0, quality = 0, tmpTotalOperation,tmpTotalWage, tmpTotalDepreciation;
+		double hiVal = 0, tmpQuality = 0, tmpSum = 0, quality = 0, tmpTotalOperation, tmpTotalWage, tmpTotalDepreciation;
 		int eff;
-		SqlRowSet srs1 = db.getJdbc().queryForRowSet("select id,user,zone,type from installment where type!='Petrol Power Plant'"),
+		SqlRowSet srs1 = db.getJdbc().queryForRowSet("select id,[user],[zone],type,fixed from installment,info_sector where type!='Petrol Power Plant' and type=name"),
 				srs2,srs3;
 		HashMap<String, Double> elementsRatio = new HashMap<String, Double>(),
 				elements = new HashMap<String, Double>(),
@@ -1123,7 +1210,8 @@ public class EngineCall implements Callable<Long> {
 				qualityCalc = new ArrayList<Double>(),
 				totalWage = new ArrayList<Double>(),
 				totalOperation = new ArrayList<Double>(),
-				totalDepreciation = new ArrayList<Double>();
+				totalDepreciation = new ArrayList<Double>(),
+				fixed = new ArrayList<Double>();
 		ArrayList<Integer> effectivity = new ArrayList<Integer>();
 		ArrayList<Object> data = new ArrayList<Object>();
 		boolean pass = false;
@@ -1144,7 +1232,7 @@ public class EngineCall implements Callable<Long> {
 			elements.clear();
 			elementsCalc.clear();
 			elementsTmpQuality.clear();
-			tmpSqlL.clear();
+			tmpSqlL = new ArrayList<String>();
 			pass = true;
 			
 			srs2 = db.getJdbc().queryForRowSet("select equipment_type,items from info_sector_equipment where sector='"+srs1.getString("type")+"'");
@@ -1157,7 +1245,7 @@ public class EngineCall implements Callable<Long> {
 					hiElement = srs2.getString("equipment_type");
 					hiVal = srs2.getDouble("items");
 				}
-				srs3 = db.getJdbc().queryForRowSet("select installment_equipment.id,quality,durability,operational,buy_price from installment_equipment,desc_equipment,list_equipment where installment='"+srs1.getString("id")+"' and equipment='"+srs2.getString("equipment_type")+"' and installment_equipment.id=list_equipment.id and list_equipment.desc=desc_equipment.id and durability > 0");
+				srs3 = db.getJdbc().queryForRowSet("select installment_equipment.id,quality,durability,operational,buy_price from installment_equipment,desc_equipment,list_equipment where installment='"+srs1.getString("id")+"' and equipment='"+srs2.getString("equipment_type")+"' and installment_equipment.id=list_equipment.id and list_equipment.[desc]=desc_equipment.id and durability > 0");
 				while(srs3.next()){
 					tmpSqlL.add("update list_equipment set durability='"+(srs3.getDouble("durability")-0.01)+"' where id='"+srs3.getString("id")+"'");
 					tmpTotalOperation += srs3.getDouble("operational");
@@ -1201,7 +1289,7 @@ public class EngineCall implements Callable<Long> {
 					hiElement = srs2.getString("employee_type");
 					hiVal = srs2.getDouble("items");
 				}
-				srs3 = db.getJdbc().queryForRowSet("select quality,operational from installment_employee,desc_employee,list_employee where installment='"+srs1.getString("id")+"' and employee='"+srs2.getString("employee_type")+"' and installment_employee.id=list_employee.id and list_employee.desc=desc_employee.id");
+				srs3 = db.getJdbc().queryForRowSet("select quality,operational from installment_employee,desc_employee,list_employee where installment='"+srs1.getString("id")+"' and employee='"+srs2.getString("employee_type")+"' and installment_employee.id=list_employee.id and list_employee.[desc]=desc_employee.id");
 				while(srs3.next()){
 					tmpTotalWage += srs3.getDouble("operational");
 					switch (srs3.getInt("quality")) {
@@ -1256,6 +1344,7 @@ public class EngineCall implements Callable<Long> {
 					totalOperation.add(tmpTotalOperation);
 					totalWage.add(tmpTotalWage);
 					totalDepreciation.add(tmpTotalDepreciation);
+					fixed.add(srs1.getDouble("fixed"));
 					tmpInstallmentSqlL.put(srs1.getString("id"), tmpSqlL);
 					eff = elements.get(hiElement).intValue()/elementsRatio.get(hiElement).intValue();
 					if(elements.get(hiElement) % elementsRatio.get(hiElement) > 0){
@@ -1275,6 +1364,7 @@ public class EngineCall implements Callable<Long> {
 					break;
 				}
 			}
+			tmpSqlL = null;
 		}
 		
 		System.out.println("Done calculating non-powerplant");
@@ -1288,80 +1378,81 @@ public class EngineCall implements Callable<Long> {
 		data.add(totalOperation);
 		data.add(totalWage);
 		data.add(totalDepreciation);
+		data.add(fixed);
 		data.add(tmpInstallmentSqlL);
 		return data;
 	}
 	
-	private String getUniqueIncrementId(String inc_table){
-		String val = "", curDate, date, sqls[];
-		int counter;
-		ArrayList<String> sqlL = new ArrayList<String>();
-		
-		SqlRowSet srs = db.getJdbc().queryForRowSet("select value from info_values where name='"+inc_table+"' union select value from info_values where name='last_inc_set_date'");
-		if(srs.next())
-			counter = Integer.parseInt(srs.getString("value"));
-		else return val;
-		
-		curDate = dateNow("ddMMyy");
-		
-		if(srs.next())
-			date = srs.getString("value");
-		else return val;
-		
-		if(!date.equals(curDate)){
-			date = curDate;
-			counter = 0;
-			sqlL.add("update info_values set value='"+date+"' where name='last_inc_set_date'");
-			
-			//update all inc into 0 value
-			sqlL.add("update info_values set value='0' where substr(name,1,4)='inc_'");
-		}
-		
-		if(counter > 999)
-			val = ""+counter;
-		else if(counter > 99)
-			val = "0"+counter;
-		else if(counter > 9)
-			val = "00"+counter;
-		else val = "000"+counter;
-		sqlL.add("update info_values set value='"+(counter+1)+"' where name='"+inc_table+"'");
-		
-		sqls = new String[sqlL.size()];
-		sqlL.toArray(sqls);
-		db.getJdbc().batchUpdate(sqls);
-		
-		return date+val;
-	}
+//	private String getUniqueIncrementId(String inc_table){
+//		String val = "", curDate, date, sqls[];
+//		int counter;
+//		ArrayList<String> sqlL = new ArrayList<String>();
+//		
+//		SqlRowSet srs = db.getJdbc().queryForRowSet("select value from info_values where name='"+inc_table+"' union select value from info_values where name='last_inc_set_date'");
+//		if(srs.next())
+//			counter = Integer.parseInt(srs.getString("value"));
+//		else return val;
+//		
+//		curDate = dateNow("ddMMyy");
+//		
+//		if(srs.next())
+//			date = srs.getString("value");
+//		else return val;
+//		
+//		if(!date.equals(curDate)){
+//			date = curDate;
+//			counter = 0;
+//			sqlL.add("update info_values set value='"+date+"' where name='last_inc_set_date'");
+//			
+//			//update all inc into 0 value
+//			sqlL.add("update info_values set value='0' where substr(name,1,4)='inc_'");
+//		}
+//		
+//		if(counter > 999)
+//			val = ""+counter;
+//		else if(counter > 99)
+//			val = "0"+counter;
+//		else if(counter > 9)
+//			val = "00"+counter;
+//		else val = "000"+counter;
+//		sqlL.add("update info_values set value='"+(counter+1)+"' where name='"+inc_table+"'");
+//		
+//		sqls = new String[sqlL.size()];
+//		sqlL.toArray(sqls);
+//		db.getJdbc().batchUpdate(sqls);
+//		
+//		return date+val;
+//	}
 	
 	private void giveRawProductToPPPDemigod(){
 		ArrayList<String> sqlL = new ArrayList<String>();
-		SqlRowSet srs = db.getJdbc().queryForRowSet("select id from info_zone"),
-				srs1,srs2;
+		SqlRowSet srs1 = db.getJdbc().queryForRowSet("select id from info_zone"),
+				srs2,srs3;
 		String sqls[],idInc;
 		
-		while(srs.next()){
-			srs1 = db.getJdbc().queryForRowSet("select id from storage where user='demigod"+srs.getString("id")+"'");
-			while(srs1.next()){
-				srs2 = db.getJdbc().queryForRowSet("select id,size from storage_product where storage_product.desc='PRWATR02' and storage='"+srs1.getString("id")+"'");
-				if(srs2.next())
-					sqlL.add("update storage_product set size='"+(srs2.getDouble("size")+70)+"' where id='"+srs2.getString("id")+"'");
+		while(srs1.next()){
+			srs2 = db.getJdbc().queryForRowSet("select id from storage where [user]='demigod"+srs1.getString("id")+"'");
+			while(srs2.next()){
+				srs3 = db.getJdbc().queryForRowSet("select id,size from storage_product where storage_product.[desc]='PRWATR02' and storage='"+srs2.getString("id")+"'");
+				if(srs3.next())
+					sqlL.add("update storage_product set size='"+(srs3.getDouble("size")+70)+"' where id='"+srs3.getString("id")+"'");
 				else {
-					idInc = getUniqueIncrementId("inc_storage_product");
-					sqlL.add("insert into storage_product values ('"+BusinessGameService.KEY_PRODUCT+idInc+"','PRWATR02','"+srs1.getString("id")+"','70','1.00')");
+					idInc = getUniqueIncrementIdNew("storage_product");
+					sqlL.add("insert into storage_product values ('"+BusinessGameService.KEY_PRODUCT+idInc+"','PRWATR02','"+srs2.getString("id")+"','70','1.00')");
 				}
-				srs2 = db.getJdbc().queryForRowSet("select id,size from storage_product where storage_product.desc='PRGSLN02' and storage='"+srs1.getString("id")+"'");
-				if(srs2.next())
-					sqlL.add("update storage_product set size='"+(srs2.getDouble("size")+19)+"' where id='"+srs2.getString("id")+"'");
+				srs3 = db.getJdbc().queryForRowSet("select id,size from storage_product where storage_product.[desc]='PRGSLN02' and storage='"+srs2.getString("id")+"'");
+				if(srs3.next())
+					sqlL.add("update storage_product set size='"+(srs3.getDouble("size")+19)+"' where id='"+srs3.getString("id")+"'");
 				else {
-					idInc = getUniqueIncrementId("inc_storage_product");
-					sqlL.add("insert into storage_product values ('"+BusinessGameService.KEY_PRODUCT+idInc+"','PRGSLN02','"+srs1.getString("id")+"','19','21.00')");
+					idInc = getUniqueIncrementIdNew("storage_product");
+					sqlL.add("insert into storage_product values ('"+BusinessGameService.KEY_PRODUCT+idInc+"','PRGSLN02','"+srs2.getString("id")+"','19','21.00')");
 				}
-				srs2 = db.getJdbc().queryForRowSet("select id,size from storage_product where storage_product.desc='PRCMCL02' and storage='"+srs1.getString("id")+"'");
-				if(srs2.next())
-					sqlL.add("update storage_product set size='"+(srs2.getDouble("size")+17)+"' where id='"+srs2.getString("id")+"'");
+				srs3 = db.getJdbc().queryForRowSet("select id,size from storage_product where storage_product.[desc]='PRCMCL02' and storage='"+srs2.getString("id")+"'");
+				if(srs3.next())
+					sqlL.add("update storage_product set size='"+(srs3.getDouble("size")+17)+"' where id='"+srs3.getString("id")+"'");
 				else {
-					idInc = getUniqueIncrementId("inc_storage_product");
-					sqlL.add("insert into storage_product values ('"+BusinessGameService.KEY_PRODUCT+idInc+"','PRCMCL02','"+srs1.getString("id")+"','17','18.05')");
+					idInc = getUniqueIncrementIdNew("storage_product");
+					sqlL.add("insert into storage_product values ('"+BusinessGameService.KEY_PRODUCT+idInc+"','PRCMCL02','"+srs2.getString("id")+"','17','18.05')");
 				}
 			}
 		}
@@ -1374,7 +1465,89 @@ public class EngineCall implements Callable<Long> {
 		db.getJdbc().batchUpdate(sqls);
 		
 		sqlL = null;
+		sqls = null;
+		srs1 = null;
+		srs1 = null;
+		srs2 = null;
+		srs3 = null;
+		
 		System.out.println("Demigod getting all raw..");
+	}
+	
+	private void startingRawMaterialFromDemigod(){
+		String idInc, tmp;
+		SqlRowSet srs1 = db.getJdbc().queryForRowSet("select id from info_zone"),
+				srs2,srs3;
+		ArrayList<String> sqlL = new ArrayList<String>();
+		String sqls[];
+		
+		while(srs1.next()){
+			srs2 = db.getJdbc().queryForRowSet("select id from storage where [user]='demigod"+srs1.getString("id")+"'");
+			while(srs2.next()){
+				srs3 = db.getJdbc().queryForRowSet("select id,size from storage_product where storage_product.[desc]='PRWATR02' and storage='"+srs2.getString("id")+"'");
+				if(srs3.next()){
+					sqlL.add("update storage_product set size=400 where id='"+srs3.getString("id")+"'");
+					sqlL.add("update market_product set size=400 wher storage_product_id='"+srs3.getString("id")+"'");
+				} else {
+					idInc = getUniqueIncrementIdNew("storage_product");
+					sqlL.add("insert into storage_product values ('"+BusinessGameService.KEY_PRODUCT+idInc+"','PRWATR02','"+srs2.getString("id")+"',400,1.00)");
+					tmp = idInc;
+					idInc = getUniqueIncrementIdNew("market_product");
+					sqlL.add("insert into market_product values ('"+BusinessGameService.KEY_MARKET_PRODUCT+idInc+"','"+tmp+"','"+srs1.getString("id")+"',1.00,400)");
+				}
+				srs3 = db.getJdbc().queryForRowSet("select id,size from storage_product where storage_product.[desc]='PRCROL02' and storage='"+srs2.getString("id")+"'");
+				if(srs3.next()){
+					sqlL.add("update storage_product set size=400 where id='"+srs3.getString("id")+"'");
+					sqlL.add("update market_product set size=400 wher storage_product_id='"+srs3.getString("id")+"'");
+				} else {
+					idInc = getUniqueIncrementIdNew("storage_product");
+					sqlL.add("insert into storage_product values ('"+BusinessGameService.KEY_PRODUCT+idInc+"','PRCROL02','"+srs2.getString("id")+"',400,3.00)");
+					tmp = idInc;
+					idInc = getUniqueIncrementIdNew("market_product");
+					sqlL.add("insert into market_product values ('"+BusinessGameService.KEY_MARKET_PRODUCT+idInc+"','"+tmp+"','"+srs1.getString("id")+"',3.00,400)");
+				}
+				srs3 = db.getJdbc().queryForRowSet("select id,size from storage_product where storage_product.[desc]='PRIRON02' and storage='"+srs2.getString("id")+"'");
+				if(srs3.next()){
+					sqlL.add("update storage_product set size=400 where id='"+srs3.getString("id")+"'");
+					sqlL.add("update market_product set size=400 wher storage_product_id='"+srs3.getString("id")+"'");
+				} else {
+					idInc = getUniqueIncrementIdNew("storage_product");
+					sqlL.add("insert into storage_product values ('"+BusinessGameService.KEY_PRODUCT+idInc+"','PRIRON02','"+srs2.getString("id")+"',400,1.9)");
+					tmp = idInc;
+					idInc = getUniqueIncrementIdNew("market_product");
+					sqlL.add("insert into market_product values ('"+BusinessGameService.KEY_MARKET_PRODUCT+idInc+"','"+tmp+"','"+srs1.getString("id")+"',1.9,400)");
+				}
+				srs3 = db.getJdbc().queryForRowSet("select id,size from storage_product where storage_product.[desc]='PRSLCA02' and storage='"+srs2.getString("id")+"'");
+				if(srs3.next()){
+					sqlL.add("update storage_product set size=400 where id='"+srs3.getString("id")+"'");
+					sqlL.add("update market_product set size=400 wher storage_product_id='"+srs3.getString("id")+"'");
+				} else {
+					idInc = getUniqueIncrementIdNew("storage_product");
+					sqlL.add("insert into storage_product values ('"+BusinessGameService.KEY_PRODUCT+idInc+"','PRSLCA02','"+srs2.getString("id")+"',400,2.5)");
+					tmp = idInc;
+					idInc = getUniqueIncrementIdNew("market_product");
+					sqlL.add("insert into market_product values ('"+BusinessGameService.KEY_MARKET_PRODUCT+idInc+"','"+tmp+"','"+srs1.getString("id")+"',2.5,400)");
+				}
+			}
+		}
+		
+		for(String sql : sqlL)
+			System.out.println(sql);
+		
+		sqls = new String[sqlL.size()];
+		sqlL.toArray(sqls);
+		db.getJdbc().batchUpdate(sqls);
+		
+		sqlL = null;
+		sqls = null;
+		srs1 = null;
+		srs1 = null;
+		srs2 = null;
+		srs3 = null;
+		
+		gc();
+		
+		System.out.println("Demigod release initial raw material at most 1000 CBM");
 	}
 	
 	private void deleteRawProductDemigod(){
@@ -1384,16 +1557,106 @@ public class EngineCall implements Callable<Long> {
 		String sqls[];
 		
 		while(srs1.next()){
-			srs2 = db.getJdbc().queryForRowSet("select id from storage where user='demigod"+srs1.getString("id")+"'");
+			srs2 = db.getJdbc().queryForRowSet("select id from storage where [user]='demigod"+srs1.getString("id")+"'");
 			while(srs2.next()){
 				sqlL.add("delete from storage_product where id='"+srs2.getString("id")+"'");
 			}
 		}
+		
+		for(String sql : sqlL)
+			System.out.println(sql);
 		
 		sqls = new String[sqlL.size()];
 		sqlL.toArray(sqls);
 		db.getJdbc().batchUpdate(sqls);
 		
 		System.out.println("Demigod deleting all product..");
+	}
+	
+	/**
+	 * Generate the 13-digit unique id based on the current time millis provided by the system
+	 * (System.currentTimeMillis()) plus 3-digit incremental value.
+	 * 
+	 * @param table The table that'll be used.
+	 * @return The 13-digit unique id plus 3-digit incremental value.
+	 */
+	private String getUniqueIncrementIdNew(String table){
+		String val = "", sqls[];
+		int counter;
+		long curMillis, millis;
+		ArrayList<String> sqlL = new ArrayList<String>();
+		
+		SqlRowSet srs = db.getJdbc().queryForRowSet("select [value] from info_values where name='inc_"+table+"' union select [value] from info_values where name='last_inc_set_millis'");
+		if(srs.next())
+			counter = Integer.parseInt(srs.getString("value"));
+		else return val;
+		
+		curMillis = System.currentTimeMillis();
+		
+		if(srs.next())
+			millis = Long.parseLong(srs.getString("value"));
+		else return val;
+		
+		if(millis < curMillis){
+			millis = curMillis;
+			counter = 0;
+			sqlL.add("update info_values set [value]='"+millis+"' where name='last_inc_set_millis'");
+			sqlL.add("update info_values set [value]='0' where substring(name,1,4)='inc_'");
+		}
+
+		if(counter > 99)
+			val = ""+counter;
+		else if(counter > 9)
+			val = "0"+counter;
+		else val = "00"+counter;
+		sqlL.add("update info_values set [value]='"+(counter+1)+"' where name='inc_"+table+"'");
+		
+		sqls = new String[sqlL.size()];
+		sqlL.toArray(sqls);
+		db.getJdbc().batchUpdate(sqls);
+		
+		return millis+val;
+	}
+	
+	/**
+	 * Take the user's activity into account. Specifically, record the flow of money to/from
+	 * specified user. 
+	 * 
+	 * @param user The user that take into account.
+	 * @param type The type of account.
+	 * @param amount The amount of money that take into account.
+	 * @param isIncome If it is an income, mark as true, otherwise must be false.
+	 */
+	private void accountingFinance(String user, String type, double amount, boolean isIncome){
+		String sqls[],idInc;
+		SqlRowSet srs;
+		ArrayList<String> sqlL = new ArrayList<String>();
+		int factor = isIncome? 1 : -1;
+		
+		srs = db.getJdbc().queryForRowSet("select id,total from user_finance where [user]='"+user+"' and type='"+type+"'");
+		if(srs.next()){
+			sqlL.add("update user_finance set total='"+(((srs.getDouble("total")*factor)+amount)*factor)+"' where id='"+srs.getString("id")+"'");
+		} else {
+			idInc = getUniqueIncrementIdNew("user_finance");
+			sqlL.add("insert into user_finance values ('"+BusinessGameService.KEY_USER_FINANCE+idInc+"','"+user+"','"+type+"','"+(factor*amount)+"')");
+		}
+		
+		sqls = new String[sqlL.size()];
+		sqlL.toArray(sqls);
+		db.getJdbc().batchUpdate(sqls);
+		
+		srs = null;
+		sqlL = null;
+		sqls = null;
+		idInc = null;
+		
+		gc();
+	}
+	
+	/**
+	 * Clean up the mess we've been created. XD
+	 */
+	private void gc(){
+		System.gc();
 	}
 }

@@ -3,18 +3,17 @@ package com.ardhi.businessgame.models;
 import java.util.HashMap;
 
 public class User {
-	private String name, email, dob, about, avatar, zone;
+	private String name, email, dob, about, zone;
 	private double money;
 	private long rep;
 	private HashMap<String, String> storages;
 	private int level;
 	
-	public User(String n, String e, String d, String ab, String av, double m, long r, String z, HashMap<String, String> s, int l){
+	public User(String n, String e, String d, String ab, double m, long r, String z, HashMap<String, String> s, int l){
 		setName(n);
 		setEmail(e);
 		setDob(d);
 		setAbout(ab);
-		setAvatar(av);
 		setMoney(m);
 		setRep(r);
 		setZone(z);
@@ -36,10 +35,6 @@ public class User {
 	
 	public void setAbout(String s){
 		about = s;
-	}
-	
-	public void setAvatar(String s){
-		avatar = s;
 	}
 	
 	public void setMoney(double m){
@@ -76,10 +71,6 @@ public class User {
 	
 	public String getAbout(){
 		return about;
-	}
-	
-	public String getAvatar(){
-		return avatar;
 	}
 	
 	public double getMoney(){

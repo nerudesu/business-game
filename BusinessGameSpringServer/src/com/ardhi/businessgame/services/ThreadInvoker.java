@@ -22,9 +22,9 @@ public class ThreadInvoker extends Thread {
 			EngineCall.working = true;
 			BusinessGameController.working = true;
 			while(true){
+//				BusinessGameController.working = false;
 				futureList.add(executor.submit(new EngineCall(EngineCall.IDLE)));
 				Thread.sleep(futureList.get(0).get());
-//				BusinessGameController.working = false;
 				futureList.add(executor.submit(new EngineCall(EngineCall.CONTRACT)));
 				futureList.add(executor.submit(new EngineCall(EngineCall.WORK)));
 				Thread.sleep(futureList.get(2).get());

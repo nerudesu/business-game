@@ -63,9 +63,9 @@ public class SectorDetailTabActivity extends TabActivity {
 	private Thread t;
 	private ProgressDialog progressDialog;
 	private String id,idE,sectorType,currentSupply;
-	private double efficiency,effectivity,tariff,totalKwh,currentKwh;
+	private double efficiency,effectivity,tariff,subscription,totalKwh,currentKwh;
 	private ArrayList<String> input,output,types,users,idSupplies;
-	private ArrayList<Double> inputVal,outputVal,supplies,tariffs,availables;
+	private ArrayList<Double> inputVal,outputVal,supplies,subscriptions,tariffs,availables;
 	private ArrayList<InstallmentEmployee> employees;
 	private ArrayList<InstallmentEquipment> equipments;
 
@@ -281,10 +281,10 @@ public class SectorDetailTabActivity extends TabActivity {
 		}
 	}
 	
-	private void updateTariff(double newTariff){
+	private void updateSubscriptionTariff(double newSubscription, double newTariff){
 		if(CommunicationService.isOnline(this)){
 			progressDialog = ProgressDialog.show(this, "", "Processing..");
-			new UpdateTariff().execute(""+newTariff);
+			new UpdateTariff().execute(""+newSubscription, ""+newTariff);
 		} else {
 			Toast.makeText(this, "Device is offline..", Toast.LENGTH_SHORT).show();
 		}
@@ -477,11 +477,13 @@ public class SectorDetailTabActivity extends TabActivity {
 			View v = null;
 			if(sectorType.equals("Petrol Power Plant")){
 				v = inflater.inflate(R.layout.extended_sector_supply_list, null);
-				final EditText txtPrice = (EditText)v.findViewById(R.id.txt_price_kwh),
+				final EditText txtSubscription = (EditText)v.findViewById(R.id.txt_subscription), 
+						txtPrice = (EditText)v.findViewById(R.id.txt_price_kwh),
 						txtKwhNeed = (EditText)v.findViewById(R.id.txt_kwh_need);
 				ListView lv = (ListView)v.findViewById(R.id.supply_list);
 				Button btnSubmit = (Button)v.findViewById(R.id.btn_submit);
 				
+				txtSubscription.setText(""+subscription);
 				txtPrice.setText(""+tariff);
 				txtKwhNeed.setText(totalKwh+" KWH");
 				lv.setAdapter(new InstallmentSupplyAdapter(a, idSupplies, types, users, supplies));
@@ -489,7 +491,7 @@ public class SectorDetailTabActivity extends TabActivity {
 				btnSubmit.setOnClickListener(new View.OnClickListener() {
 					@Override
 					public void onClick(View v) {
-						updateTariff(Double.parseDouble(txtPrice.getText().toString()));
+						updateSubscriptionTariff(Double.parseDouble(txtSubscription.getText().toString()), Double.parseDouble(txtPrice.getText().toString()));
 					}
 				});
 				
@@ -497,6 +499,7 @@ public class SectorDetailTabActivity extends TabActivity {
 				v = inflater.inflate(R.layout.extended_sector_supplier_choice, null);
 				final Spinner spinSupply = (Spinner)v.findViewById(R.id.spin_supplier);
 				final EditText txtUser = (EditText)v.findViewById(R.id.txt_user),
+						txtSubscription = (EditText)v.findViewById(R.id.txt_subscription),
 						txtPriceKwh = (EditText)v.findViewById(R.id.txt_price_kwh),
 						txtKwhAvailable = (EditText)v.findViewById(R.id.txt_kwh_available),
 						txtKwhNeed = (EditText)v.findViewById(R.id.txt_kwh_need);
@@ -509,6 +512,7 @@ public class SectorDetailTabActivity extends TabActivity {
 				if(tmp > -1)
 					spinSupply.setSelection(tmp);
 				
+				
 				txtKwhNeed.setText(""+currentKwh);
 				
 				spinSupply.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -516,6 +520,7 @@ public class SectorDetailTabActivity extends TabActivity {
 					@Override
 					public void onItemSelected(AdapterView<?> spinner, View v, int i, long id) {
 						txtUser.setText(users.get(i));
+						txtSubscription.setText(subscriptions.get(i)+" ZE");
 						txtPriceKwh.setText(tariffs.get(i)+" ZE");
 						txtKwhAvailable.setText(availables.get(i)+" KWH");
 					}
@@ -607,21 +612,22 @@ public class SectorDetailTabActivity extends TabActivity {
 				
 				if(sectorType.equals("Petrol Power Plant")){
 					totalKwh = 0;
-					tariff = new Gson().fromJson(array.get(9), Double.class);
+					subscription = new Gson().fromJson(array.get(9), Double.class);
+					tariff = new Gson().fromJson(array.get(10), Double.class);
 					
-					array1 = parser.parse(new Gson().fromJson(array.get(10), String.class)).getAsJsonArray();
+					array1 = parser.parse(new Gson().fromJson(array.get(11), String.class)).getAsJsonArray();
 					types = new ArrayList<String>();
 					for(int i=0;i<array1.size();i++){
 						types.add(new Gson().fromJson(array1.get(i), String.class));
 					}
 					
-					array1 = parser.parse(new Gson().fromJson(array.get(11), String.class)).getAsJsonArray();
+					array1 = parser.parse(new Gson().fromJson(array.get(12), String.class)).getAsJsonArray();
 					users = new ArrayList<String>();
 					for(int i=0;i<array1.size();i++){
 						users.add(new Gson().fromJson(array1.get(i), String.class));
 					}
 					
-					array1 = parser.parse(new Gson().fromJson(array.get(12), String.class)).getAsJsonArray();
+					array1 = parser.parse(new Gson().fromJson(array.get(13), String.class)).getAsJsonArray();
 					supplies = new ArrayList<Double>();
 					for(int i=0;i<array1.size();i++){
 						supplies.add(new Gson().fromJson(array1.get(i), Double.class));
@@ -630,7 +636,7 @@ public class SectorDetailTabActivity extends TabActivity {
 					
 					totalKwh = new BigDecimal(Double.valueOf(totalKwh)).setScale(2, BigDecimal.ROUND_HALF_EVEN).doubleValue();
 					
-					array1 = parser.parse(new Gson().fromJson(array.get(13), String.class)).getAsJsonArray();
+					array1 = parser.parse(new Gson().fromJson(array.get(14), String.class)).getAsJsonArray();
 					idSupplies = new ArrayList<String>();
 					for(int i=0;i<array1.size();i++){
 						idSupplies.add(new Gson().fromJson(array1.get(i), String.class));
@@ -649,19 +655,25 @@ public class SectorDetailTabActivity extends TabActivity {
 					}
 					
 					array1 = parser.parse(new Gson().fromJson(array.get(11), String.class)).getAsJsonArray();
+					subscriptions = new ArrayList<Double>();
+					for(int i=0;i<array1.size();i++){
+						subscriptions.add(new Gson().fromJson(array1.get(i), Double.class));
+					}
+					
+					array1 = parser.parse(new Gson().fromJson(array.get(12), String.class)).getAsJsonArray();
 					tariffs = new ArrayList<Double>();
 					for(int i=0;i<array1.size();i++){
 						tariffs.add(new Gson().fromJson(array1.get(i), Double.class));
 					}
 					
-					array1 = parser.parse(new Gson().fromJson(array.get(12), String.class)).getAsJsonArray();
+					array1 = parser.parse(new Gson().fromJson(array.get(13), String.class)).getAsJsonArray();
 					availables = new ArrayList<Double>();
 					for(int i=0;i<array1.size();i++){
 						availables.add(new Gson().fromJson(array1.get(i), Double.class));
 					}
 					
-					currentKwh = new Gson().fromJson(array.get(13), Double.class);
-					currentSupply = new Gson().fromJson(array.get(14), String.class);
+					currentKwh = new Gson().fromJson(array.get(14), Double.class);
+					currentSupply = new Gson().fromJson(array.get(15), String.class);
 				}
 				
 				parser = null;
@@ -761,17 +773,19 @@ public class SectorDetailTabActivity extends TabActivity {
 	}
 	
 	private class UpdateTariff extends AsyncTask<String, Void, Object>{
-		double tmp;
+		double tmpd1, tmpd2;
 		
 		@Override
 		protected Object doInBackground(String... params) {
 			HashMap<String, String> postParameters = new HashMap<String, String>();
 			postParameters.put("id", id);
-			postParameters.put("tariff", params[0]);
-			tmp = Double.parseDouble(params[0]);
+			postParameters.put("subscription", params[0]);
+			postParameters.put("tariff", params[1]);
+			tmpd1 = Double.parseDouble(params[0]);
+			tmpd2 = Double.parseDouble(params[1]);
 			String res = null;
 			try {
-				res = CommunicationService.post(CommunicationService.POST_UPDATE_TARIFF, postParameters);
+				res = CommunicationService.post(CommunicationService.POST_UPDATE_SUBSCRIPTION_TARIFF, postParameters);
 			} catch (Exception e) {
 				e.printStackTrace();
 				res = null;
@@ -792,7 +806,8 @@ public class SectorDetailTabActivity extends TabActivity {
 			} else if(res.toString().equals("0")){
 				Toast.makeText(getApplicationContext(), "Internal server error..", Toast.LENGTH_SHORT).show();
 			} else {
-				tariff = tmp;
+				subscription = tmpd1;
+				tariff = tmpd2;
 				getTabHost().setCurrentTab(0);
 				setLayout(3);
 			}

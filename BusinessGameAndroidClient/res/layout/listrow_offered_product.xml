@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:padding="5dip">
+    <ImageView android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/imgdesc_product"
+        android:src="@drawable/ic_launcher"
+        android:id="@+id/img"/>
+    <TextView android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_toRightOf="@+id/img"
+		android:textStyle="bold"
+		android:textColor="#FFFFFF"
+		android:textSize="18sp"
+		android:id="@+id/txt_product"/>
+    <TextView android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:layout_alignLeft="@+id/txt_product"
+		android:layout_below="@+id/txt_product"
+		android:id="@+id/txt_size"/>
+    <RatingBar android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_alignLeft="@+id/txt_size"
+		android:layout_below="@+id/txt_size"
+		android:numStars="3"
+		android:rating="2"
+		android:id="@+id/rate_quality"
+		style="?android:attr/ratingBarStyleSmall"/>
+    <Button android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:text="@string/btn_cancel"
+        android:id="@+id/btn_cancel"/>
+</RelativeLayout>

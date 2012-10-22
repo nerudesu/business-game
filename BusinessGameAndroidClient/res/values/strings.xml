@@ -1,6 +1,6 @@
 <resources>
 
-    <string name="app_name">Business Game</string>
+    <string name="app_name">Zentriump</string>
     <string name="hello_world">Hello world!</string>
     <string name="menu_settings">Settings</string>
     <string name="title_activity_login">Login</string>
@@ -21,6 +21,7 @@
     <string name="btn_hire">Hire</string>
     <string name="btn_fire">Fire</string>
     <string name="btn_attach">Attach</string>
+    <string name="btn_fix">Fix</string>
     <string name="btn_detach">Detach</string>
     <string name="btn_awaiting_confirmation">Awaiting confirmation</string>
     <string name="btn_accept">Accept</string>
@@ -30,6 +31,9 @@
     <string name="btn_new_installment">Create new installment</string>
     <string name="btn_send_pm">Send Private Message</string>
     <string name="btn_make_contract">Make a Contract</string>
+    <string name="btn_next">Next</string>
+    <string name="btn_prev">Prev</string>
+    
     <string name="imgdesc_user">User</string>
     <string name="imgdesc_product">Product</string>
     <string name="imgdesc_installment">Installment</string>
@@ -75,6 +79,7 @@
     <string name="installment">Installment : </string>
     <string name="installment_supply">Energy Supply : </string>
     <string name="installment_type">Installment type : </string>
+    <string name="subscription">Subscription : </string>
     <string name="price_kwh">Price per KWH : </string>
     <string name="kwh_available">KWH available : </string>
     <string name="kwh_need">KWH needed : </string>
@@ -113,7 +118,9 @@
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="advertise">Advertise now!</string>
+    
     <string name="question_borrow">Are you sure you want to borrow this money? Once you successfully getting this money, you will no longer be able to borrow more money for several period.</string>
+    <string name="question_pay_borrow">Please input the money you want to pay</string>
     <string name="question_logout">Are you sure you want to log out?</string>
     <string name="question_storage">You have no storage in your zone. Build now? It\'s only \'%.2f\' </string>
     <string name="question_product">How much?</string>
@@ -122,7 +129,40 @@
     <string name="question_bundle_installment">You are about to buy a bundle of equipment and hire a team of employee for an installment you choose before. Are you sure?</string>
     <string name="question_advertise">Are you sure you want to advertise now?</string>
     <string name="question">Are you sure?</string>
-
+    
+    <string name="help_0_title">Welcome</string>
+    <string name="help_1_title">Getting Started</string>
+    <string name="help_2_title">The Map</string>
+    <string name="help_3_title">Turn</string>
+    <string name="help_4_title">Bank</string>
+    <string name="help_5_title">Headquarter</string>
+    <string name="help_6_title">Storage</string>
+    <string name="help_7_title">Market</string>
+    <string name="help_8_title">Ads</string>
+    <string name="help_9_title">Contract and PM</string>
+    <string name="help_10_title">Conclusion</string>
+    
+    <string name="help_0">Hello! Welcome to Zentriumph, a Massively Multiplayer Online Business Simulation Game. \n\nHere, you\'ll compete with other players building your own business empire.</string>
+    <string name="help_1_1">This is your main menu:</string>
+    <string name="help_1_2">The first one is My Business menu where you manage all your business entities. \n\nMy Account, this menu will show all related data from your profile where you can later edit. \n\nHelp system, the one that you’re reading right now. \n\nAnd last is logout button.</string>
+    <string name="help_2_1">When you click on My Business menu, you\'ll see a map of your world.</string>
+    <string name="help_2_2">You can move around the map by panning your finger according to the direction you want to go. \n\nYou can also click on every building on map that will bring you to their specific window.</string>
+    <string name="help_3_1">A turn occurs every ten minutes, consisting nine minutes of active time where player can do all the activity in Zentriumph such as buying/selling, etc. and one minute of passive time where player can\'t do things because the server takes time to prepare for a turn. \n\nThe turn indicated by the timer at the top left of the map or bottom bar on detailed window.</string>
+    <string name="help_3_2">After the end of each turn your input goods will be converted to products, all cost that calculated based on turn will be also deducted automatically from your cash. \n\nWe think you\'ve grasp all the basic from Zentriumph, now… how to actually start your business empire? We will guide you to build your first business right away through our several next pages tutorial, so stick with us.</string>
+    <string name="help_4_1">Unlike other bgame, in Zentriumph you start with zero capital. \nYou have to submit your proposal to bank to get some sums of money to get you started with your businesses.</string>
+    <string name="help_4_2">This proposal will contain all the money you need to invest in a business, first you can select what sector you want to build first, and it\'ll list all the info regarding the sector. \nYou can scroll the upper tab to roll with the detail of every part needed to run that sector (such as: equipment, employee, etc.), you can also define how many turns the bank will cover your expenses on input goods. \n\nRemember, not all applied proposal will be accepted. Your chance to get accepted depends on what sector you choose and the total of money that\'ll be invested. \nEvery amount of money that you\'ve borrowed from bank will cost you 15% of interests that you\'ve to pay for each turn. \nYou can also pay the loans anytime; this will reduce the amount of interests of course.</string>
+    <string name="help_5_1">After you get the cash needed to start investing from the bank, you need to go to headquarter to unlock your sector by buying their blueprints. \nWhen you get the blueprint, the corresponding sector will appear on the map. \nThe cost to unlock your first sector will be nulled, but it will increase according to the amount of sectors that you currently have.</string>
+    <string name="help_5_2">You can also view how your business progress compared with others on the Headquarter by visiting the intelligence tab to show your position on the rank.</string>
+    <string name="help_6_1">You\'ve your cash, you\'ve your business sector, next thing to do is to buy storage, and without storage you can\'t store all the goods and equipment needed to produce the product.</string>
+    <string name="help_6_2">All goods and equipment have quantity that counted using CBM measurement. \nYou can increase your capacity by upgrading your storage.</string>
+	<string name="help_7_1">This is the place where sellers meet buyer, or vice versa. \nWhen buying or selling a product you can specify the amount of it according to your need.</string>
+    <string name="help_7_2">Selling in the market will cost you some retribution cost and an amount of transport cost that will be deducted directly from your financial statement for every transaction.</string>
+    <string name="help_8_1">You can increase your product\'s visibility by promoting them through some advertisement, just select for how much turn the ads will be running and what media type that you\'ll be using, note that different media type will cost and give you different results too.</string>
+    <string name="help_8_2">If you place an ads over the same product that still has ads running it\'ll automatically extend the promoting time.</string>
+    <string name="help_9_1">By using a contract, player can barter resources, buy/sell products. When making a contract, seller agreed to supply their products for an amount of time.</string>
+    <string name="help_9_2">The seller/supplier will also receive reputation point for every successful transaction, but beware! When you can\'t fulfill your contract because you don\'t exceed your production planning, you can get negative reputation. It\'s recommended that you contact the player that you want to make contract with using our PM system. And did you know? By making a contract you can remove some cost like retribution cost when you\'re selling on market.</string>
+    <string name="help_10">That\'s all! Now you\'re ready to compete with others and start building your business empire. For feedback, please send us through our e-mail at phionsoft@yahoo.co.jp \n\nHave fun!</string>
+    
     <string-array name="options_main">
         <item>My Business</item>
         <item>My Account</item>
@@ -322,5 +362,6 @@
     <string name="title_activity_my_profile">MyProfileActivity</string>
     <string name="title_activity_message">MessageActivity</string>
     <string name="title_activity_player_info">PlayerInfoActivity</string>
+    <string name="title_activity_help">HelpActivity</string>
 
 </resources>
