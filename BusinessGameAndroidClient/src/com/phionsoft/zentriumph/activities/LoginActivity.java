@@ -7,6 +7,7 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.KeyEvent;
@@ -163,6 +164,13 @@ public class LoginActivity extends Activity {
 			HashMap<String, String> postParameters = new HashMap<String, String>();
 			postParameters.put("user", user.getText().toString());
 			postParameters.put("pass", pass.getText().toString());
+			try {
+				postParameters.put("ver", getPackageManager().getPackageInfo(getPackageName(), 0).versionCode+"");
+			} catch (NameNotFoundException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+				postParameters.put("ver", "failed");
+			}
 			
 			String res = null;
 			try {
@@ -195,6 +203,8 @@ public class LoginActivity extends Activity {
 				Toast.makeText(LoginActivity.this, "Wrong password..", Toast.LENGTH_SHORT).show();
 			} else if(res.toString().equals("1")){
 				Toast.makeText(LoginActivity.this, "Username not exist..", Toast.LENGTH_SHORT).show();
+			} else if(res.toString().equals("2")){
+				Toast.makeText(LoginActivity.this, "Please upgrade your apps first..", Toast.LENGTH_SHORT).show();
 			} else {
 				if(db.addUser(new Gson().fromJson(res.toString(), User.class))){
 					startActivity(new Intent(LoginActivity.this, MainBusinessGameActivity.class));

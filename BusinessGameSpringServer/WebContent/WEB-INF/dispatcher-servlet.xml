@@ -33,7 +33,7 @@
 	
 	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close">
 		<property name="driverClass" value="com.microsoft.sqlserver.jdbc.SQLServerDriver" />
-		<property name="jdbcUrl" value="jdbc:sqlserver://192.168.1.8:1039;databaseName=businessgame;user=Ardhi;password=ardhi" />
+		<property name="jdbcUrl" value="jdbc:sqlserver://103.247.211.45:1433;databaseName=businessgame;user=sa;password=adminebadfriitt" />
 		<property name="acquireIncrement" value="5" />
 		<property name="idleConnectionTestPeriod" value="60" />
 		<property name="maxPoolSize" value="100" />

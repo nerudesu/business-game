@@ -1389,8 +1389,16 @@ public class BusinessGameService {
 	
 	public String loginUser(HttpServletRequest req){
 		String val = "Ok";
-		SqlRowSet srs1 = db.getJdbc().queryForRowSet("select * from businessgame.dbo.[user] where name='"+req.getParameter("user")+"'"),
+		SqlRowSet srs1 = db.getJdbc().queryForRowSet("select [value] from info_values where name='ver'"),
 				srs2;
+		
+		if(srs1.next()){
+			if(!srs1.getString("value").equals(req.getParameter("ver")))
+				return "2";
+		} else return "0";
+		
+		srs1 = db.getJdbc().queryForRowSet("select * from businessgame.dbo.[user] where name='"+req.getParameter("user")+"'");
+		System.out.println("Ver : "+req.getParameter("ver"));
 		User userAcc;
 		if(srs1.next()){
 			if(req.getParameter("pass").equals(srs1.getString("pass"))){

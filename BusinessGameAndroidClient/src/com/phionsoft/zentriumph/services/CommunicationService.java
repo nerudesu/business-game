@@ -16,7 +16,7 @@ import android.net.NetworkInfo;
 public class CommunicationService {
 	
 	public static final int HTTP_TIMEOUT = 10 * 1000; // milliseconds
-	public static final String URL = "http://192.168.1.5:8080/BusinessGame/businessGame",
+	public static final String URL = "http://103.247.211.45:1001/businessGame",
 			GET_GET_GAME_TIME = "?action=getGameTime",
 			GET_GET_ENTIRE_ZONE = "?action=getEntireZone",
 			GET_LOAD_BANK_DATA = "?action=loadBankData",
