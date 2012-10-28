@@ -11,6 +11,12 @@ import com.ardhi.businessgame.models.TimePhase;
 
 public class ThreadInvoker extends Thread {
 
+	private boolean threadWork = false;
+	
+	public void setThreadWork(boolean val){
+		threadWork = val;
+	}
+	
 	@Override
 	public void run() {
 		try {
@@ -21,7 +27,8 @@ public class ThreadInvoker extends Thread {
 			engine = null;
 			EngineCall.working = true;
 			BusinessGameController.working = true;
-			while(true){
+			threadWork = true;
+			while(threadWork){
 //				BusinessGameController.working = false;
 				futureList.add(executor.submit(new EngineCall(EngineCall.IDLE)));
 				Thread.sleep(futureList.get(0).get());

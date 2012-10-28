@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.sql.DataSource;
@@ -66,7 +67,14 @@ public class BusinessGameService {
 	@PostConstruct
 	public void startEngine() throws Exception{
 		System.out.println("Starting EngineDaemon..");
+		invoker.setThreadWork(true);
 		invoker.start();
+	}
+	
+	@PreDestroy
+	public void stopEngine() throws Exception{
+		invoker.setThreadWork(false);
+		invoker.interrupt();
 	}
 
 	/* End of engine configuration */
@@ -205,14 +213,19 @@ public class BusinessGameService {
 		if(isAvailable){
 			int level = srs1.getInt("level")-1;
 			
-			double capacity = 0, fill = 0;
-			srs1 = db.getJdbc().queryForRowSet("select [value] from info_values where name='storage' union select [value] from info_values where name='storage_inc'");
+			double capacity = 0, fill = 0, upgrade = 0, inc = 0;
+			srs1 = db.getJdbc().queryForRowSet("select [value] from info_values where name='storage' union select [value] from info_values where name='storage_inc' union select [value] from info_values where name='cost_storage_upgrade'");
 			if(srs1.next()){
 				capacity = Double.parseDouble(srs1.getString("value"));
 			} else return "0";
 			
 			if(srs1.next()){
 				capacity += level*Double.parseDouble(srs1.getString("value"));
+				inc = Double.parseDouble(srs1.getString("value"));
+			} else return "0";
+			
+			if(srs1.next()){
+				upgrade = Double.parseDouble(srs1.getString("value"));
 			} else return "0";
 			
 			srs1 = db.getJdbc().queryForRowSet("select storage_product.id,product,quality,size,draw from storage_product,desc_product,info_product where storage='"+id+"' and desc_product.id=storage_product.[desc] and product=name");
@@ -245,6 +258,9 @@ public class BusinessGameService {
 			data.add(gson.toJson(isAvailable));
 			data.add(gson.toJson(capacity));
 			data.add(gson.toJson(fill));
+			data.add(gson.toJson(upgrade));
+			data.add(gson.toJson(inc));
+			data.add(gson.toJson(level+1));
 			data.add(gson.toJson(storageProducts));
 			data.add(gson.toJson(storageEquipments));
 			data.add(gson.toJson(marketProducts));
@@ -275,13 +291,32 @@ public class BusinessGameService {
 	}
 	
 	public String refreshClientData(HttpServletRequest req) {
-		SqlRowSet srs = db.getJdbc().queryForRowSet("select * from businessgame.dbo.[user] where name='"+req.getParameter("user")+"'");
+		SqlRowSet srs;
+//		srs2 = db.getJdbc().queryForRowSet("select cost from info_zone where id='"+srs1.getString("zone")+"'");
+//		double propCost;
+//		if(srs2.next()){
+//			propCost = srs2.getDouble("cost");
+//		} else return "0";
+		
+		srs = db.getJdbc().queryForRowSet("select sector,cost from user_sector_blueprint,info_sector where [user]='"+req.getParameter("user")+"' and sector=name");
+		HashMap<String, Double> sectorCosts = new HashMap<String, Double>();
+		while(srs.next()){
+			sectorCosts.put(srs.getString("sector"), srs.getDouble("cost"));
+		}
+		
 		String val = "0";
+		srs = db.getJdbc().queryForRowSet("select money,rep,cost from [user],info_zone where name='"+req.getParameter("user")+"' and id=[zone]");
+		User user;
 		if(srs.next())
-			val = gson.toJson(new User(srs.getString("name"), srs.getString("email"), srs.getString("dob"), srs.getString("about"), srs.getDouble("money"), srs.getLong("rep"), srs.getString("zone"), new HashMap<String, String>(), srs.getInt("level")));
-		else val = "0";
+			user = new User("", "", "", "", srs.getDouble("money"), srs.getDouble("cost"), srs.getLong("rep"), "", 0, new HashMap<String, String>(), new HashMap<String, String>(), new HashMap<String, String>(), sectorCosts, new ArrayList<Installment>());
+		else return "0";
+
+		val = gson.toJson(user);
 		
 		srs = null;
+		sectorCosts = null;
+		user = null;
+		
 		gc();
 		
 		return val;
@@ -296,12 +331,6 @@ public class BusinessGameService {
 		while(srs1.next()){
 			sectors.add(srs1.getString("name"));
 			sectorsLvl.add(srs1.getInt("level"));
-		}
-		
-		srs1 = db.getJdbc().queryForRowSet("select sector from user_sector_blueprint where [user]='"+req.getParameter("user")+"'");
-		ArrayList<String> userSectors = new ArrayList<String>();
-		while(srs1.next()){
-			userSectors.add(srs1.getString("sector"));
 		}
 		
 		srs1 = db.getJdbc().queryForRowSet("select [value] from info_values where name='sector'");
@@ -410,7 +439,7 @@ public class BusinessGameService {
 			
 			storage += tmpd1;
 			for(int i=1;i<srs1.getLong("level");i++){
-				storage += tmpd2*i;
+				storage += tmpd2;
 			}
 		}
 		
@@ -504,7 +533,6 @@ public class BusinessGameService {
 		ArrayList<String> data = new ArrayList<String>();
 		data.add(gson.toJson(sectors));
 		data.add(gson.toJson(sectorsLvl));
-		data.add(gson.toJson(userSectors));
 		data.add(gson.toJson(price));
 		data.add(gson.toJson(contracts));
 		data.add(gson.toJson(pendingContracts));
@@ -537,7 +565,6 @@ public class BusinessGameService {
 		
 		sectors = null;
 		sectorsLvl = null;
-		userSectors = null;
 		contracts = null;
 		pendingContracts = null;
 		data = null;
@@ -679,104 +706,105 @@ public class BusinessGameService {
 	}
 	
 	public String loadInstallmentOwnedByUser(HttpServletRequest req) {
-		String val = "0",hiElement="";
-//		val = gson.toJson(calculateInstallmentByUser(req.getParameter("user")));
-		double hiVal = 0,tmpd1,tmpd2;
-		int eff;
-		SqlRowSet srs1 = db.getJdbc().queryForRowSet("select id,[zone],type,draw from installment,info_sector where [user]='"+req.getParameter("user")+"' and [zone]=(select [zone] from businessgame.dbo.[user] where name='"+req.getParameter("user")+"') and name=type"),
-				srs2,srs3;
-		HashMap<String, Double> elementsRatio = new HashMap<String, Double>(),
-				elements = new HashMap<String, Double>(),
-				elementsCalc = new HashMap<String, Double>();
-		ArrayList<Installment> installments = new ArrayList<Installment>();
-		boolean pass = false;
-		
-		while(srs1.next()){
-			hiElement="";
-			hiVal=0;
-			elementsRatio.clear();
-			elements.clear();
-			elementsCalc.clear();
-			pass = true;
-			
-			srs2 = db.getJdbc().queryForRowSet("select equipment_type,items from info_sector_equipment where sector='"+srs1.getString("type")+"'");
-			while(srs2.next()){
-				elementsRatio.put(srs2.getString("equipment_type"), srs2.getDouble("items"));
-				if(hiVal < srs2.getDouble("items")){
-					hiElement = srs2.getString("equipment_type");
-					hiVal = srs2.getDouble("items");
-				}
-				srs3 = db.getJdbc().queryForRowSet("select count(installment_equipment.id) from installment_equipment,list_equipment,desc_equipment where installment='"+srs1.getString("id")+"' and desc_equipment.equipment='"+srs2.getString("equipment_type")+"' and installment_equipment.id=list_equipment.id and list_equipment.[desc]=desc_equipment.id");
-				srs3.next();
-				elements.put(srs2.getString("equipment_type"), srs3.getDouble(1));
-			}
-			
-			srs2 = db.getJdbc().queryForRowSet("select employee_type,items from info_sector_employee where sector='"+srs1.getString("type")+"'");
-			while(srs2.next()){
-				elementsRatio.put(srs2.getString("employee_type"), srs2.getDouble("items"));
-				if(hiVal < srs2.getDouble("items")){
-					hiElement = srs2.getString("employee_type");
-					hiVal = srs2.getDouble("items");
-				}
-				srs3 = db.getJdbc().queryForRowSet("select count(installment_employee.id) from installment_employee,list_employee,desc_employee where installment='"+srs1.getString("id")+"' and desc_employee.employee='"+srs2.getString("employee_type")+"' and installment_employee.id=list_employee.id and list_employee.[desc]=desc_employee.id");
-				srs3.next();
-				elements.put(srs2.getString("employee_type"), srs3.getDouble(1));
-			}
-			
-			//calculating:
-			while(true){
-				for(String element : elementsRatio.keySet()){
-					if(element.equals(hiElement)){
-						elementsCalc.put(element, elements.get(element));
-					} else {
-						elementsCalc.put(element, (elementsRatio.get(element)*elements.get(hiElement))/elementsRatio.get(hiElement));
-					}
-				}
-				
-				for(String element : elements.keySet()){
-					if(elements.get(element) < elementsCalc.get(element)){
-						pass = false;
-						hiElement = element;
-						hiVal = elements.get(element);
-						break;
-					} else {
-						pass = true;
-					}
-				}
-				if(pass){
-					eff = elements.get(hiElement).intValue()/elementsRatio.get(hiElement).intValue();
-					if(elements.get(hiElement) % elementsRatio.get(hiElement) > 0){
-						hiVal = (elementsRatio.get(hiElement)*(eff+1));
-						if(hiVal > 0)
-							tmpd1 = new BigDecimal(Double.valueOf(elementsCalc.get(hiElement)/(elementsRatio.get(hiElement)*(eff+1)))).setScale(2, BigDecimal.ROUND_HALF_EVEN).doubleValue();
-						else tmpd1 = 0;
-						tmpd2 = eff+1;
-					} else {
-						hiVal = (elementsRatio.get(hiElement)*eff);
-						if(hiVal > 0)
-							tmpd1 = new BigDecimal(Double.valueOf(elementsCalc.get(hiElement)/(elementsRatio.get(hiElement)*eff))).setScale(2, BigDecimal.ROUND_HALF_EVEN).doubleValue();
-						else tmpd1 = 0;
-						tmpd2 = eff;
-					}
-					installments.add(new Installment(srs1.getString("id"), srs1.getString("type"), srs1.getString("zone"), tmpd1, tmpd2, srs1.getString("draw")));
-					break;
-				}
-			}
-		}
-		
-		val = gson.toJson(installments);
-		
-		installments = null;
-		hiElement = null;
-		srs1 = null;
-		srs2 = null;
-		srs3 = null;
-		elements = null;
-		elementsCalc = null;
-		elementsRatio = null;
-		
-		gc();
-		
+		String val = gson.toJson(getUserInstallments(req.getParameter("user")));
+//		String val = "0",hiElement="";
+//
+//		double hiVal = 0,tmpd1,tmpd2;
+//		int eff;
+//		SqlRowSet srs1 = db.getJdbc().queryForRowSet("select id,[zone],type,draw from installment,info_sector where [user]='"+req.getParameter("user")+"' and [zone]=(select [zone] from businessgame.dbo.[user] where name='"+req.getParameter("user")+"') and name=type"),
+//				srs2,srs3;
+//		HashMap<String, Double> elementsRatio = new HashMap<String, Double>(),
+//				elements = new HashMap<String, Double>(),
+//				elementsCalc = new HashMap<String, Double>();
+//		ArrayList<Installment> installments = new ArrayList<Installment>();
+//		boolean pass = false;
+//		
+//		while(srs1.next()){
+//			hiElement="";
+//			hiVal=0;
+//			elementsRatio.clear();
+//			elements.clear();
+//			elementsCalc.clear();
+//			pass = true;
+//			
+//			srs2 = db.getJdbc().queryForRowSet("select equipment_type,items from info_sector_equipment where sector='"+srs1.getString("type")+"'");
+//			while(srs2.next()){
+//				elementsRatio.put(srs2.getString("equipment_type"), srs2.getDouble("items"));
+//				if(hiVal < srs2.getDouble("items")){
+//					hiElement = srs2.getString("equipment_type");
+//					hiVal = srs2.getDouble("items");
+//				}
+//				srs3 = db.getJdbc().queryForRowSet("select count(installment_equipment.id) from installment_equipment,list_equipment,desc_equipment where installment='"+srs1.getString("id")+"' and desc_equipment.equipment='"+srs2.getString("equipment_type")+"' and installment_equipment.id=list_equipment.id and list_equipment.[desc]=desc_equipment.id");
+//				srs3.next();
+//				elements.put(srs2.getString("equipment_type"), srs3.getDouble(1));
+//			}
+//			
+//			srs2 = db.getJdbc().queryForRowSet("select employee_type,items from info_sector_employee where sector='"+srs1.getString("type")+"'");
+//			while(srs2.next()){
+//				elementsRatio.put(srs2.getString("employee_type"), srs2.getDouble("items"));
+//				if(hiVal < srs2.getDouble("items")){
+//					hiElement = srs2.getString("employee_type");
+//					hiVal = srs2.getDouble("items");
+//				}
+//				srs3 = db.getJdbc().queryForRowSet("select count(installment_employee.id) from installment_employee,list_employee,desc_employee where installment='"+srs1.getString("id")+"' and desc_employee.employee='"+srs2.getString("employee_type")+"' and installment_employee.id=list_employee.id and list_employee.[desc]=desc_employee.id");
+//				srs3.next();
+//				elements.put(srs2.getString("employee_type"), srs3.getDouble(1));
+//			}
+//			
+//			//calculating:
+//			while(true){
+//				for(String element : elementsRatio.keySet()){
+//					if(element.equals(hiElement)){
+//						elementsCalc.put(element, elements.get(element));
+//					} else {
+//						elementsCalc.put(element, (elementsRatio.get(element)*elements.get(hiElement))/elementsRatio.get(hiElement));
+//					}
+//				}
+//				
+//				for(String element : elements.keySet()){
+//					if(elements.get(element) < elementsCalc.get(element)){
+//						pass = false;
+//						hiElement = element;
+//						hiVal = elements.get(element);
+//						break;
+//					} else {
+//						pass = true;
+//					}
+//				}
+//				if(pass){
+//					eff = elements.get(hiElement).intValue()/elementsRatio.get(hiElement).intValue();
+//					if(elements.get(hiElement) % elementsRatio.get(hiElement) > 0){
+//						hiVal = (elementsRatio.get(hiElement)*(eff+1));
+//						if(hiVal > 0)
+//							tmpd1 = new BigDecimal(Double.valueOf(elementsCalc.get(hiElement)/(elementsRatio.get(hiElement)*(eff+1)))).setScale(2, BigDecimal.ROUND_HALF_EVEN).doubleValue();
+//						else tmpd1 = 0;
+//						tmpd2 = eff+1;
+//					} else {
+//						hiVal = (elementsRatio.get(hiElement)*eff);
+//						if(hiVal > 0)
+//							tmpd1 = new BigDecimal(Double.valueOf(elementsCalc.get(hiElement)/(elementsRatio.get(hiElement)*eff))).setScale(2, BigDecimal.ROUND_HALF_EVEN).doubleValue();
+//						else tmpd1 = 0;
+//						tmpd2 = eff;
+//					}
+//					installments.add(new Installment(srs1.getString("id"), srs1.getString("type"), srs1.getString("zone"), tmpd1, tmpd2, srs1.getString("draw")));
+//					break;
+//				}
+//			}
+//		}
+//		
+//		val = gson.toJson(installments);
+//		
+//		installments = null;
+//		hiElement = null;
+//		srs1 = null;
+//		srs2 = null;
+//		srs3 = null;
+//		elements = null;
+//		elementsCalc = null;
+//		elementsRatio = null;
+//		
+//		gc();
+//		
 		return val;
 	}
 	
@@ -806,6 +834,7 @@ public class BusinessGameService {
 		data.add(installmentIOdata.get(4));
 		data.add(installmentIOdata.get(5));
 		data.add(installmentIOdata.get(6));
+		data.add(installmentIOdata.get(7));
 		data.add(gson.toJson(equipments));
 		data.add(gson.toJson(employees));
 		
@@ -933,7 +962,7 @@ public class BusinessGameService {
 		srs1.next();
 		equipmentType = srs1.getString("equipment");
 		
-		srs1 = db.getJdbc().queryForRowSet("select installment.id,[zone],type,draw from info_sector_equipment,installment,info_sector where equipment_type='"+equipmentType+"' and [user]='"+req.getParameter("user")+"' and [zone]=(select [zone] from businessgame.dbo.[user] where name='"+req.getParameter("user")+"') and installment.type=sector and type=name");
+		srs1 = db.getJdbc().queryForRowSet("select installment.id,[zone],type,draw,active from info_sector_equipment,installment,info_sector where equipment_type='"+equipmentType+"' and [user]='"+req.getParameter("user")+"' and [zone]=(select [zone] from businessgame.dbo.[user] where name='"+req.getParameter("user")+"') and installment.type=sector and type=name");
 		while(srs1.next()){
 			hiElement="";
 			hiVal=0;
@@ -1001,7 +1030,7 @@ public class BusinessGameService {
 						else tmpd1 = 0; 
 						tmpd2 = eff;
 					}
-					installments.add(new Installment(srs1.getString("id"), srs1.getString("type"), srs1.getString("zone"), tmpd1, tmpd2, srs1.getString("draw")));
+					installments.add(new Installment(srs1.getString("id"), srs1.getString("type"), srs1.getString("zone"), tmpd1, tmpd2, srs1.getString("draw"), srs1.getBoolean("active")));
 					break;
 				}
 			}
@@ -1107,9 +1136,9 @@ public class BusinessGameService {
 					tmpPrices = new ArrayList<Double>();
 					outputs.add(srs2.getString("output_type"));
 					srs3 = db.getJdbc().queryForRowSet("select price from desc_product where product='"+srs2.getString("output_type")+"' order by quality asc");
-					System.out.println("select price from desc_product where product='"+srs2.getString("output_type")+"' order by quality asc");
+//					System.out.println("select price from desc_product where product='"+srs2.getString("output_type")+"' order by quality asc");
 					while(srs3.next()){
-						System.out.println(srs3.getDouble("price"));
+//						System.out.println(srs3.getDouble("price"));
 						tmpPrices.add(srs3.getDouble("price"));
 					}
 					prices.add(tmpPrices);
@@ -1126,7 +1155,7 @@ public class BusinessGameService {
 		
 		for(int i=0;i<outputs.size();i++){
 			for(int j=0;j<qualities.size();j++){
-				System.out.println(outputs.get(i)+" - "+qualities.get(j)+" at "+prices.get(i).get(j));
+//				System.out.println(outputs.get(i)+" - "+qualities.get(j)+" at "+prices.get(i).get(j));
 			}
 		}
 		
@@ -1163,7 +1192,7 @@ public class BusinessGameService {
 //		val = gson.toJson(calculateInstallmentByUser(req.getParameter("user")));
 		double hiVal = 0,tmpd1,tmpd2;
 		int eff;
-		SqlRowSet srs1 = db.getJdbc().queryForRowSet("select id,[zone],type,draw from installment,info_sector where [user]='"+req.getParameter("user")+"' and type='"+req.getParameter("type")+"' and [zone]=(select [zone] from businessgame.dbo.[user] where name='"+req.getParameter("user")+"') and name=type"),
+		SqlRowSet srs1 = db.getJdbc().queryForRowSet("select id,[zone],type,draw,active from installment,info_sector where [user]='"+req.getParameter("user")+"' and type='"+req.getParameter("type")+"' and [zone]=(select [zone] from businessgame.dbo.[user] where name='"+req.getParameter("user")+"') and name=type"),
 				srs2,srs3;
 		HashMap<String, Double> elementsRatio = new HashMap<String, Double>(),
 				elements = new HashMap<String, Double>(),
@@ -1238,7 +1267,7 @@ public class BusinessGameService {
 						else tmpd1 = 0;
 						tmpd2 = eff;
 					}
-					installments.add(new Installment(srs1.getString("id"), srs1.getString("type"), srs1.getString("zone"), tmpd1, tmpd2, srs1.getString("draw")));
+					installments.add(new Installment(srs1.getString("id"), srs1.getString("type"), srs1.getString("zone"), tmpd1, tmpd2, srs1.getString("draw"), srs1.getBoolean("active")));
 					break;
 				}
 			}
@@ -1361,19 +1390,50 @@ public class BusinessGameService {
 	public String loginUser(HttpServletRequest req){
 		String val = "Ok";
 		SqlRowSet srs1 = db.getJdbc().queryForRowSet("select * from businessgame.dbo.[user] where name='"+req.getParameter("user")+"'"),
-				srs2 = db.getJdbc().queryForRowSet("select id,[zone] from storage where [user]='"+req.getParameter("user")+"'");
+				srs2;
 		User userAcc;
 		if(srs1.next()){
-			HashMap<String, String> storages = new HashMap<String, String>();
-			while(srs2.next()){
-				storages.put(srs2.getString("zone"), srs2.getString("id"));
-			}
 			if(req.getParameter("pass").equals(srs1.getString("pass"))){
-				userAcc = new User(srs1.getString("name"), srs1.getString("email"), srs1.getString("dob"), srs1.getString("about"), srs1.getDouble("money"), srs1.getLong("rep"), srs1.getString("zone"), storages, srs1.getInt("level"));
+				HashMap<String, String> storages = new HashMap<String, String>(),
+						marketLicenses = new HashMap<String, String>(),
+						sectorBlueprints = new HashMap<String, String>();
+				HashMap<String, Double> sectorCost = new HashMap<String, Double>();
+				ArrayList<Installment> installments = getUserInstallments(req.getParameter("user"));
+				
+				srs2 = db.getJdbc().queryForRowSet("select cost from info_zone where id='"+srs1.getString("zone")+"'");
+				double propCost;
+				if(srs2.next()){
+					propCost = srs2.getDouble("cost");
+				} else return "0";
+				
+				srs2 = db.getJdbc().queryForRowSet("select id,[zone] from storage where [user]='"+req.getParameter("user")+"'");
+				while(srs2.next()){
+					storages.put(srs2.getString("zone"), srs2.getString("id"));
+				}
+				
+				srs2 = db.getJdbc().queryForRowSet("select id,[zone] from user_market_license where [user]='"+req.getParameter("user")+"'");
+				while(srs2.next()){
+					marketLicenses.put(srs2.getString("zone"), srs2.getString("id"));
+				}
+				
+				System.out.println(marketLicenses);
+				
+				srs2 = db.getJdbc().queryForRowSet("select id,sector,cost from user_sector_blueprint,info_sector where [user]='"+req.getParameter("user")+"' and sector=name");
+				while(srs2.next()){
+					sectorBlueprints.put(srs2.getString("sector"), srs2.getString("id"));
+					sectorCost.put(srs2.getString("sector"), srs2.getDouble("cost"));
+				}
+				
+				userAcc = new User(srs1.getString("name"), srs1.getString("email"), srs1.getString("dob"), srs1.getString("about"), srs1.getDouble("money"), propCost, srs1.getLong("rep"), srs1.getString("zone"), srs1.getInt("level"), storages, marketLicenses, sectorBlueprints, sectorCost, installments);
 				val = gson.toJson(userAcc);
+				
+				storages = null;
+				marketLicenses = null;
+				sectorBlueprints = null;
+				sectorCost = null;
+				installments = null;
+				
 			} else val = "0";
-			
-			storages = null;
 			
 		} else val = "1";
 		
@@ -1387,7 +1447,7 @@ public class BusinessGameService {
 	}
 
 	public String registerUser(HttpServletRequest req) {
-		String val = "Ok",sqls[],idInc;
+		String val = "",sqls[],idInc;
 		SqlRowSet srs = db.getJdbc().queryForRowSet("select name from businessgame.dbo.[user] where name='"+req.getParameter("user")+"'");
 		ArrayList<String> sqlL = new ArrayList<String>();
 		
@@ -1397,16 +1457,29 @@ public class BusinessGameService {
 		
 		idInc = getUniqueIncrementIdNew("user_market_license");
 		
+		HashMap<String, String> marketLicense = new HashMap<String, String>();
 		sqlL.add("insert into businessgame.dbo.[user_market_license] values ('"+KEY_USER_MARKET_LICENSE+idInc+"','"+req.getParameter("user")+"','"+req.getParameter("zone")+"')");
+		marketLicense.put(req.getParameter("zone"), KEY_USER_MARKET_LICENSE+idInc);
+		
+		srs = db.getJdbc().queryForRowSet("select cost from info_zone where id='"+req.getParameter("zone")+"'");
+		double propCost;
+		if(srs.next()){
+			propCost = srs.getDouble("cost");
+		} else return "0";
 		
 		sqls = new String[sqlL.size()];
 		sqlL.toArray(sqls);
 		db.getJdbc().batchUpdate(sqls);
 		
+		User user = new User(req.getParameter("user"), req.getParameter("email"), req.getParameter("dob"), "This is me", 0.00, propCost, 0, req.getParameter("zone"), 1, new HashMap<String, String>(), marketLicense, new HashMap<String, String>(), new HashMap<String, Double>(), new ArrayList<Installment>());
+		
+		val = gson.toJson(user);
+		
 		sqls = null;
 		sqlL = null;
 		srs = null;
 		idInc = null;
+		user = null;
 		
 		gc();
 		
@@ -1491,9 +1564,9 @@ public class BusinessGameService {
 	}
 	
 	public String buyMarketProduct(HttpServletRequest req) {
-		String val = "0", seller = "", sellerZone = "", user, userZone, productIdSeller, desc, product, idInc,sqls[];
+		String val = "0", seller = "", sellerZone = "", user, userZone, product, idInc,sqls[], desc;
 		double userMoney, sellerMoney, price, storage = 0, picked, size, total, transport = 0;
-		int quality, level;
+		int level;
 		ArrayList<String> sqlL = new ArrayList<String>();
 		
 		SqlRowSet srs = db.getJdbc().queryForRowSet("select name,money,[zone] from businessgame.dbo.[user] where name=(select [user] from storage where id='"+req.getParameter("storage")+"')");
@@ -1512,36 +1585,21 @@ public class BusinessGameService {
 		//4 = storage ga ada
 		//5 = storage ga cukup
 		
-		srs = db.getJdbc().queryForRowSet("select storage_product_id,market_product.[desc],price,size from market_product where id='"+req.getParameter("productId")+"'");
+		srs = db.getJdbc().queryForRowSet("select desc_product.id,market_product.price,market_product.size,storage.[user],storage.[zone],[user].money,product,quality from market_product,storage_product,desc_product,storage,[user] where market_product.id='"+req.getParameter("productId")+"' and storage_product.id=storage_product_id and storage_product.[desc]=desc_product.id and storage_product.storage=storage.id and storage.[user]=[user].name");
 		if(srs.next()){
+			desc = srs.getString("id");
 			price = srs.getDouble("price");
 			size = srs.getDouble("size");
-			productIdSeller = srs.getString("storage_product_id");
-			desc = srs.getString("desc");
+			seller = srs.getString("user");
+			product = srs.getString("product");
+			sellerMoney = srs.getDouble("money");
+			sellerZone = srs.getString("zone");
 		} else return "1";
 		
-		if(!productIdSeller.equals("")){
-			srs = db.getJdbc().queryForRowSet("select storage.[user],storage.[zone],[user].money,product,quality from storage_product,desc_product,storage,[user] where storage_product.id='"+productIdSeller+"' and storage_product.[desc]=desc_product.id and storage_product.storage=storage.id and storage.[user]=[user].name");
-			if(srs.next()){
-				seller = srs.getString("user");
-				product = srs.getString("product");
-				quality = srs.getInt("quality");
-				sellerMoney = srs.getDouble("money");
-				sellerZone = srs.getString("zone");
-			} else return "0";
-			
-			srs = db.getJdbc().queryForRowSet("select transport from info_product where name='"+product+"'");
-			if(srs.next())
-				transport = srs.getDouble("transport");
-			else return "0";
-		} else {
-			srs = db.getJdbc().queryForRowSet("select product,quality from desc_product where id='"+desc+"'");
-			if(srs.next()){
-				product = srs.getString("product");
-				quality = srs.getInt("quality");
-			} else return "0";
-			sellerMoney = 0;
-		}
+		srs = db.getJdbc().queryForRowSet("select transport from info_product where name='"+product+"'");
+		if(srs.next())
+			transport = srs.getDouble("transport");
+		else return "0";
 		
 		System.out.println("Tanda 2");
 		
@@ -1584,11 +1642,6 @@ public class BusinessGameService {
 		if(storage < picked)
 			return "5";
 		
-		srs = db.getJdbc().queryForRowSet("select id from desc_product where product='"+product+"' and quality='"+quality+"'");
-		if(srs.next())
-			desc = srs.getString("id");
-		else return "0";
-		
 		System.out.println("Tanda 5");
 		
 		srs = db.getJdbc().queryForRowSet("select id,size,avg_price from storage_product where storage_product.[desc]='"+desc+"' and storage='"+req.getParameter("storage")+"'");
@@ -1615,62 +1668,36 @@ public class BusinessGameService {
 //			idInc = getUniqueIncrementIdNew("user_finance");
 //			sqlL.add("insert into user_finance values ('"+KEY_USER_FINANCE+idInc+"','"+user+"','Raw Material','"+(-1*total)+"')");
 //		}
-		accountingFinance(user, "Raw Material", total, false);
+//		accountingFinance(user, "Raw Material", total, false);
 		
 		sellerMoney += total;
 		
-		if(!seller.equals("")){
-			double tmpd1;
-			
-			srs = db.getJdbc().queryForRowSet("select transport_in,transport_out,retribution from info_zone where id='"+userZone+"'");
-			if(srs.next()){
-				if(userZone.equals(sellerZone))
-					transport *= srs.getDouble("transport_in");
-				else transport *= srs.getDouble("transport_out");
-				tmpd1 = srs.getDouble("retribution");
-			} else return "0";
-			
-//			srs = db.getJdbc().queryForRowSet("select total from user_finance where user='"+seller+"' and type='Sales'");
-//			if(srs.next()){
-//				sqlL.add("update user_finance set total='"+(((srs.getDouble("total")*-1)+total)*-1)+"' where user='"+seller+"' and type='Raw Material'");
-//			} else {
-//				idInc = getUniqueIncrementIdNew("user_finance");
-//				sqlL.add("insert into user_finance values ('"+KEY_USER_FINANCE+idInc+"','"+seller+"','Raw Material','"+(-1*total)+"')");
-//			}
-			accountingFinance(seller, "Sales", total, true);
-			
-//			srs = db.getJdbc().queryForRowSet("select id,total from user_finance where user='"+seller+"' and type='Transport'");
-//			if(srs.next()){
-//				db.getJdbc().execute("update user_finance set total='"+(((srs.getDouble("total")*-1)+(picked*transport))*-1)+"' where id='"+srs.getString("id")+"'");
-//			} else {
-//				idInc = getUniqueIncrementIdNew("user_finance");
-//				db.getJdbc().execute("insert into user_finance values ('"+BusinessGameService.KEY_USER_FINANCE+idInc+"','"+seller+"','Transport','"+(picked*transport*-1)+"')");
-//			}
-			accountingFinance(seller, "Transport", picked*transport, false);
-			
-//			srs = db.getJdbc().queryForRowSet("select id,total from user_finance where user='"+seller+"' and type='Retribution'");
-//			if(srs.next()){
-//				db.getJdbc().execute("update user_finance set total='"+(((srs.getDouble("total")*-1)+(picked*tmpd1))*-1)+"' where id='"+srs.getString("id")+"'");
-//			} else {
-//				idInc = getUniqueIncrementIdNew("user_finance");
-//				db.getJdbc().execute("insert into user_finance values ('"+BusinessGameService.KEY_USER_FINANCE+idInc+"','"+seller+"','Retribution','"+(picked*tmpd1*-1)+"')");
-//			}
-			accountingFinance(seller, "Retribution", picked*tmpd1, false);
-			
-			sqlL.add("update businessgame.dbo.[user] set money='"+sellerMoney+"' where name='"+seller+"'");
-			
-			srs = db.getJdbc().queryForRowSet("select id,size from storage_product where id=(select storage_product_id from market_product where id='"+req.getParameter("productId")+"')");
-			if(srs.next()){
-				val = srs.getString("id");
-				size = srs.getDouble("size");
-			}
-			else return "0";
-			
-			size -= picked;
-			if(size > 0)
-				sqlL.add("update storage_product set size='"+size+"' where id='"+val+"'");
-			else sqlL.add("delete from storage_product where id='"+val+"'");
+		double tmpd1;
+		
+		srs = db.getJdbc().queryForRowSet("select transport_in,transport_out,retribution from info_zone where id='"+userZone+"'");
+		if(srs.next()){
+			if(userZone.equals(sellerZone))
+				transport *= srs.getDouble("transport_in");
+			else transport *= srs.getDouble("transport_out");
+			tmpd1 = srs.getDouble("retribution");
+		} else return "0";
+		accountingFinance(seller, "Sales", total, true);
+		accountingFinance(seller, "Transport", picked*transport, false);
+		accountingFinance(seller, "Retribution", picked*tmpd1, false);
+		
+		sqlL.add("update businessgame.dbo.[user] set money='"+sellerMoney+"' where name='"+seller+"'");
+		
+		srs = db.getJdbc().queryForRowSet("select id,size from storage_product where id=(select storage_product_id from market_product where id='"+req.getParameter("productId")+"')");
+		if(srs.next()){
+			val = srs.getString("id");
+			size = srs.getDouble("size");
 		}
+		else return "0";
+		
+		size -= picked;
+		if(size > 0)
+			sqlL.add("update storage_product set size='"+size+"' where id='"+val+"'");
+		else sqlL.add("delete from storage_product where id='"+val+"'");
 		
 		System.out.println("Tanda 6");
 		
@@ -1678,7 +1705,8 @@ public class BusinessGameService {
 		sqlL.toArray(sqls);
 		db.getJdbc().batchUpdate(sqls);
 
-		srs = db.getJdbc().queryForRowSet("select market_product.id,storage.[user],product,market_product.price,quality,market_product.size,draw from market_product,storage_product,desc_product,storage,info_product where market_product.[zone]='"+userZone+"' and storage_product.id=storage_product_id and desc_product.id=storage_product.[desc] and storage.id=storage_product.storage and product=name union select market_product.id,'',product,market_product.price,quality,market_product.size,draw from market_product,desc_product,info_product where market_product.[zone]='"+userZone+"' and desc_product.id=market_product.[desc] and product=name");
+		srs = db.getJdbc().queryForRowSet("select market_product.id,storage.[user],product,market_product.price,quality,market_product.size,draw from market_product,storage_product,desc_product,storage,info_product where market_product.[zone]='"+userZone+"' and storage_product.id=storage_product_id and desc_product.id=storage_product.[desc] and storage.id=storage_product.storage and product=name");
+//		srs = db.getJdbc().queryForRowSet("select market_product.id,storage.[user],product,market_product.price,quality,market_product.size,draw from market_product,storage_product,desc_product,storage,info_product where market_product.[zone]='"+userZone+"' and storage_product.id=storage_product_id and desc_product.id=storage_product.[desc] and storage.id=storage_product.storage and product=name union select market_product.id,'',product,market_product.price,quality,market_product.size,draw from market_product,desc_product,info_product where market_product.[zone]='"+userZone+"' and desc_product.id=market_product.[desc] and product=name");
 		ArrayList<MarketProduct> products = new ArrayList<MarketProduct>();
 		while(srs.next()){
 			products.add(new MarketProduct(srs.getString("id"), srs.getString("user"), srs.getString("product"), srs.getDouble("price"), srs.getInt("quality"), srs.getDouble("size"), srs.getString("draw")));
@@ -1699,7 +1727,6 @@ public class BusinessGameService {
 		sellerZone = null;
 		user = null;
 		userZone = null;
-		productIdSeller = null;
 		desc = null;
 		product = null;
 		idInc = null;
@@ -1710,7 +1737,7 @@ public class BusinessGameService {
 	}
 	
 	public String buyMarketEquipment(HttpServletRequest req) {
-		String val = "0", seller, user, userZone, equipmentIdSeller, desc, sqls[];
+		String val = "0", seller, user, userZone, equipmentIdSeller, sqls[];
 		double userMoney, sellerMoney, price, storage = 0, size;
 		int level;
 		ArrayList<String> sqlL = new ArrayList<String>();
@@ -1728,24 +1755,14 @@ public class BusinessGameService {
 			userZone = srs.getString("zone");
 		} else return "0";
 		
-		srs = db.getJdbc().queryForRowSet("select storage_equipment_id,market_equipment.[desc],market_equipment.price,size from market_equipment,list_equipment,desc_equipment where market_equipment.id='"+req.getParameter("equipmentId")+"' and list_equipment.[desc]=desc_equipment.id and (storage_equipment_id=list_equipment.id or market_equipment.[desc]=list_equipment.id)");
+		srs = db.getJdbc().queryForRowSet("select storage_equipment_id,market_equipment.price,size,name,money from market_equipment,list_equipment,desc_equipment,[user],storage,storage_equipment where market_equipment.id='"+req.getParameter("equipmentId")+"' and storage_equipment.id=list_equipment.id and storage_equipment_id=storage_equipment.id and list_equipment.[desc]=desc_equipment.id and storage_equipment_id=list_equipment.id and storage.id=storage_equipment.storage and [user].name=storage.[user]");
 		if(srs.next()){
 			price = srs.getDouble("price");
 			size = srs.getDouble("size");
 			equipmentIdSeller = srs.getString("storage_equipment_id");
-			desc = srs.getString("desc");
+			seller = srs.getString("name");
+			sellerMoney = srs.getDouble("money");
 		} else return "1";
-		
-		if(!equipmentIdSeller.equals("")){
-			srs = db.getJdbc().queryForRowSet("select name,money from businessgame.dbo.[user] where name=(select [user] from storage where id=(select storage from storage_equipment where id='"+equipmentIdSeller+"'))");
-			if(srs.next()){
-				seller = srs.getString("name");
-				sellerMoney = srs.getDouble("money");
-			} else return "0";
-		} else {
-			seller = "";
-			sellerMoney = 0;
-		}
 		
 		if(userMoney < price)
 			return "2";
@@ -1774,11 +1791,9 @@ public class BusinessGameService {
 		if(storage < size)
 			return "4";
 		
-		if(!equipmentIdSeller.equals(""))
-			sqlL.add("update storage_equipment set storage='"+req.getParameter("storage")+"' where id='"+equipmentIdSeller+"'");
-		else sqlL.add("insert into storage_equipment values ('"+desc+"','"+req.getParameter("storage")+"')");
+		sqlL.add("update storage_equipment set storage='"+req.getParameter("storage")+"' where id='"+equipmentIdSeller+"'");
 		
-		sqlL.add("update list_equipment set buy_price='"+price+"' where id='"+desc+"'");
+		sqlL.add("update list_equipment set buy_price='"+price+"' where id='"+equipmentIdSeller+"'");
 		
 		sqlL.add("delete from market_equipment where id='"+req.getParameter("equipmentId")+"'");
 		
@@ -1793,7 +1808,7 @@ public class BusinessGameService {
 		sqlL.toArray(sqls);
 		db.getJdbc().batchUpdate(sqls);
 		
-		srs = db.getJdbc().queryForRowSet("select market_equipment.id,storage.[user],equipment,market_equipment.price,quality,durability,size,operational,draw from market_equipment,storage_equipment,desc_equipment,list_equipment,storage,info_equipment where market_equipment.[zone]='"+userZone+"' and storage_equipment.id=storage_equipment_id and list_equipment.id=storage_equipment.id and list_equipment.[desc]=desc_equipment.id and storage.id=storage_equipment.storage and equipment=name union select market_equipment.id,'',equipment,market_equipment.price,quality,durability,size,operational,draw from market_equipment,desc_equipment,list_equipment,info_equipment where market_equipment.[zone]='"+userZone+"' and list_equipment.id=market_equipment.[desc] and list_equipment.[desc]=desc_equipment.id and equipment=name");
+		srs = db.getJdbc().queryForRowSet("select market_equipment.id,storage.[user],equipment,market_equipment.price,quality,durability,size,operational,draw from market_equipment,storage_equipment,desc_equipment,list_equipment,storage,info_equipment where market_equipment.[zone]='"+userZone+"' and storage_equipment.id=storage_equipment_id and list_equipment.id=storage_equipment.id and list_equipment.[desc]=desc_equipment.id and storage.id=storage_equipment.storage and equipment=name");
 		ArrayList<MarketEquipment> equipments = new ArrayList<MarketEquipment>();
 		while(srs.next()){
 			equipments.add(new MarketEquipment(srs.getString("id"), srs.getString("user"), srs.getString("equipment"), srs.getDouble("price"), srs.getInt("quality"), srs.getDouble("durability"), srs.getDouble("size"), srs.getDouble("operational"), srs.getString("draw")));
@@ -1814,7 +1829,6 @@ public class BusinessGameService {
 		user = null;
 		userZone = null;
 		equipmentIdSeller = null;
-		desc = null;
 		
 		gc();
 		
@@ -1921,8 +1935,9 @@ public class BusinessGameService {
 		SqlRowSet srs1, srs2;
 		
 		idInc = getUniqueIncrementIdNew("market_equipment");
-		sqlL.add("insert into market_equipment values ('"+KEY_MARKET_EQUIPMENT+idInc+"','"+req.getParameter("equipmentId")+"','','"+req.getParameter("marketZone")+"','"+req.getParameter("price")+"')");
-		
+		sqlL.add("insert into market_equipment values ('"+KEY_MARKET_EQUIPMENT+idInc+"','"+req.getParameter("equipmentId")+"','"+req.getParameter("marketZone")+"',"+req.getParameter("price")+")");
+
+		System.out.println("insert into market_equipment values ('"+KEY_MARKET_EQUIPMENT+idInc+"','"+req.getParameter("equipmentId")+"','"+req.getParameter("marketZone")+"',"+req.getParameter("price")+")");
 		sqls = new String[sqlL.size()];
 		sqlL.toArray(sqls);
 		db.getJdbc().batchUpdate(sqls);
@@ -1964,22 +1979,28 @@ public class BusinessGameService {
 	}
 	
 	public String createNewInstallment(HttpServletRequest req) {
-		String val = "", idInc, sqls[];
+		String val = "", idInc, sqls[], draw;
 		double money, cost;
 		ArrayList<String> sqlL = new ArrayList<String>();
 		
 		//0=internal error
-		//1=uang ga cukup
+		//1=blueprint ga punya (kemungkinan user nge-cheat)
+		//2=uang ga cukup
 		
-		SqlRowSet srs = db.getJdbc().queryForRowSet("select money from [user] where name='"+req.getParameter("user")+"'");
+		SqlRowSet srs = db.getJdbc().queryForRowSet("select id from user_sector_blueprint where user='"+req.getParameter("user")+"' and sector='"+req.getParameter("type")+"'");
+		if(!srs.next())
+			return "1";
+		
+		srs = db.getJdbc().queryForRowSet("select money from [user] where name='"+req.getParameter("user")+"'");
 		if(srs.next())
 			money = srs.getDouble("money");
 		else return "0";
 		
-		srs = db.getJdbc().queryForRowSet("select cost from info_sector where name='"+req.getParameter("type")+"'");
-		if(srs.next())
+		srs = db.getJdbc().queryForRowSet("select cost,draw from info_sector where name='"+req.getParameter("type")+"'");
+		if(srs.next()){
 			cost = srs.getDouble("cost");
-		else return "0";
+			draw = srs.getString("draw");
+		} else return "0";
 		
 		srs = db.getJdbc().queryForRowSet("select cost from info_zone where id='"+req.getParameter("zone")+"'");
 		if(srs.next())
@@ -1987,24 +2008,31 @@ public class BusinessGameService {
 		else return "0";
 		
 		if(money < cost)
-			return "1";
+			return "2";
 		
 		money -= cost;
 		
 		sqlL.add("update [user] set money='"+money+"' where name='"+req.getParameter("user")+"'");
 		idInc = getUniqueIncrementIdNew("installment");
-		sqlL.add("insert into installment values ('"+KEY_INSTALLMENT+idInc+"','"+req.getParameter("user")+"','"+req.getParameter("zone")+"','"+req.getParameter("type")+"','',0,0,0,0)");
+		sqlL.add("insert into installment values ('"+KEY_INSTALLMENT+idInc+"','"+req.getParameter("user")+"','"+req.getParameter("zone")+"','"+req.getParameter("type")+"','',0,0,0,0,0)");
 		
 		sqls = new String[sqlL.size()];
 		sqlL.toArray(sqls);
 		db.getJdbc().batchUpdate(sqls);
 		
-		val = loadInstallmentOwnedByUserFromSelectedType(req);
+		Installment tmp = new Installment(KEY_INSTALLMENT+idInc, req.getParameter("type"), req.getParameter("zone"), 0, 0, draw, false);
+		
+		ArrayList<String> data = new ArrayList<String>();
+		data.add(gson.toJson(money));
+		data.add(gson.toJson(tmp));
+		
+		val = gson.toJson(data);
 		
 		sqlL = null;
 		sqls = null;
 		idInc = null;
 		srs = null;
+		tmp = null;
 		
 		gc();
 		
@@ -2033,13 +2061,21 @@ public class BusinessGameService {
 				equipments.add(new StorageEquipment(srs1.getString("id"), srs1.getString("equipment"), srs1.getInt("quality"), srs1.getDouble("durability"), srs1.getDouble("size"), srs1.getDouble("operational"), srs1.getString("draw")));
 		}
 		
-		val=gson.toJson(equipments);
+		Installment installment = getSingleUserInstallments(req.getParameter("idInstallment"));
+
+		ArrayList<String> data = new ArrayList<String>();
+		data.add(gson.toJson(equipments));
+		data.add(gson.toJson(installment));
+		
+		val=gson.toJson(data);
 		
 		sqlL = null;
 		equipments = null;
 		srs1 = null;
 		srs2 = null;
 		sqls = null;
+		installment = null;
+		data = null;
 		
 		gc();
 		
@@ -2073,9 +2109,17 @@ public class BusinessGameService {
 			equipments.add(new InstallmentEquipment(srs.getString("id"), srs.getString("equipment"), srs.getInt("quality"), srs.getDouble("durability"), srs.getDouble("size"), srs.getDouble("operational"), srs.getString("draw")));
 		}
 		
-		val = gson.toJson(equipments);
+		Installment installment = getSingleUserInstallments(req.getParameter("id"));
+		
+		ArrayList<String> data = new ArrayList<String>();
+		data.add(gson.toJson(equipments));
+		data.add(gson.toJson(installment));
+		
+		val=gson.toJson(data);
 		
 		equipments = null;
+		installment = null;
+		data = null;
 		sqlL = null;
 		sqls = null;
 		idStorage = null;
@@ -2126,14 +2170,18 @@ public class BusinessGameService {
 			employees.add(new MarketEmployee(srs.getString("id"), srs.getString("employee"), srs.getDouble("price"), srs.getInt("quality"), srs.getDouble("operational"), srs.getString("draw")));
 		}
 		
+		Installment installment = getSingleUserInstallments(req.getParameter("idInstallment"));
+		
 		ArrayList<String> data = new ArrayList<String>();
 		data.add(gson.toJson(money));
 		data.add(gson.toJson(employees));
+		data.add(gson.toJson(installment));
 		
 		val = gson.toJson(data);
 		
 		data = null;
 		employees = null;
+		installment = null;
 		sqlL = null;
 		sqls = null;
 		idEmployee = null;
@@ -2174,7 +2222,13 @@ public class BusinessGameService {
 			employees.add(new InstallmentEmployee(srs.getString("id"), srs.getString("employee"), srs.getInt("quality"), srs.getDouble("operational"), srs.getString("draw")));
 		}
 		
-		val = gson.toJson(employees);
+		Installment installment = getSingleUserInstallments(req.getParameter("id"));
+		
+		ArrayList<String> data = new ArrayList<String>();
+		data.add(gson.toJson(employees));
+		data.add(gson.toJson(installment));
+		
+		val = gson.toJson(data);
 		
 		employees = null;
 		sqlL = null;
@@ -2182,6 +2236,8 @@ public class BusinessGameService {
 		idInc = null;
 		zone = null;
 		srs = null;
+		data = null;
+		installment = null;
 		
 		gc();
 		
@@ -2208,7 +2264,7 @@ public class BusinessGameService {
 	
 	public String buySectorBlueprint(HttpServletRequest req) {
 		String val="", idInc, sqls[];
-		double money, price;
+		double money, price, cost;
 		int level,userLevel;
 		ArrayList<String> sqlL = new ArrayList<String>();
 		
@@ -2260,7 +2316,17 @@ public class BusinessGameService {
 		sqlL.toArray(sqls);
 		db.getJdbc().batchUpdate(sqls);
 		
-		val = gson.toJson(money);
+		srs = db.getJdbc().queryForRowSet("select cost from info_sector where name='"+req.getParameter("sector")+"'");
+		if(srs.next()){
+			cost = srs.getDouble("cost");
+		} else return "0";
+		
+		ArrayList<String> data = new ArrayList<String>();
+		data.add(gson.toJson(money));
+		data.add(KEY_USER_SECTOR_BLUEPRINT+idInc);
+		data.add(gson.toJson(cost));
+		
+		val = gson.toJson(data);
 		
 		sqlL = null;
 		sqls = null;
@@ -2644,7 +2710,7 @@ public class BusinessGameService {
 		SqlRowSet srs = db.getJdbc().queryForRowSet("select id,money,borrow from businessgame.dbo.[user],borrow_bank where name='"+req.getParameter("user")+"' and name=[user]");
 		if(srs.next()){
 			money = srs.getDouble("money");
-			loan = srs.getDouble("loan");
+			loan = srs.getDouble("borrow");
 			idBorrow = srs.getString("id");
 		} else return "0";
 		
@@ -2671,6 +2737,80 @@ public class BusinessGameService {
 		
 		val = gson.toJson(money);
 		
+		sqlL = null;
+		sqls = null;
+		srs = null;
+		
+		gc();
+		
+		return val;
+	}
+	
+	public String upgradeStorage(HttpServletRequest req) {
+		String val = "", sqls[], user;
+		long level;
+		double money,price;
+		SqlRowSet srs = db.getJdbc().queryForRowSet("select [user],level from storage where id='"+req.getParameter("storage")+"'");
+		ArrayList<String> sqlL = new ArrayList<String>();
+		
+		if(srs.next()){
+			user = srs.getString("user");
+			level = srs.getLong("level");
+		} else return "0";
+		
+		srs = db.getJdbc().queryForRowSet("select money from businessgame.dbo.[user] where name='"+user+"'");
+		if(srs.next())
+			money = srs.getDouble("money");
+		else return "0";
+		
+		srs = db.getJdbc().queryForRowSet("select [value] from info_values where name='cost_storage_upgrade'");
+		
+		if(srs.next())
+			price = Double.parseDouble(srs.getString("value"));
+		else return "0";
+		
+		if(money < price)
+			return "1";
+		
+		money -= price;
+		
+		sqlL.add("update businessgame.dbo.[user] set money="+money+" where name='"+user+"'");
+		sqlL.add("update storage set level="+(level+1)+" where id='"+req.getParameter("storage")+"'");
+		
+		sqls = new String[sqlL.size()];
+		sqlL.toArray(sqls);
+		db.getJdbc().batchUpdate(sqls);
+		
+		ArrayList<String> data = new ArrayList<String>();
+		data.add(gson.toJson(money));
+		data.add(checkUserStorage(req));
+		
+		val = gson.toJson(data);
+		
+		data = null;
+		sqlL = null;
+		sqls = null;
+		srs = null;
+		
+		gc();
+		
+		return val;
+	}
+	
+	public String activateDeactivateInstallment(HttpServletRequest req) {
+		String val = "";
+		boolean active;
+		SqlRowSet srs = db.getJdbc().queryForRowSet("select active from installment where id='"+req.getParameter("id")+"'");
+		if(srs.next())
+			active = !srs.getBoolean("active");
+		else return "0";
+		
+		db.getJdbc().execute("update installment set active='"+(active? 1 : 0)+"' where id='"+req.getParameter("id")+"'");
+		
+		val = gson.toJson(active);
+		
+		srs = null;
+		
 		return val;
 	}
 	
@@ -2685,14 +2825,15 @@ public class BusinessGameService {
 	 * @param idInstallment The id of an installment being called.
 	 * @return List of information regarding the details of an installment. The output will come as
 	 * follow : (0) type installment, (1) calculated efficiency, (2) calculated effectivity,
-	 * (3) list of input, (4) list of input ratio, (5) list of output, (6) list of output ratio.
+	 * (3) list of input, (4) list of input ratio, (5) list of output, (6) list of output ratio, 
+	 * (7) whether the installment is active/inactive state.
 	 * 
 	 */
 	private ArrayList<String> calculateInstallmentAndIOByIdInstallment(String idInstallment){
 		String hiElement="";
 		double hiVal = 0,efficiency = 0,effectivity = 0;
 		int eff;
-		SqlRowSet srs1 = db.getJdbc().queryForRowSet("select type from installment where id='"+idInstallment+"'"),
+		SqlRowSet srs1 = db.getJdbc().queryForRowSet("select type,active from installment where id='"+idInstallment+"'"),
 				srs2,srs3;
 		HashMap<String, Double> elementsRatio = new HashMap<String, Double>(),
 				elements = new HashMap<String, Double>(),
@@ -2792,6 +2933,7 @@ public class BusinessGameService {
 		data.add(gson.toJson(inputVal));
 		data.add(gson.toJson(output));
 		data.add(gson.toJson(outputVal));
+		data.add(gson.toJson(srs1.getBoolean("active")));
 		
 		input = null;
 		inputVal = null;
@@ -2804,6 +2946,209 @@ public class BusinessGameService {
 		gc();
 		
 		return data;
+	}
+	
+	/**
+	 * Getting all user's installments, regardless of its type (or sector, in specifically)..
+	 * @param user
+	 * @return list of installment in ArrayList<Installment>
+	 */
+	private ArrayList<Installment> getUserInstallments(String user){
+		String hiElement="";
+
+		double hiVal = 0,tmpd1,tmpd2;
+		int eff;
+		SqlRowSet srs1 = db.getJdbc().queryForRowSet("select id,[zone],type,draw,active from installment,info_sector where [user]='"+user+"' and [zone]=(select [zone] from businessgame.dbo.[user] where name='"+user+"') and name=type"),
+				srs2,srs3;
+		HashMap<String, Double> elementsRatio = new HashMap<String, Double>(),
+				elements = new HashMap<String, Double>(),
+				elementsCalc = new HashMap<String, Double>();
+		ArrayList<Installment> installments = new ArrayList<Installment>();
+		boolean pass = false;
+		
+		while(srs1.next()){
+			hiElement="";
+			hiVal=0;
+			elementsRatio.clear();
+			elements.clear();
+			elementsCalc.clear();
+			pass = true;
+			
+			srs2 = db.getJdbc().queryForRowSet("select equipment_type,items from info_sector_equipment where sector='"+srs1.getString("type")+"'");
+			while(srs2.next()){
+				elementsRatio.put(srs2.getString("equipment_type"), srs2.getDouble("items"));
+				if(hiVal < srs2.getDouble("items")){
+					hiElement = srs2.getString("equipment_type");
+					hiVal = srs2.getDouble("items");
+				}
+				srs3 = db.getJdbc().queryForRowSet("select count(installment_equipment.id) from installment_equipment,list_equipment,desc_equipment where installment='"+srs1.getString("id")+"' and desc_equipment.equipment='"+srs2.getString("equipment_type")+"' and installment_equipment.id=list_equipment.id and list_equipment.[desc]=desc_equipment.id");
+				srs3.next();
+				elements.put(srs2.getString("equipment_type"), srs3.getDouble(1));
+			}
+			
+			srs2 = db.getJdbc().queryForRowSet("select employee_type,items from info_sector_employee where sector='"+srs1.getString("type")+"'");
+			while(srs2.next()){
+				elementsRatio.put(srs2.getString("employee_type"), srs2.getDouble("items"));
+				if(hiVal < srs2.getDouble("items")){
+					hiElement = srs2.getString("employee_type");
+					hiVal = srs2.getDouble("items");
+				}
+				srs3 = db.getJdbc().queryForRowSet("select count(installment_employee.id) from installment_employee,list_employee,desc_employee where installment='"+srs1.getString("id")+"' and desc_employee.employee='"+srs2.getString("employee_type")+"' and installment_employee.id=list_employee.id and list_employee.[desc]=desc_employee.id");
+				srs3.next();
+				elements.put(srs2.getString("employee_type"), srs3.getDouble(1));
+			}
+			
+			//calculating:
+			while(true){
+				for(String element : elementsRatio.keySet()){
+					if(element.equals(hiElement)){
+						elementsCalc.put(element, elements.get(element));
+					} else {
+						elementsCalc.put(element, (elementsRatio.get(element)*elements.get(hiElement))/elementsRatio.get(hiElement));
+					}
+				}
+				
+				for(String element : elements.keySet()){
+					if(elements.get(element) < elementsCalc.get(element)){
+						pass = false;
+						hiElement = element;
+						hiVal = elements.get(element);
+						break;
+					} else {
+						pass = true;
+					}
+				}
+				if(pass){
+					eff = elements.get(hiElement).intValue()/elementsRatio.get(hiElement).intValue();
+					if(elements.get(hiElement) % elementsRatio.get(hiElement) > 0){
+						hiVal = (elementsRatio.get(hiElement)*(eff+1));
+						if(hiVal > 0)
+							tmpd1 = new BigDecimal(Double.valueOf(elementsCalc.get(hiElement)/(elementsRatio.get(hiElement)*(eff+1)))).setScale(2, BigDecimal.ROUND_HALF_EVEN).doubleValue();
+						else tmpd1 = 0;
+						tmpd2 = eff+1;
+					} else {
+						hiVal = (elementsRatio.get(hiElement)*eff);
+						if(hiVal > 0)
+							tmpd1 = new BigDecimal(Double.valueOf(elementsCalc.get(hiElement)/(elementsRatio.get(hiElement)*eff))).setScale(2, BigDecimal.ROUND_HALF_EVEN).doubleValue();
+						else tmpd1 = 0;
+						tmpd2 = eff;
+					}
+					installments.add(new Installment(srs1.getString("id"), srs1.getString("type"), srs1.getString("zone"), tmpd1, tmpd2, srs1.getString("draw"), srs1.getBoolean("active")));
+					break;
+				}
+			}
+		}
+		
+		hiElement = null;
+		srs1 = null;
+		srs2 = null;
+		srs3 = null;
+		elements = null;
+		elementsCalc = null;
+		elementsRatio = null;
+		
+		gc();
+		
+		return installments;
+	}
+	
+	private Installment getSingleUserInstallments(String id){
+		String hiElement="";
+
+		double hiVal = 0,tmpd1,tmpd2;
+		int eff;
+		SqlRowSet srs1 = db.getJdbc().queryForRowSet("select [zone],type,draw,active from installment,info_sector where id='"+id+"' and name=type"),
+				srs2,srs3;
+		HashMap<String, Double> elementsRatio = new HashMap<String, Double>(),
+				elements = new HashMap<String, Double>(),
+				elementsCalc = new HashMap<String, Double>();
+		Installment installment = null;
+		boolean pass = false;
+		
+		if(srs1.next()){
+			hiElement="";
+			hiVal=0;
+			elementsRatio.clear();
+			elements.clear();
+			elementsCalc.clear();
+			pass = true;
+			
+			srs2 = db.getJdbc().queryForRowSet("select equipment_type,items from info_sector_equipment where sector='"+srs1.getString("type")+"'");
+			while(srs2.next()){
+				elementsRatio.put(srs2.getString("equipment_type"), srs2.getDouble("items"));
+				if(hiVal < srs2.getDouble("items")){
+					hiElement = srs2.getString("equipment_type");
+					hiVal = srs2.getDouble("items");
+				}
+				srs3 = db.getJdbc().queryForRowSet("select count(installment_equipment.id) from installment_equipment,list_equipment,desc_equipment where installment='"+id+"' and desc_equipment.equipment='"+srs2.getString("equipment_type")+"' and installment_equipment.id=list_equipment.id and list_equipment.[desc]=desc_equipment.id");
+				srs3.next();
+				elements.put(srs2.getString("equipment_type"), srs3.getDouble(1));
+			}
+			
+			srs2 = db.getJdbc().queryForRowSet("select employee_type,items from info_sector_employee where sector='"+srs1.getString("type")+"'");
+			while(srs2.next()){
+				elementsRatio.put(srs2.getString("employee_type"), srs2.getDouble("items"));
+				if(hiVal < srs2.getDouble("items")){
+					hiElement = srs2.getString("employee_type");
+					hiVal = srs2.getDouble("items");
+				}
+				srs3 = db.getJdbc().queryForRowSet("select count(installment_employee.id) from installment_employee,list_employee,desc_employee where installment='"+id+"' and desc_employee.employee='"+srs2.getString("employee_type")+"' and installment_employee.id=list_employee.id and list_employee.[desc]=desc_employee.id");
+				srs3.next();
+				elements.put(srs2.getString("employee_type"), srs3.getDouble(1));
+			}
+			
+			//calculating:
+			while(true){
+				for(String element : elementsRatio.keySet()){
+					if(element.equals(hiElement)){
+						elementsCalc.put(element, elements.get(element));
+					} else {
+						elementsCalc.put(element, (elementsRatio.get(element)*elements.get(hiElement))/elementsRatio.get(hiElement));
+					}
+				}
+				
+				for(String element : elements.keySet()){
+					if(elements.get(element) < elementsCalc.get(element)){
+						pass = false;
+						hiElement = element;
+						hiVal = elements.get(element);
+						break;
+					} else {
+						pass = true;
+					}
+				}
+				if(pass){
+					eff = elements.get(hiElement).intValue()/elementsRatio.get(hiElement).intValue();
+					if(elements.get(hiElement) % elementsRatio.get(hiElement) > 0){
+						hiVal = (elementsRatio.get(hiElement)*(eff+1));
+						if(hiVal > 0)
+							tmpd1 = new BigDecimal(Double.valueOf(elementsCalc.get(hiElement)/(elementsRatio.get(hiElement)*(eff+1)))).setScale(2, BigDecimal.ROUND_HALF_EVEN).doubleValue();
+						else tmpd1 = 0;
+						tmpd2 = eff+1;
+					} else {
+						hiVal = (elementsRatio.get(hiElement)*eff);
+						if(hiVal > 0)
+							tmpd1 = new BigDecimal(Double.valueOf(elementsCalc.get(hiElement)/(elementsRatio.get(hiElement)*eff))).setScale(2, BigDecimal.ROUND_HALF_EVEN).doubleValue();
+						else tmpd1 = 0;
+						tmpd2 = eff;
+					}
+					installment = new Installment(id, srs1.getString("type"), srs1.getString("zone"), tmpd1, tmpd2, srs1.getString("draw"), srs1.getBoolean("active"));
+					break;
+				}
+			}
+		}
+		
+		hiElement = null;
+		srs1 = null;
+		srs2 = null;
+		srs3 = null;
+		elements = null;
+		elementsCalc = null;
+		elementsRatio = null;
+		
+		gc();
+		
+		return installment;
 	}
 	
 	/**

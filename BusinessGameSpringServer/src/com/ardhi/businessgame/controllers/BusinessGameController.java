@@ -79,6 +79,8 @@ public class BusinessGameController {
 		listActionPost.add("cancelOfferEquipment");
 		listActionPost.add("fixEquipment");
 		listActionPost.add("payBorrowedMoney");
+		listActionPost.add("upgradeStorage");
+		listActionPost.add("activateDeactivateInstallment");
 	}
 	
 	@RequestMapping(method=RequestMethod.GET)
@@ -199,6 +201,10 @@ public class BusinessGameController {
 				return businessGameService.fixEquipment(req);
 			case 27:
 				return businessGameService.payBorrowedMoney(req);
+			case 28:
+				return businessGameService.upgradeStorage(req);
+			case 29:
+				return businessGameService.activateDeactivateInstallment(req);
 			default:
 				return "-1";
 		}

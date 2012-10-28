@@ -27,7 +27,6 @@
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/org.springframework.web.struts-3.1.0.RELEASE.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/org.springframework.web-3.1.0.RELEASE.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/c3p0-0.9.1.2.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/mysql-connector-java-5.1.12-bin.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/gson-2.1-javadoc.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/gson-2.1.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/sqljdbc4.jar"/>

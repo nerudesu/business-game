@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <TextView android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text="@string/question_equipment"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:layout_margin="10dip"/>
+    
+    <TableLayout android:layout_width="wrap_content"
+	    android:layout_height="wrap_content" 
+	    android:layout_gravity="center_horizontal">
+	    
+	    <TableRow >
+	        
+	        <TextView android:layout_width="wrap_content"
+		        android:layout_height="wrap_content"
+		        android:textAppearance="?android:attr/textAppearanceMedium"
+		        android:text="@string/price"/>
+		    
+		    <EditText android:layout_width="wrap_content"
+		        android:layout_height="wrap_content"
+		        android:id="@+id/txt_price"
+		        android:background="@null"
+                android:focusable="false"
+                android:inputType="none"
+                android:textColor="@android:color/white"/>
+	    
+	    </TableRow>
+	    
+	    <TableRow >
+	        
+	        <TextView android:textAppearance="?android:attr/textAppearanceMedium"
+	        	android:text="@string/storage_capacity"/>
+		    
+		    <EditText android:layout_width="wrap_content"
+		        android:layout_height="wrap_content"
+		        android:id="@+id/txt_capacity"
+		        android:background="@null"
+                android:focusable="false"
+                android:inputType="none"
+                android:textColor="@android:color/white"/>
+	    
+	    </TableRow>
+	
+	</TableLayout>
+    
+</LinearLayout>

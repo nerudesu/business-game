@@ -14,7 +14,7 @@
         android:layout_height="wrap_content"
         android:contentDescription="@string/imgdesc_product"
         android:layout_gravity="center_horizontal"
-        android:src="@drawable/ic_launcher"
+        android:src="@drawable/help_13_contract"
         android:id="@+id/img"/>
     
     <TextView android:layout_width="match_parent"

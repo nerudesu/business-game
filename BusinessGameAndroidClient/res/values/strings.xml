@@ -1,6 +1,6 @@
 <resources>
 
-    <string name="app_name">Zentriump</string>
+    <string name="app_name">Zentriumph</string>
     <string name="hello_world">Hello world!</string>
     <string name="menu_settings">Settings</string>
     <string name="title_activity_login">Login</string>
@@ -33,6 +33,7 @@
     <string name="btn_make_contract">Make a Contract</string>
     <string name="btn_next">Next</string>
     <string name="btn_prev">Prev</string>
+    <string name="btn_upgrade">Upgrade</string>
     
     <string name="imgdesc_user">User</string>
     <string name="imgdesc_product">Product</string>
@@ -66,7 +67,7 @@
     <string name="prop_cost">Property cost : </string>
     <string name="turn_cost">Total cost per turn : </string>
     <string name="money_borrowed">Money borrowed : </string>
-    <string name="storage_capacity">Storage Capacity : </string>
+    <string name="storage_capacity">Capacity : </string>
     <string name="market">Market : </string>
     <string name="price">Price : </string>
     <string name="price_per_cbm">Price per CBM : </string>
@@ -167,7 +168,6 @@
         <item>My Business</item>
         <item>My Account</item>
         <item>Help</item>
-        <item>Options</item>
         <item>Logout</item>
     </string-array>
     <string-array name="options_bank">
